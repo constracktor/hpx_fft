@@ -7,7 +7,7 @@
 #include <fftw3.h>
 
 
-#define NUM_POINTS 64
+#define NUM_POINTS 16
 
 #include <stdio.h>
 #include <math.h>
