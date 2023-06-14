@@ -24,11 +24,9 @@ void acquire_from_somewhere(fftw_complex* signal) {
   for (i = 0; i < NUM_POINTS; ++i) {
     double theta = (double)i / (double)NUM_POINTS * M_PI;
 
-    signal[i][REAL] = 1.0 * cos(10.0 * theta) +
-    0.5 * cos(25.0 * theta);
+    signal[i][REAL] = i;// 1.0 * cos(10.0 * theta) + 0.5 * cos(25.0 * theta);
 
-    signal[i][IMAG] = 1.0 * sin(10.0 * theta) +
-    0.5 * sin(25.0 * theta);
+    signal[i][IMAG] = 0;// 1.0 * sin(10.0 * theta) + 0.5 * sin(25.0 * theta);
   }
 }
 
@@ -58,7 +56,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
   do_something_with(result);
 
   fftw_destroy_plan(plan);
-  
+
   std::cout << "Hello World\n";
 
 
