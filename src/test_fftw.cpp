@@ -6,76 +6,59 @@
 
 #include <fftw3.h>
 
-class FFTW_Adapter {
-	    shared_ptr<Global> global;
-	    Utilities utilities;
 
-	    //plans for FFF basis
-		FFTW_PLAN fft_plan_Fourier_forward_x;
-        FFTW_PLAN fft_plan_Fourier_inverse_x;
-        FFTW_PLAN fft_plan_Fourier_forward_y;
-        FFTW_PLAN fft_plan_Fourier_inverse_y;
-        FFTW_PLAN fft_plan_Fourier_forward_z;
-        FFTW_PLAN fft_plan_Fourier_inverse_z;
+#define NUM_POINTS 64
 
-        //plans for sine/ cosine basis
-        FFTW_PLAN fft_plan_Sine_forward_x;
-		FFTW_PLAN fft_plan_Sine_inverse_x;
-		FFTW_PLAN fft_plan_Sine_forward_y;
-		FFTW_PLAN fft_plan_Sine_inverse_y;
-		FFTW_PLAN fft_plan_Sine_forward_z;
-		FFTW_PLAN fft_plan_Sine_inverse_z;
+#include <stdio.h>
+#include <math.h>
 
-		FFTW_PLAN fft_plan_Cosine_forward_x;
-		FFTW_PLAN fft_plan_Cosine_inverse_x;
-		FFTW_PLAN fft_plan_Cosine_forward_y;
-		FFTW_PLAN fft_plan_Cosine_inverse_y;
-		FFTW_PLAN fft_plan_Cosine_forward_z;
-		FFTW_PLAN fft_plan_Cosine_inverse_z;
+#define REAL 0
+#define IMAG 1
 
-        Array<Complex,3> FA;
-        Array<Complex,3> IA;
-        Array<Real,3> RA;
+void acquire_from_somewhere(fftw_complex* signal) {
+  /* Generate two sine waves of different frequencies and
+  * amplitudes.
+  */
 
-	public: 
-		FFTW_Adapter();
-		FFTW_Adapter(shared_ptr<Global> global);
-		void init_transform(string basis);
-		void DFT_forward_x(Array<Complex,2> A);
-		void DFT_forward_R2C(Array<Real,2> Ar);
-		void DFT_inverse_x(Array<Complex,2> A);
-		void DFT_inverse_C2R(Array<Real,2> Ar);
+  int i;
+  for (i = 0; i < NUM_POINTS; ++i) {
+    double theta = (double)i / (double)NUM_POINTS * M_PI;
 
-		void DFT_forward_x(Array<Complex,3> A);
-		void DFT_forward_R2C(Array<Real,3> Ar);
-		void DFT_forward_y(Array<Complex,3> IA);
-		void DFT_inverse_x(Array<Complex,3> A);
-		void DFT_inverse_C2R(Array<Real,3> Ar);
-		void DFT_inverse_y(Array<Complex,3> IA);
+    signal[i][REAL] = 1.0 * cos(10.0 * theta) +
+    0.5 * cos(25.0 * theta);
 
-		void DFT_forward_R2R(string basis_option, Array<Real,2> Ar);
-		void DFT_forward_R2R_x(string basis_option, Array<Complex,2> A);
-		void DFT_inverse_R2R(string basis_option, Array<Real,2> Ar);
-		void DFT_inverse_R2R_x(string basis_option, Array<Complex,2> A);
+    signal[i][IMAG] = 1.0 * sin(10.0 * theta) +
+    0.5 * sin(25.0 * theta);
+  }
+}
 
-		void DFT_forward_R2R(string basis_option, Array<Real,3> Ar);
-		void DFT_forward_R2R_x(string basis_option, Array<Complex,3> A);
-		void DFT_inverse_R2R(string basis_option, Array<Real,3> Ar);
-		void DFT_inverse_R2R_x(string basis_option, Array<Complex,3> A);
-		void DFT_forward_R2R_y(string basis_option, Array<Complex,3> IA);
-		void DFT_inverse_R2R_y(string basis_option, Array<Complex,3> IA);
+void do_something_with(fftw_complex* result) {
+  int i;
+  for (i = 0; i < NUM_POINTS; ++i) {
+    double mag = sqrt(result[i][REAL] * result[i][REAL] +
+    result[i][IMAG] * result[i][IMAG]);
 
-		void DFT_forward_C2C(string basis_option, Array<Complex,2> A);
-		void DFT_inverse_C2C(string basis_option, Array<Complex,2> A);
-		void DFT_forward_C2C(string basis_option, Array<Complex,3> A);
-		void DFT_inverse_C2C(string basis_option, Array<Complex,3> A);
+    printf("%g\n", mag);
+  }
+}
 
-
-		void Finalize();
-	};
-    
 int hpx_main(hpx::program_options::variables_map& vm)
 {
+      fftw_complex signal[NUM_POINTS];
+  fftw_complex result[NUM_POINTS];
+
+  fftw_plan plan = fftw_plan_dft_1d(NUM_POINTS,
+  signal,
+  result,
+  FFTW_FORWARD,
+  FFTW_ESTIMATE);
+
+  acquire_from_somewhere(signal);
+  fftw_execute(plan);
+  do_something_with(result);
+
+  fftw_destroy_plan(plan);
+  
   std::cout << "Hello World\n";
 
 
