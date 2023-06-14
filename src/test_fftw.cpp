@@ -7,7 +7,7 @@
 #include <fftw3.h>
 
 
-#define NUM_POINTS 16
+#define NUM_POINTS 4
 
 #include <stdio.h>
 #include <math.h>
@@ -26,7 +26,7 @@ void acquire_from_somewhere(fftw_complex* signal) {
 
     signal[i][REAL] = i;// 1.0 * cos(10.0 * theta) + 0.5 * cos(25.0 * theta);
 
-    signal[i][IMAG] = 0;// 1.0 * sin(10.0 * theta) + 0.5 * sin(25.0 * theta);
+    signal[i][IMAG] = NUM_POINTS - 1 - i;// 1.0 * sin(10.0 * theta) + 0.5 * sin(25.0 * theta);
   }
 }
 
@@ -36,7 +36,7 @@ void do_something_with(fftw_complex* result) {
     double mag = sqrt(result[i][REAL] * result[i][REAL] +
     result[i][IMAG] * result[i][IMAG]);
 
-    printf("%g\n", mag);
+    printf("%g - %g\n", result[i][REAL], result[i][IMAG]);
   }
 }
 
