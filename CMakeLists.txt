@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 
+#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/lib")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 #include_directories(PkgConfig::FFTW)
