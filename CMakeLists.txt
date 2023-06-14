@@ -2,9 +2,23 @@ cmake_minimum_required(VERSION 3.18)
 project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 
-add_executable(sender_receiver src/sender_receiver.cpp ${HEADER_FILES})
-target_link_libraries(sender_receiver 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+#include_directories(PkgConfig::FFTW)
+#link_libraries     (PkgConfig::FFTW)
+
+
+
+# add_executable(sender_receiver src/sender_receiver.cpp ${HEADER_FILES})
+# target_link_libraries(sender_receiver 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component)
+
+add_executable(test_fftw src/test_fftw.cpp ${HEADER_FILES})
+target_link_libraries(test_fftw 
                         HPX::hpx 
                         HPX::wrap_main 
-                        HPX::iostreams_component)
+                        HPX::iostreams_component
+                        PkgConfig::FFTW)
 
