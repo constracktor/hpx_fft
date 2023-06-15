@@ -8,7 +8,7 @@
 #include <fftw3.h>
 
 
-#define NUM_POINTS 4
+#define NUM_POINTS 8
 
 #include <stdio.h>
 #include <math.h>
@@ -29,7 +29,7 @@ void acquire_from_somewhere(std::vector<std::complex<double>>& signal) {
     //signal[i][IMAG] = NUM_POINTS - 1 - i;// 1.0 * sin(10.0 * theta) + 0.5 * sin(25.0 * theta);
 
     signal[i].real(i);
-    signal[i].imag(NUM_POINTS-1-i);
+    signal[i].imag(0);
   }
 }
 
@@ -49,22 +49,52 @@ int hpx_main(hpx::program_options::variables_map& vm)
   std::vector<std::complex<double>> result;
   signal.resize(NUM_POINTS);
   result.resize(NUM_POINTS);
-  //fftw_complex signal[NUM_POINTS];
-  //fftw_complex result[NUM_POINTS];
 
-  fftw_plan plan = fftw_plan_dft_1d(NUM_POINTS,
-            reinterpret_cast<fftw_complex*>(&signal[0]),
-            reinterpret_cast<fftw_complex*>(&result[0]),
+  fftw_plan plan_complex = fftw_plan_dft_1d(NUM_POINTS,
+            reinterpret_cast<fftw_complex*>(signal.data()),
+            reinterpret_cast<fftw_complex*>(result.data()),
             FFTW_FORWARD,
             FFTW_ESTIMATE);
 
   //acquire_from_somewhere(signal);
   acquire_from_somewhere(signal);
-  fftw_execute(plan);
+  fftw_execute(plan_complex);
   do_something_with(result);
 
-  fftw_destroy_plan(plan);
+  fftw_destroy_plan(plan_complex);
 
+  std::vector<double> real_signal;
+  real_signal.resize(NUM_POINTS);
+
+  fftw_plan plan_real_r2c = fftw_plan_dft_r2c_1d(NUM_POINTS,
+            real_signal.data(),
+            reinterpret_cast<fftw_complex*>(result.data()),
+            FFTW_ESTIMATE);
+
+  fftw_plan plan_real_c2r = fftw_plan_dft_c2r_1d(NUM_POINTS,
+            reinterpret_cast<fftw_complex*>(result.data()),
+            real_signal.data(),
+            FFTW_ESTIMATE);
+
+    for (int i = 0; i < NUM_POINTS; ++i) 
+    {
+        real_signal[i]=i;
+        result[i].real(10);
+        result[i].imag(10);
+    }
+    for (int i = 0; i < NUM_POINTS; ++i) 
+    {
+        std::cout << real_signal[i] << std::endl;
+    }
+  fftw_execute(plan_real_r2c);
+  do_something_with(result);
+  fftw_execute(plan_real_c2r);
+
+
+    for (int i = 0; i < NUM_POINTS; ++i) 
+    {
+        std::cout << real_signal[i] / NUM_POINTS << std::endl;
+    }
   std::cout << "Hello World\n";
 
 
