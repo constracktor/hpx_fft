@@ -9,6 +9,7 @@
 
 
 #define NUM_POINTS 4
+#define N_DIM 2
 
 #include <stdio.h>
 #include <math.h>
@@ -100,28 +101,28 @@ int hpx_main(hpx::program_options::variables_map& vm)
     /////////////////////
     // 2 x NUM_POINTS 1D r2c and c2r
     std::vector<double> real_signal_2;
-    real_signal_2.resize(2 * (NUM_POINTS+2));
+    real_signal_2.resize(N_DIM * (NUM_POINTS+2));
     for (int i = 0; i < NUM_POINTS; ++i) 
     {
-        real_signal_2[i]=i;
-        real_signal_2[i + NUM_POINTS +2] = i;
+        for (int j = 0; j < N_DIM; ++j) 
+        {
+            real_signal_2[i + j * (NUM_POINTS + 2)]=i;
+        }
     }
 
-    std::cout << "first" << std::endl;
-    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    for (int j = 0; j < N_DIM; ++j) 
     {
-        std::cout << real_signal_2[i] << std::endl;
-    }
-    std::cout << "second" << std::endl;
-    for (int i = 0; i < NUM_POINTS + 2; ++i) 
-    {
-        std::cout << real_signal_2[i + NUM_POINTS +2] << std::endl;
+        std::cout << "Dim: " << j << std::endl;
+        for (int i = 0; i < NUM_POINTS + 2; ++i) 
+        {
+            std::cout << real_signal_2[i + j*(NUM_POINTS +2)] << std::endl;
+        }
     }
 
-
+    // forward
     int rank = 1;
-    const int* n= new int(4);
-    int howmany = 2;
+    const int* n= new int(NUM_POINTS);
+    int howmany = N_DIM;
     int idist = NUM_POINTS + 2, odist = NUM_POINTS/2 + 1; /* the distance in memory between the first element of the first array and the first element of the second array */
     int istride = 1, ostride = 1; /* array is contiguous in memory */
     //const int inembed = n+2, onembed = n+2;
@@ -131,30 +132,34 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(real_signal_2.data()), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-
-
-
-                            
-
-
-
-
     fftw_execute(plan_2_r2c);
     
-    std::cout << "first" << std::endl;
-    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    for (int j = 0; j < N_DIM; ++j) 
     {
-        std::cout << real_signal_2[i] << std::endl;
-    }
-    std::cout << "second" << std::endl;
-    for (int i = 0; i < NUM_POINTS + 2; ++i) 
-    {
-        std::cout << real_signal_2[i + NUM_POINTS +2] << std::endl;
+        std::cout << "Dim: " << j << std::endl;
+        for (int i = 0; i < NUM_POINTS + 2; ++i) 
+        {
+            std::cout << real_signal_2[i + j*(NUM_POINTS +2)] << std::endl;
+        }
     }
 
+    //backward
+    fftw_plan plan_2_c2r = fftw_plan_many_dft_c2r(rank, n, howmany,
+                            reinterpret_cast<fftw_complex*>(real_signal_2.data()), NULL,
+                            istride, odist,
+                            real_signal_2.data(), NULL,
+                            ostride, idist, FFTW_ESTIMATE);
+    fftw_execute(plan_2_c2r);
 
-
-
+    
+    for (int j = 0; j < N_DIM; ++j) 
+    {
+        std::cout << "Dim: " << j << std::endl;
+        for (int i = 0; i < NUM_POINTS; ++i) 
+        {
+            std::cout << real_signal_2[i + j*(NUM_POINTS +2)] / NUM_POINTS << std::endl;
+        }
+    }
 
 
 
