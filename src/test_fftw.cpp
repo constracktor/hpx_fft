@@ -33,9 +33,9 @@ void acquire_from_somewhere(std::vector<std::complex<double>>& signal) {
   }
 }
 
-void do_something_with(std::vector<std::complex<double>>& result) {
+void do_something_with(std::vector<std::complex<double>>& result, int N) {
   int i;
-  for (i = 0; i < NUM_POINTS; ++i) {
+  for (i = 0; i < N; ++i) {
     // double mag = sqrt(result[i][REAL] * result[i][REAL] +
     // result[i][IMAG] * result[i][IMAG]);
     printf("%g - %g\n", result[i].real(), result[i].imag());
@@ -45,33 +45,37 @@ void do_something_with(std::vector<std::complex<double>>& result) {
 
 int hpx_main(hpx::program_options::variables_map& vm)
 {
-  std::vector<std::complex<double>> signal;
-  std::vector<std::complex<double>> result;
-  signal.resize(NUM_POINTS);
-  result.resize(NUM_POINTS);
-
-  fftw_plan plan_complex = fftw_plan_dft_1d(NUM_POINTS,
+    // 1D
+    ////////////////
+    // complex to complex
+    std::vector<std::complex<double>> signal;
+    signal.resize(NUM_POINTS);
+    
+    fftw_plan plan_complex = fftw_plan_dft_1d(NUM_POINTS,
             reinterpret_cast<fftw_complex*>(signal.data()),
-            reinterpret_cast<fftw_complex*>(result.data()),
+            reinterpret_cast<fftw_complex*>(signal.data()),
             FFTW_FORWARD,
             FFTW_ESTIMATE);
 
-  //acquire_from_somewhere(signal);
-  acquire_from_somewhere(signal);
-  fftw_execute(plan_complex);
-  do_something_with(result);
+    //acquire_from_somewhere(signal);
+    acquire_from_somewhere(signal);
+    fftw_execute(plan_complex);
+    do_something_with(signal,NUM_POINTS);
 
-  fftw_destroy_plan(plan_complex);
+    fftw_destroy_plan(plan_complex);
+    /////////////
+    // real to complex and back complex to real
+    std::vector<double> real_signal;
+    real_signal.resize(NUM_POINTS);
+    std::vector<std::complex<double>> result;
+    result.resize(NUM_POINTS/2 + 1);
 
-  std::vector<double> real_signal;
-  real_signal.resize(NUM_POINTS);
-
-  fftw_plan plan_real_r2c = fftw_plan_dft_r2c_1d(NUM_POINTS,
+    fftw_plan plan_real_r2c = fftw_plan_dft_r2c_1d(NUM_POINTS,
             real_signal.data(),
             reinterpret_cast<fftw_complex*>(result.data()),
             FFTW_ESTIMATE);
 
-  fftw_plan plan_real_c2r = fftw_plan_dft_c2r_1d(NUM_POINTS,
+    fftw_plan plan_real_c2r = fftw_plan_dft_c2r_1d(NUM_POINTS,
             reinterpret_cast<fftw_complex*>(result.data()),
             real_signal.data(),
             FFTW_ESTIMATE);
@@ -79,40 +83,73 @@ int hpx_main(hpx::program_options::variables_map& vm)
     for (int i = 0; i < NUM_POINTS; ++i) 
     {
         real_signal[i]=i;
-        result[i].real(10);
-        result[i].imag(10);
     }
     for (int i = 0; i < NUM_POINTS; ++i) 
     {
         std::cout << real_signal[i] << std::endl;
     }
-  fftw_execute(plan_real_r2c);
-  do_something_with(result);
-  fftw_execute(plan_real_c2r);
+    fftw_execute(plan_real_r2c);
+    do_something_with(result,NUM_POINTS/2+1);
+    fftw_execute(plan_real_c2r);
 
 
     for (int i = 0; i < NUM_POINTS; ++i) 
     {
         std::cout << real_signal[i] / NUM_POINTS << std::endl;
     }
-  std::cout << "Hello World\n";
 
 
-namespace hpxex = hpx::execution;
-namespace hpxexp = hpx::execution::experimental;
-//namespace hpxtt = hpx::this_thread::experimental;
 
-// Parallel execution using default executor
-std::vector v = {1.0, 2.0};
-hpx::for_each(hpxex::par, v.begin(), v.end(), [](double val) { std::cout << "default " << val << std::endl; });
+    //////////////////////////////////////////////////////////////////////////////////
+    int n_dim=4;
+    int n_c = n_dim / 2 + 1;
+    int N = n_dim * n_dim * n_dim;
+    std::vector<double> input;
+    std::vector<std::complex<double>> output;
+    input.resize(N);
+    output.resize(n_c * n_dim * n_dim);
+    for(int i; i<N; ++i)
+    {
+        input[i] = i % (N/2);
+    }
+    // 3D
+    fftw_plan plan_r2c_3d = fftw_plan_dft_r2c_3d(n_dim, n_dim, n_dim,
+                                                input.data(),
+                                                reinterpret_cast<fftw_complex*>(output.data()),
+                                                FFTW_ESTIMATE);
+    fftw_execute(plan_r2c_3d);
+    do_something_with(output,N);
+    for(int i; i<N; ++i)
+    {
+        input[i] = 0;
+    }
+    fftw_plan plan_c2r_3d = fftw_plan_dft_c2r_3d(n_dim, n_dim, n_dim,
+                                            reinterpret_cast<fftw_complex*>(output.data()),
+                                            input.data(),
+                                            FFTW_ESTIMATE);
+    fftw_execute(plan_c2r_3d);
+    for(int i; i<N; ++i)
+    {
+        std::cout << input[i] / N << std::endl;
+    }
 
-// Parallel execution using parallel_executor
-hpxex::parallel_executor exec;
-hpx::for_each(hpxex::par.on(exec), v.begin(), v.end(), [](double val) { std::cout << "parallel" << val << std::endl; });
 
-// Parallel asynchronous (eager) execution using parallel_executor
-hpx::future f = hpx::for_each(hpxex::par(hpxex::task).on(exec), v.begin(), v.end(), [](double val) { std::cout << "async" << val << std::endl; });
-f.get(); // wait for completion
+
+// namespace hpxex = hpx::execution;
+// namespace hpxexp = hpx::execution::experimental;
+// //namespace hpxtt = hpx::this_thread::experimental;
+
+// // Parallel execution using default executor
+// std::vector v = {1.0, 2.0};
+// hpx::for_each(hpxex::par, v.begin(), v.end(), [](double val) { std::cout << "default " << val << std::endl; });
+
+// // Parallel execution using parallel_executor
+// hpxex::parallel_executor exec;
+// hpx::for_each(hpxex::par.on(exec), v.begin(), v.end(), [](double val) { std::cout << "parallel" << val << std::endl; });
+
+// // Parallel asynchronous (eager) execution using parallel_executor
+// hpx::future f = hpx::for_each(hpxex::par(hpxex::task).on(exec), v.begin(), v.end(), [](double val) { std::cout << "async" << val << std::endl; });
+// f.get(); // wait for completion
 
 
   return hpx::finalize();    // Handles HPX shutdown
