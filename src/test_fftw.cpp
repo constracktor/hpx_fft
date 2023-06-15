@@ -8,7 +8,7 @@
 #include <fftw3.h>
 
 
-#define NUM_POINTS 8
+#define NUM_POINTS 4
 
 #include <stdio.h>
 #include <math.h>
@@ -96,6 +96,67 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         std::cout << real_signal[i] / NUM_POINTS << std::endl;
     }
+
+    /////////////////////
+    // 2 x NUM_POINTS 1D r2c and c2r
+    std::vector<double> real_signal_2;
+    real_signal_2.resize(2 * (NUM_POINTS+2));
+    for (int i = 0; i < NUM_POINTS; ++i) 
+    {
+        real_signal_2[i]=i;
+        real_signal_2[i + NUM_POINTS +2] = i;
+    }
+
+    std::cout << "first" << std::endl;
+    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    {
+        std::cout << real_signal_2[i] << std::endl;
+    }
+    std::cout << "second" << std::endl;
+    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    {
+        std::cout << real_signal_2[i + NUM_POINTS +2] << std::endl;
+    }
+
+
+    int rank = 1;
+    const int* n= new int(4);
+    int howmany = 2;
+    int idist = NUM_POINTS + 2, odist = NUM_POINTS/2 + 1; /* the distance in memory between the first element of the first array and the first element of the second array */
+    int istride = 1, ostride = 1; /* array is contiguous in memory */
+    //const int inembed = n+2, onembed = n+2;
+
+    fftw_plan plan_2_r2c = fftw_plan_many_dft_r2c(rank, n, howmany,
+                            real_signal_2.data(), NULL,
+                            istride, idist,
+                            reinterpret_cast<fftw_complex*>(real_signal_2.data()), NULL,
+                            ostride, odist, FFTW_ESTIMATE);
+
+
+
+                            
+
+
+
+
+    fftw_execute(plan_2_r2c);
+    
+    std::cout << "first" << std::endl;
+    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    {
+        std::cout << real_signal_2[i] << std::endl;
+    }
+    std::cout << "second" << std::endl;
+    for (int i = 0; i < NUM_POINTS + 2; ++i) 
+    {
+        std::cout << real_signal_2[i + NUM_POINTS +2] << std::endl;
+    }
+
+
+
+
+
+
 
     //////////////////////////////////////////////////////////////////////////////////\
     // 3D
