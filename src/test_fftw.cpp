@@ -165,40 +165,69 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     //////////////////////////////////////////////////////////////////////////////////\
     // 3D
+    // int n_dim=4;
+    // int n_c = n_dim / 2 + 1;
+    // int N = n_dim * n_dim * n_dim;
+    // std::vector<double> input;
+    // std::vector<std::complex<double>> output;
+    // input.resize(N);
+    // output.resize(n_c * n_dim * n_dim);
+    // for(int i; i<N; ++i)
+    // {
+    //     input[i] = i % (N/2);
+    // }
+    // // forward
+    // fftw_plan plan_r2c_3d = fftw_plan_dft_r2c_3d(n_dim, n_dim, n_dim,
+    //                                             input.data(),
+    //                                             reinterpret_cast<fftw_complex*>(output.data()),
+    //                                             FFTW_ESTIMATE);
+    // fftw_execute(plan_r2c_3d);
+    // //do_something_with(output,N);
+    // for(int i; i<N; ++i)
+    // {
+    //     input[i] = 0;
+    // }
+    // // backward
+    // fftw_plan plan_c2r_3d = fftw_plan_dft_c2r_3d(n_dim, n_dim, n_dim,
+    //                                         reinterpret_cast<fftw_complex*>(output.data()),
+    //                                         input.data(),
+    //                                         FFTW_ESTIMATE);
+    // fftw_execute(plan_c2r_3d);
+    // for(int i; i<N; ++i)
+    // {
+    //     //std::cout << input[i] / N << std::endl;
+    // }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    // 2D
+    // fftw 
     int n_dim=4;
     int n_c = n_dim / 2 + 1;
-    int N = n_dim * n_dim * n_dim;
+    int N = n_dim * n_dim;
     std::vector<double> input;
-    std::vector<std::complex<double>> output;
-    input.resize(N);
-    output.resize(n_c * n_dim * n_dim);
+    input.resize((n_dim+2)*n_dim);
     for(int i; i<N; ++i)
     {
-        input[i] = i % (N/2);
+        input[i] = i;
     }
     // forward
-    fftw_plan plan_r2c_3d = fftw_plan_dft_r2c_3d(n_dim, n_dim, n_dim,
+    fftw_plan plan_r2c_2d = fftw_plan_dft_r2c_2d(n_dim, n_dim,
                                                 input.data(),
-                                                reinterpret_cast<fftw_complex*>(output.data()),
+                                                reinterpret_cast<fftw_complex*>(input.data()),
                                                 FFTW_ESTIMATE);
-    fftw_execute(plan_r2c_3d);
-    //do_something_with(output,N);
-    for(int i; i<N; ++i)
-    {
-        input[i] = 0;
-    }
+
+    fftw_execute(plan_r2c_2d);
+
     // backward
-    fftw_plan plan_c2r_3d = fftw_plan_dft_c2r_3d(n_dim, n_dim, n_dim,
-                                            reinterpret_cast<fftw_complex*>(output.data()),
+    fftw_plan plan_c2r_2d = fftw_plan_dft_c2r_2d(n_dim, n_dim,
+                                            reinterpret_cast<fftw_complex*>(input.data()),
                                             input.data(),
                                             FFTW_ESTIMATE);
-    fftw_execute(plan_c2r_3d);
+    fftw_execute(plan_c2r_2d);
     for(int i; i<N; ++i)
     {
-        //std::cout << input[i] / N << std::endl;
+        std::cout << input[i] / N << std::endl;
     }
-
-
 
 // namespace hpxex = hpx::execution;
 // namespace hpxexp = hpx::execution::experimental;
