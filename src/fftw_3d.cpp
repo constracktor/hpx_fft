@@ -137,7 +137,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     int istride = 1, ostride = 1; /* array is contiguous in memory */
 
 
-    fftw_plan plan_2_r2c = fftw_plan_many_dft_r2c(rank, n, 1,
+    fftw_plan plan_2_r2c = fftw_plan_many_dft_r2c(rank, n, howmany,
                             input_2.data(), NULL,
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(input_2.data()), NULL,
