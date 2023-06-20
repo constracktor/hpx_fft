@@ -144,7 +144,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             ostride, odist, FFTW_ESTIMATE);
     fftw_execute(plan_2_r2c);
 
-    print_complex(input_1, dim_r_x, dim_r_y, dim_r_z);
+    print_complex(input_2, dim_r_x, dim_r_y, dim_r_z);
 
 
 
