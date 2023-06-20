@@ -137,14 +137,33 @@ int hpx_main(hpx::program_options::variables_map& vm)
     int istride = 1, ostride = 1; /* array is contiguous in memory */
 
 
-    fftw_plan plan_2_r2c = fftw_plan_many_dft_r2c(rank, n, howmany,
+    fftw_plan plan_2_r2c_3d = fftw_plan_many_dft_r2c(rank, n, howmany,
                             input_2.data(), NULL,
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(input_2.data()), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-    fftw_execute(plan_2_r2c);
+    fftw_execute(plan_2_r2c_3d);
 
     print_complex(input_2, dim_r_x, dim_r_y, dim_r_z);
+
+
+    // forward step two
+    const int* n1= new int(dim_r_y);
+    int howmany = dim_r_x * dim_c_z;
+    istride = dim_c_z;
+    ostride = dim_c_z;
+    idist = 1;
+    odist = 1;
+
+    fftw_plan plan_3_c2c_1 = fftw_plan_many_dft(rank, n, howmany,
+                    reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
+                    istride, idist,
+                    reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
+                    ostride, odist, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(plan_3_c2c_1);
+
+    print_complex(input_2, dim_r_x, dim_r_y, dim_r_z);
+
 
 
 
