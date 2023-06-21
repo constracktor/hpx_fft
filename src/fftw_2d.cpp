@@ -7,7 +7,7 @@
 
 #include <fftw3.h>
 
-void print_fft(const std::vector<double>& input, int dim_r, int scaling = 0)
+void print_real(const std::vector<double>& input, int dim_r, int scaling = 0)
 {
     double factor = 1.0;
     if (scaling)
@@ -26,7 +26,7 @@ void print_fft(const std::vector<double>& input, int dim_r, int scaling = 0)
     std::cout << std::endl;
 }
 
-void print_ifft(const std::vector<double>& input, int dim_r)
+void print_complex(const std::vector<double>& input, int dim_r)
 {
     for(int i=0; i<dim_r; ++i)
     {
@@ -39,7 +39,7 @@ void print_ifft(const std::vector<double>& input, int dim_r)
     std::cout << std::endl;
 }
 
-void print_ifft_t(const std::vector<double>& input, int dim_r)
+void print_complex_t(const std::vector<double>& input, int dim_r)
 {
     for(int i=0; i<dim_r/2+1; ++i)
     {
@@ -77,7 +77,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
 
     std::cout << "Input: " << std::endl;
-    print_fft(input_1,dim_r);
+    print_real(input_1,dim_r);
     
     ////////////////////////////////////////////////////////////////////////////////////
     // use fftw function
@@ -90,7 +90,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_r2c_2d);
     
     std::cout << "FFT: FFTW 2D" << std::endl;
-    print_ifft(input_1,dim_r);
+    print_complex(input_1,dim_r);
     
     ///////////
     // backward
@@ -101,7 +101,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_c2r_2d);
     
     std::cout << "IFFT: FFTW 2D" << std::endl;
-    print_fft(input_1,dim_r,1);
+    print_real(input_1,dim_r,1);
 
     ////////////////////////////////////////////////////////////////////////////////////
     // use local transform   
@@ -145,7 +145,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_2_c2c);
 
     std::cout << "FFT: Local transpose" << std::endl;
-    print_ifft_t(transpose,dim_r);
+    print_complex_t(transpose,dim_r);
 
     /////////
     // backward step one
@@ -179,7 +179,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_2_c2r);
 
     std::cout << "IFFT: Local transpose" << std::endl;
-    print_fft(input_2,dim_r,1);
+    print_real(input_2,dim_r,1);
 
     ////////////////////////////////////////////////////////////////////////////////////
     // strided fft
@@ -187,12 +187,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // forward step one
     idist = dim_r + 2,
     odist = dim_r/2 + 1;
-    fftw_plan plan_2_r2c_s = fftw_plan_many_dft_r2c(rank, n, howmany,
+    fftw_plan plan_3_r2c = fftw_plan_many_dft_r2c(rank, n, howmany,
                             input_3.data(), NULL,
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-    fftw_execute(plan_2_r2c_s);
+    fftw_execute(plan_3_r2c);
 
     /////////
     // forward step two
@@ -201,24 +201,24 @@ int hpx_main(hpx::program_options::variables_map& vm)
     ostride = dim_c;
     idist = 1;
     odist =1;
-    fftw_plan plan_2_c2c_s = fftw_plan_many_dft(rank, n, howmany,
+    fftw_plan plan_3_c2c = fftw_plan_many_dft(rank, n, howmany,
                     reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                     istride, idist,
                     reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                     ostride, odist, FFTW_FORWARD, FFTW_ESTIMATE);
-    fftw_execute(plan_2_c2c_s);
+    fftw_execute(plan_3_c2c);
 
     std::cout << "FFT: Strided" << std::endl;
-    print_ifft(input_3,dim_r);
+    print_complex(input_3,dim_r);
 
     /////////
     // backward step one
-    fftw_plan plan_2_c2c_s_b = fftw_plan_many_dft(rank, n, howmany,
+    fftw_plan plan_3_c2c_b = fftw_plan_many_dft(rank, n, howmany,
                 reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                 istride, idist,
                 reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                 ostride, odist, FFTW_BACKWARD, FFTW_ESTIMATE);
-    fftw_execute(plan_2_c2c_s_b);
+    fftw_execute(plan_3_c2c_b);
 
     /////////
     // backward step two
@@ -227,15 +227,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
     odist = dim_r + 2;
     istride = 1;
     ostride = 1;
-    fftw_plan plan_2_c2r_s = fftw_plan_many_dft_c2r(rank, n, howmany,
+    fftw_plan plan_3_c2r = fftw_plan_many_dft_c2r(rank, n, howmany,
                             reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                             istride, idist,
                             input_3.data(), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-    fftw_execute(plan_2_c2r_s);
+    fftw_execute(plan_3_c2r);
 
     std::cout << "IFFT: Strided" << std::endl;
-    print_fft(input_3,dim_r,1);
+    print_real(input_3,dim_r,1);
 
     return hpx::finalize();    // Handles HPX shutdown
 }

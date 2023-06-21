@@ -37,3 +37,10 @@ target_link_libraries(fftw_3d
                         HPX::iostreams_component
                         PkgConfig::FFTW)
 
+add_executable(par_2d src/par_2d.cpp ${HEADER_FILES})
+target_link_libraries(par_2d 
+                        HPX::hpx 
+                        HPX::wrap_main 
+                        HPX::iostreams_component
+                        PkgConfig::FFTW)
+
