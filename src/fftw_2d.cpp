@@ -4,6 +4,7 @@
 #include <hpx/init.hpp>
 #include <hpx/future.hpp>
 #include <complex>
+#include <chrono>
 
 #include <fftw3.h>
 
@@ -56,7 +57,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 {
     ///////////////////////////////////////////////////////////////////////////////////
     // 2D
-    int dim_r = 4;
+    int dim_r = 1024;
     int dim_c = dim_r/2 + 1;
 
     int N = 2 * dim_c * dim_r;
@@ -77,7 +78,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
 
     std::cout << "Input: " << std::endl;
-    print_real(input_1,dim_r);
+    //print_real(input_1,dim_r);
     
     ////////////////////////////////////////////////////////////////////////////////////
     // use fftw function
@@ -87,10 +88,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
                                                 input_1.data(),
                                                 reinterpret_cast<fftw_complex*>(input_1.data()),
                                                 FFTW_ESTIMATE);
+    auto start_fftw = std::chrono::steady_clock::now();
     fftw_execute(plan_r2c_2d);
+    auto stop_fftw = std::chrono::steady_clock::now();
     
     std::cout << "FFT: FFTW 2D" << std::endl;
-    print_complex(input_1,dim_r);
+    //print_complex(input_1,dim_r);
     
     ///////////
     // backward
@@ -101,7 +104,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_c2r_2d);
     
     std::cout << "IFFT: FFTW 2D" << std::endl;
-    print_real(input_1,dim_r,1);
+    //print_real(input_1,dim_r,1);
 
     ////////////////////////////////////////////////////////////////////////////////////
     // use local transform   
@@ -121,18 +124,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(input_2.data()), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-    fftw_execute(plan_2_r2c);
+    //fftw_execute(plan_2_r2c);
  
-    // local transpose
-    for (int i = 0; i < dim_r; ++i) 
-    {
-        for (int j = 0; j < dim_r/2+1; ++j) 
-        {
-            transpose[j * (2 * dim_r) +2*i] = input_2[i *(dim_r+2) + 2*j];
-            transpose[j * (2 * dim_r) +2*i + 1] = input_2[i *(dim_r+2) + 2*j + 1];
-        }
-    }
-
     /////////
     // forward step two
     idist = dim_r;
@@ -142,10 +135,23 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(transpose.data()), NULL,
                             ostride, odist, FFTW_FORWARD, FFTW_ESTIMATE);
+ 
+    auto start_trans = std::chrono::steady_clock::now();
+    fftw_execute(plan_2_r2c);
+     // local transpose
+    for (int i = 0; i < dim_r; ++i) 
+    {
+        for (int j = 0; j < dim_r/2+1; ++j) 
+        {
+            transpose[j * (2 * dim_r) +2*i] = input_2[i *(dim_r+2) + 2*j];
+            transpose[j * (2 * dim_r) +2*i + 1] = input_2[i *(dim_r+2) + 2*j + 1];
+        }
+    }
     fftw_execute(plan_2_c2c);
+    auto stop_trans = std::chrono::steady_clock::now();
 
     std::cout << "FFT: Local transpose" << std::endl;
-    print_complex_t(transpose,dim_r);
+    //print_complex_t(transpose,dim_r);
 
     /////////
     // backward step one
@@ -179,7 +185,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_2_c2r);
 
     std::cout << "IFFT: Local transpose" << std::endl;
-    print_real(input_2,dim_r,1);
+    //print_real(input_2,dim_r,1);
 
     ////////////////////////////////////////////////////////////////////////////////////
     // strided fft
@@ -192,7 +198,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             istride, idist,
                             reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                             ostride, odist, FFTW_ESTIMATE);
-    fftw_execute(plan_3_r2c);
+    //fftw_execute(plan_3_r2c);
 
     /////////
     // forward step two
@@ -206,10 +212,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
                     istride, idist,
                     reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
                     ostride, odist, FFTW_FORWARD, FFTW_ESTIMATE);
+
+    auto start_stride = std::chrono::steady_clock::now();
+    fftw_execute(plan_3_r2c);
     fftw_execute(plan_3_c2c);
+    auto stop_stride = std::chrono::steady_clock::now();
 
     std::cout << "FFT: Strided" << std::endl;
-    print_complex(input_3,dim_r);
+    //print_complex(input_3,dim_r);
 
     /////////
     // backward step one
@@ -235,7 +245,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_3_c2r);
 
     std::cout << "IFFT: Strided" << std::endl;
-    print_real(input_3,dim_r,1);
+    //print_real(input_3,dim_r,1);
+
+    auto duration_fftw = std::chrono::duration_cast<std::chrono::microseconds>(stop_fftw - start_fftw);
+    auto duration_stride = std::chrono::duration_cast<std::chrono::microseconds>(stop_stride - start_stride);
+    auto duration_trans = std::chrono::duration_cast<std::chrono::microseconds>(stop_trans - start_trans);
+    std::cout << "Elapsed fftw (ms)=" << duration_fftw.count() << std::endl;
+    std::cout << "Elapsed trans(ms)=" << duration_trans.count() << std::endl;
+    std::cout << "Elapsed strided(ms)=" << duration_stride.count() << std::endl;
 
     return hpx::finalize();    // Handles HPX shutdown
 }
