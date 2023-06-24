@@ -60,14 +60,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     // parallel 
     const int n_locs = 2;
-    // assume dim_r_x > n_locs
+    // assume dim_r_x > n_locs and dim_r_y > n_locs
     const int loc_size_x = dim_c_x / n_locs;
     const int loc_size_y = dim_c_y / n_locs;
     
-    // strides distributed across locesses
+    // strides distributed across localities
     std::vector<strides_loc<double>> data_locs(n_locs);
+    // placeholder for rearrange
     std::vector<strides_loc<double>> r_data_locs(n_locs);
-
+    // FFTW plans
     std::vector<plans_loc> r2c_plans_locs(n_locs);
     std::vector<plans_loc> c2r_plans_locs(n_locs);
     std::vector<plans_loc> f_c2c_plans_locs(n_locs);
@@ -90,14 +91,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
             }
         }
     } 
-    
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        for(auto & stride : strides)
-        {
-            print_real(stride, dim_r_x, dim_r_y, dim_c_z);
-        }
-    }
+    // print 
+    // for(auto & strides : data_locs)
+    // {
+    //     for(auto & stride : strides)
+    //     {
+    //         print_real(stride, dim_r_x, dim_r_y, dim_c_z);
+    //     }
+    // }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // forward
@@ -122,15 +123,16 @@ int hpx_main(hpx::program_options::variables_map& vm)
             fftw_execute(r2c_plan);
         }
     }
-    std::cout << "Forward 2D r2c: " << std::endl;
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, dim_r_y, dim_c_z);
-        }
-    }
+    // print
+    // std::cout << "Forward 2D r2c: " << std::endl;
+    // for(auto & strides : data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, dim_r_y, dim_c_z);
+    //     }
+    // }
     ////////////////////////////
     // step 2: dirty communication
     // rearrange 
@@ -148,21 +150,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
             }
         }
     } 
-    std::cout << "Forward rearrange: " << std::endl;
-    for(auto & r_strides : r_data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : r_strides)
-        {
-            print_complex(stride, loc_size_x, dim_c_z);
-        }
+    // print
+    // std::cout << "Forward rearrange: " << std::endl;
+    // for(auto & r_strides : r_data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : r_strides)
+    //     {
+    //         print_complex(stride, loc_size_x, dim_c_z);
+    //     }
         
-    }
+    // }
     // communicate
     for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
         data_locs[loc].resize(loc_size_y);
-        // collect data from own locess 
+        // collect data from own Locality: 
         for(int i=0; i<loc_size_y; ++i)
         {
             data_locs[loc][i].resize(2*dim_c_z*dim_c_x);
@@ -172,7 +175,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                       r_data_locs[loc][i + loc * loc_size_y].end(), 
                       data_locs[loc][i].begin() + loc * loc_size_x * 2 * dim_c_z);
         }  
-        // collect data from other locesses
+        // collect data from other Locality:es
         for(int loc_r = 0; loc_r < n_locs; ++loc_r) // parallel loop over n_locs
         {
             if(loc_r != loc)
@@ -186,15 +189,16 @@ int hpx_main(hpx::program_options::variables_map& vm)
             }
         }
     }
-    std::cout << "Forward communicate: " << std::endl;
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, dim_c_x, dim_c_z);
-        }
-    }
+    // print
+    // std::cout << "Forward communicate: " << std::endl;
+    // for(auto & strides : data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, dim_c_x, dim_c_z);
+    //     }
+    // }
     /////////////////////////////////////////////
     // step 3: strided forward c2c in x-direction
     // create fftw plans for forward c2c in x-direction
@@ -220,16 +224,17 @@ int hpx_main(hpx::program_options::variables_map& vm)
             fftw_execute(c2c_plan);
         }
     }
-    std::cout << "3D FFT: " << std::endl;
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, dim_c_x, dim_c_z);
-        }
+    // print
+    // std::cout << "3D FFT: " << std::endl;
+    // for(auto & strides : data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, dim_c_x, dim_c_z);
+    //     }
         
-    }
+    // }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // backward
@@ -257,16 +262,17 @@ int hpx_main(hpx::program_options::variables_map& vm)
             fftw_execute(c2c_plan);
         }
     }
-    std::cout << "Backward 1D c2c: " << std::endl;
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, dim_c_x, dim_c_z);
-        }
+    // print
+    // std::cout << "Backward 1D c2c: " << std::endl;
+    // for(auto & strides : data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, dim_c_x, dim_c_z);
+    //     }
         
-    }
+    // }
     //////////////////////////////
     // step 2: dirty communication
     // rearrange 
@@ -285,21 +291,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
             }
         }
     } 
-    std::cout << "Backward rearrange" << std::endl;
-    for(auto & strides : r_data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, loc_size_y, dim_c_z);
-        }
+    // print
+    // std::cout << "Backward rearrange" << std::endl;
+    // for(auto & strides : r_data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, loc_size_y, dim_c_z);
+    //     }
         
-    }
+    // }
     // communicate
     for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
         data_locs[loc].resize(loc_size_x);
-        // collect data from own locess 
+        // collect data from own Locality: 
         for(int i=0; i<loc_size_x; ++i)
         {
             data_locs[loc][i].resize(2*dim_c_z*dim_c_x);
@@ -309,7 +316,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                       r_data_locs[loc][i + loc * loc_size_x].end(), 
                       data_locs[loc][i].begin() + loc * loc_size_y * 2 * dim_c_z);
         }  
-        // collect data from other locesses
+        // collect data from other Locality:es
         for(int loc_r = 0; loc_r < n_locs; ++loc_r) // parallel loop over n_locs
         {
             if(loc_r != loc)
@@ -323,16 +330,17 @@ int hpx_main(hpx::program_options::variables_map& vm)
             }
         }
     }
-    std::cout << "Backward communicate" << std::endl;
-    for(auto & strides : data_locs) // parallel loop over n_locs
-    {
-        std::cout << "locess" << std::endl;
-        for(auto & stride : strides)
-        {
-            print_complex(stride, dim_c_y, dim_c_z);
-        }
+    // print
+    // std::cout << "Backward communicate" << std::endl;
+    // for(auto & strides : data_locs) // parallel loop over n_locs
+    // {
+    //     std::cout << "Locality:" << std::endl;
+    //     for(auto & stride : strides)
+    //     {
+    //         print_complex(stride, dim_c_y, dim_c_z);
+    //     }
         
-    }
+    // }
     ////////////////////////////////////
     // step 3: c2r in y- and z-direction
     // create fftw plans for c2r in z- and y-direction
@@ -355,6 +363,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
             fftw_execute(c2r_plan);
         }
     }
+    // print
     std::cout << "3D IFFT: " << std::endl;
     for(auto & strides : data_locs) // parallel loop over n_locs
     {
