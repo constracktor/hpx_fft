@@ -7,9 +7,9 @@
 #include <fftw3.h>
 
 template <typename T>
-using strides_proc = std::vector<std::vector<T>>;
+using strides_loc = std::vector<std::vector<T>>;
 
-using plans_proc = std::vector<fftw_plan>;
+using plans_loc = std::vector<fftw_plan>;
 
 void print_real(const std::vector<double>& input, int dim_r_x, int dim_r_y, int dim_c_z, int scaling = 0)
 {
@@ -48,8 +48,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // 3D
     // dimensions
     const int dim_r_z = 4; 
-    const int dim_r_y = 16;
-    const int dim_r_x = 8; 
+    const int dim_r_y = 4;
+    const int dim_r_x = 4; 
 
     const int dim_c_z = dim_r_z / 2 + 1;
     const int dim_c_y = dim_r_y;
@@ -59,25 +59,25 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const int N_c = 2 * dim_c_z * dim_c_y;
 
     // parallel 
-    const int n_procs = 8;
-    // assume dim_r_x > n_procs
-    const int proc_size = dim_c_x / n_procs;
-    const int proc_size_r = dim_c_y / n_procs;
+    const int n_locs = 2;
+    // assume dim_r_x > n_locs
+    const int loc_size_x = dim_c_x / n_locs;
+    const int loc_size_y = dim_c_y / n_locs;
     
-    // strides distributed across processes
-    std::vector<strides_proc<double>> data_procs(n_procs);
-    std::vector<strides_proc<double>> r_data_procs(n_procs);
+    // strides distributed across locesses
+    std::vector<strides_loc<double>> data_locs(n_locs);
+    std::vector<strides_loc<double>> r_data_locs(n_locs);
 
-    std::vector<plans_proc> r2c_plans_procs(n_procs);
-    std::vector<plans_proc> c2r_plans_procs(n_procs);
-    std::vector<plans_proc> f_c2c_plans_procs(n_procs);
-    std::vector<plans_proc> b_c2c_plans_procs(n_procs);
+    std::vector<plans_loc> r2c_plans_locs(n_locs);
+    std::vector<plans_loc> c2r_plans_locs(n_locs);
+    std::vector<plans_loc> f_c2c_plans_locs(n_locs);
+    std::vector<plans_loc> b_c2c_plans_locs(n_locs);
 
     //////////////////////////////////////////////////////////////////////////////////////
     // intialize with from 0 with spacers
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        strides.resize(proc_size);
+        strides.resize(loc_size_x);
         for(auto & stride : strides)
         {
             stride.resize(N_c);
@@ -91,7 +91,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
     } 
     
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
         for(auto & stride : strides)
         {
@@ -103,19 +103,19 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // forward
     // step 1: r2c in z- and y-direction
     // create fftw plans for r2c in z- and y-direction
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        r2c_plans_procs[proc].resize(proc_size);
-        for(int i=0; i<proc_size; ++i)
+        r2c_plans_locs[loc].resize(loc_size_x);
+        for(int i=0; i<loc_size_x; ++i)
         {     
-            r2c_plans_procs[proc][i] = fftw_plan_dft_r2c_2d(dim_r_y, dim_r_z,
-                                                    data_procs[proc][i].data(),
-                                                    reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()),
+            r2c_plans_locs[loc][i] = fftw_plan_dft_r2c_2d(dim_r_y, dim_r_z,
+                                                    data_locs[loc][i].data(),
+                                                    reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()),
                                                     FFTW_ESTIMATE);
         }
     }
     // launch fftw plans
-    for(auto & r2c_plans : r2c_plans_procs) // parallel loop over n_procs
+    for(auto & r2c_plans : r2c_plans_locs) // parallel loop over n_locs
     {
         for(auto & r2c_plan : r2c_plans)
         {
@@ -123,9 +123,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
     }
     std::cout << "Forward 2D r2c: " << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
             print_complex(stride, dim_r_y, dim_c_z);
@@ -134,62 +134,62 @@ int hpx_main(hpx::program_options::variables_map& vm)
     ////////////////////////////
     // step 2: dirty communication
     // rearrange 
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        r_data_procs[proc].resize(dim_c_y);
+        r_data_locs[loc].resize(dim_c_y);
         for(int i=0; i<dim_c_y; ++i)
         {
-            r_data_procs[proc][i].resize(2 * dim_c_z * proc_size);
-            for(int j=0; j<proc_size; ++j)
+            r_data_locs[loc][i].resize(2 * dim_c_z * loc_size_x);
+            for(int j=0; j<loc_size_x; ++j)
             { 
-                std::move(data_procs[proc][j].begin() + i * 2* dim_c_z, 
-                          data_procs[proc][j].begin() + (i+1) * 2 * dim_c_z, 
-                          r_data_procs[proc][i].begin() + j * 2 * dim_c_z);
+                std::move(data_locs[loc][j].begin() + i * 2* dim_c_z, 
+                          data_locs[loc][j].begin() + (i+1) * 2 * dim_c_z, 
+                          r_data_locs[loc][i].begin() + j * 2 * dim_c_z);
             }
         }
     } 
     std::cout << "Forward rearrange: " << std::endl;
-    for(auto & r_strides : r_data_procs) // parallel loop over n_procs
+    for(auto & r_strides : r_data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : r_strides)
         {
-            print_complex(stride, proc_size, dim_c_z);
+            print_complex(stride, loc_size_x, dim_c_z);
         }
         
     }
     // communicate
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        data_procs[proc].resize(proc_size_r);
-        // collect data from own process 
-        for(int i=0; i<proc_size_r; ++i)
+        data_locs[loc].resize(loc_size_y);
+        // collect data from own locess 
+        for(int i=0; i<loc_size_y; ++i)
         {
-            data_procs[proc][i].resize(2*dim_c_z*dim_c_x);
-            std::fill(data_procs[proc][i].begin(),data_procs[proc][i].end(),1.0);
+            data_locs[loc][i].resize(2*dim_c_z*dim_c_x);
+            std::fill(data_locs[loc][i].begin(),data_locs[loc][i].end(),1.0);
    
-            std::move(r_data_procs[proc][i + proc * proc_size_r].begin(), 
-                      r_data_procs[proc][i + proc * proc_size_r].end(), 
-                      data_procs[proc][i].begin() + proc * proc_size * 2 * dim_c_z);
+            std::move(r_data_locs[loc][i + loc * loc_size_y].begin(), 
+                      r_data_locs[loc][i + loc * loc_size_y].end(), 
+                      data_locs[loc][i].begin() + loc * loc_size_x * 2 * dim_c_z);
         }  
-        // collect data from other processes
-        for(int proc_r = 0; proc_r < n_procs; ++proc_r) // parallel loop over n_procs
+        // collect data from other locesses
+        for(int loc_r = 0; loc_r < n_locs; ++loc_r) // parallel loop over n_locs
         {
-            if(proc_r != proc)
+            if(loc_r != loc)
             {
-                for(int i=0; i<proc_size_r; ++i)
+                for(int i=0; i<loc_size_y; ++i)
                 {
-                    std::move(r_data_procs[proc_r][i + proc * proc_size_r].begin(), 
-                              r_data_procs[proc_r][i + proc * proc_size_r].end(), 
-                              data_procs[proc][i].begin() + proc_r * proc_size * 2 * dim_c_z);
+                    std::move(r_data_locs[loc_r][i + loc * loc_size_y].begin(), 
+                              r_data_locs[loc_r][i + loc * loc_size_y].end(), 
+                              data_locs[loc][i].begin() + loc_r * loc_size_x * 2 * dim_c_z);
                 } 
             }
         }
     }
     std::cout << "Forward communicate: " << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
             print_complex(stride, dim_c_x, dim_c_z);
@@ -198,22 +198,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
     /////////////////////////////////////////////
     // step 3: strided forward c2c in x-direction
     // create fftw plans for forward c2c in x-direction
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        f_c2c_plans_procs[proc].resize(proc_size_r);
-        for(int i=0; i<proc_size_r; ++i)
+        f_c2c_plans_locs[loc].resize(loc_size_y);
+        for(int i=0; i<loc_size_y; ++i)
         {
-            f_c2c_plans_procs[proc][i] = fftw_plan_many_dft(1, &dim_c_x, dim_c_z,
-                                            reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()), NULL,
+            f_c2c_plans_locs[loc][i] = fftw_plan_many_dft(1, &dim_c_x, dim_c_z,
+                                            reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()), NULL,
                                             dim_c_z, 1,
-                                            reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()), NULL,
+                                            reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()), NULL,
                                             dim_c_z, 1,
                                             FFTW_FORWARD, FFTW_ESTIMATE);
         }
         
     }
     // launch fftw plans
-    for(auto & c2c_plans : f_c2c_plans_procs) // parallel loop over n_procs
+    for(auto & c2c_plans : f_c2c_plans_locs) // parallel loop over n_locs
     {
         for(auto & c2c_plan : c2c_plans)
         {
@@ -221,9 +221,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
     }
     std::cout << "3D FFT: " << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
             print_complex(stride, dim_c_x, dim_c_z);
@@ -235,22 +235,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // backward
     // step 1: strided backward c2c in x-direction
     // create fftw plans for backward c2c in x-direction
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        b_c2c_plans_procs[proc].resize(proc_size_r);
-        for(int i=0; i<proc_size_r; ++i)
+        b_c2c_plans_locs[loc].resize(loc_size_y);
+        for(int i=0; i<loc_size_y; ++i)
         {
-            b_c2c_plans_procs[proc][i] = fftw_plan_many_dft(1, &dim_c_x, dim_c_z,
-                                            reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()), NULL,
+            b_c2c_plans_locs[loc][i] = fftw_plan_many_dft(1, &dim_c_x, dim_c_z,
+                                            reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()), NULL,
                                             dim_c_z, 1,
-                                            reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()), NULL,
+                                            reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()), NULL,
                                             dim_c_z, 1,
                                             FFTW_BACKWARD, FFTW_ESTIMATE);
         }
         
     }
     // launch fftw plans
-    for(auto & c2c_plans : b_c2c_plans_procs) // parallel loop over n_procs
+    for(auto & c2c_plans : b_c2c_plans_locs) // parallel loop over n_locs
     {
         for(auto & c2c_plan : c2c_plans)
         {
@@ -258,9 +258,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
     }
     std::cout << "Backward 1D c2c: " << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
             print_complex(stride, dim_c_x, dim_c_z);
@@ -270,63 +270,63 @@ int hpx_main(hpx::program_options::variables_map& vm)
     //////////////////////////////
     // step 2: dirty communication
     // rearrange 
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        r_data_procs[proc].resize(dim_c_x);
+        r_data_locs[loc].resize(dim_c_x);
         for(int i=0; i<dim_c_x; ++i)
         {
-            r_data_procs[proc][i].resize(2 * dim_c_z * proc_size_r);
-            std::fill(r_data_procs[proc][i].begin(),r_data_procs[proc][i].end(),1.0);
-            for(int j=0; j<proc_size_r; ++j)
+            r_data_locs[loc][i].resize(2 * dim_c_z * loc_size_y);
+            std::fill(r_data_locs[loc][i].begin(),r_data_locs[loc][i].end(),1.0);
+            for(int j=0; j<loc_size_y; ++j)
             { 
-                std::move(data_procs[proc][j].begin() + i * 2* dim_c_z, 
-                          data_procs[proc][j].begin() + (i+1) * 2 * dim_c_z, 
-                          r_data_procs[proc][i].begin() + j * 2 * dim_c_z);
+                std::move(data_locs[loc][j].begin() + i * 2* dim_c_z, 
+                          data_locs[loc][j].begin() + (i+1) * 2 * dim_c_z, 
+                          r_data_locs[loc][i].begin() + j * 2 * dim_c_z);
             }
         }
     } 
     std::cout << "Backward rearrange" << std::endl;
-    for(auto & strides : r_data_procs) // parallel loop over n_procs
+    for(auto & strides : r_data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
-            print_complex(stride, proc_size_r, dim_c_z);
+            print_complex(stride, loc_size_y, dim_c_z);
         }
         
     }
     // communicate
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        data_procs[proc].resize(proc_size);
-        // collect data from own process 
-        for(int i=0; i<proc_size; ++i)
+        data_locs[loc].resize(loc_size_x);
+        // collect data from own locess 
+        for(int i=0; i<loc_size_x; ++i)
         {
-            data_procs[proc][i].resize(2*dim_c_z*dim_c_x);
-            std::fill(data_procs[proc][i].begin(),data_procs[proc][i].end(),1.0);
+            data_locs[loc][i].resize(2*dim_c_z*dim_c_x);
+            std::fill(data_locs[loc][i].begin(),data_locs[loc][i].end(),1.0);
    
-            std::move(r_data_procs[proc][i + proc * proc_size].begin(), 
-                      r_data_procs[proc][i + proc * proc_size].end(), 
-                      data_procs[proc][i].begin() + proc * proc_size_r * 2 * dim_c_z);
+            std::move(r_data_locs[loc][i + loc * loc_size_x].begin(), 
+                      r_data_locs[loc][i + loc * loc_size_x].end(), 
+                      data_locs[loc][i].begin() + loc * loc_size_y * 2 * dim_c_z);
         }  
-        // collect data from other processes
-        for(int proc_r = 0; proc_r < n_procs; ++proc_r) // parallel loop over n_procs
+        // collect data from other locesses
+        for(int loc_r = 0; loc_r < n_locs; ++loc_r) // parallel loop over n_locs
         {
-            if(proc_r != proc)
+            if(loc_r != loc)
             {
-                for(int i=0; i<proc_size; ++i)
+                for(int i=0; i<loc_size_x; ++i)
                 {
-                    std::move(r_data_procs[proc_r][i + proc * proc_size].begin(), 
-                              r_data_procs[proc_r][i + proc * proc_size].end(), 
-                              data_procs[proc][i].begin() + proc_r * proc_size_r * 2 * dim_c_z);
+                    std::move(r_data_locs[loc_r][i + loc * loc_size_x].begin(), 
+                              r_data_locs[loc_r][i + loc * loc_size_x].end(), 
+                              data_locs[loc][i].begin() + loc_r * loc_size_y * 2 * dim_c_z);
                 } 
             }
         }
     }
     std::cout << "Backward communicate" << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
-        std::cout << "Process" << std::endl;
+        std::cout << "locess" << std::endl;
         for(auto & stride : strides)
         {
             print_complex(stride, dim_c_y, dim_c_z);
@@ -336,19 +336,19 @@ int hpx_main(hpx::program_options::variables_map& vm)
     ////////////////////////////////////
     // step 3: c2r in y- and z-direction
     // create fftw plans for c2r in z- and y-direction
-    for(int proc = 0; proc < n_procs; ++proc) // parallel loop over n_procs
+    for(int loc = 0; loc < n_locs; ++loc) // parallel loop over n_locs
     {
-        c2r_plans_procs[proc].resize(proc_size);
-        for(int i=0; i<proc_size; ++i)
+        c2r_plans_locs[loc].resize(loc_size_x);
+        for(int i=0; i<loc_size_x; ++i)
         {     
-            c2r_plans_procs[proc][i] = fftw_plan_dft_c2r_2d(dim_r_y, dim_r_z,
-                                        reinterpret_cast<fftw_complex*>(data_procs[proc][i].data()),
-                                        data_procs[proc][i].data(),
+            c2r_plans_locs[loc][i] = fftw_plan_dft_c2r_2d(dim_r_y, dim_r_z,
+                                        reinterpret_cast<fftw_complex*>(data_locs[loc][i].data()),
+                                        data_locs[loc][i].data(),
                                         FFTW_ESTIMATE);
         }
     }
     // launch fftw plans
-    for(auto & c2r_plans : c2r_plans_procs) // parallel loop over n_procs
+    for(auto & c2r_plans : c2r_plans_locs) // parallel loop over n_locs
     {
         for(auto & c2r_plan : c2r_plans)
         {
@@ -356,7 +356,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         }
     }
     std::cout << "3D IFFT: " << std::endl;
-    for(auto & strides : data_procs) // parallel loop over n_procs
+    for(auto & strides : data_locs) // parallel loop over n_locs
     {
         for(auto & stride : strides)
         {
