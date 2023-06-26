@@ -42,6 +42,7 @@ void print_complex(const std::vector<double>& input,  int dim_r_y, int dim_c_z)
     std::cout << std::endl;
 }
 
+///
 int hpx_main(hpx::program_options::variables_map& vm)
 {
     ///////////////////////////////////////////////////////////////////////////////////
@@ -144,11 +145,15 @@ int hpx_main(hpx::program_options::variables_map& vm)
             r_data_locs[loc][i].resize(2 * dim_c_z * loc_size_x);
             for(int j=0; j<loc_size_x; ++j)
             { 
+                std::cout << "Before: Data: " << data_locs[loc][j][0] << " Rdata: " << r_data_locs[loc][i][0] << std::endl;
                 std::move(data_locs[loc][j].begin() + i * 2* dim_c_z, 
                           data_locs[loc][j].begin() + (i+1) * 2 * dim_c_z, 
                           r_data_locs[loc][i].begin() + j * 2 * dim_c_z);
+
+                std::cout << "After: Data: " << data_locs[loc][j][0] << " Rdata: " << r_data_locs[loc][i][0] << std::endl;
             }
         }
+        
     } 
     // print
     // std::cout << "Forward rearrange: " << std::endl;
