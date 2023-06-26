@@ -10,7 +10,6 @@
 //#include <hpx/iostream.hpp>
 //#include <fftw3.h>
 
-#include <hpx/algorithm.hpp>
 #include <hpx/include/partitioned_vector.hpp>
 
 #include <hpx/include/actions.hpp>
@@ -20,28 +19,6 @@
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/iostream.hpp>
-
-
-#include <hpx/config.hpp>
-
-#include <hpx/algorithm.hpp>
-#include <hpx/hpx.hpp>
-#include <hpx/hpx_init.hpp>
-#include <hpx/include/partitioned_vector.hpp>
-
-#include <hpx/modules/program_options.hpp>
-
-#include <cstddef>
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
-#include <random>
-#include <string>
-#include <vector>
-
-///////////////////////////////////////////////////////////////////////////////
-// Define the vector types to be used.
-HPX_REGISTER_PARTITIONED_VECTOR(int)
 
 #include <cstddef>
 #include <cstdint>
@@ -61,6 +38,13 @@ HPX_REGISTER_PARTITIONED_VECTOR(int)
 // to run on a particular OS-thread, we may have to retry as the HPX-thread may
 // end up being 'stolen' by another OS-thread.
 #include <hpx/include/partitioned_vector.hpp>
+
+HPX_REGISTER_PARTITIONED_VECTOR(double);
+
+// By default, the number of segments is equal to the current number of
+// localities
+//
+hpx::partitioned_vector<double> va;
 ///////////////////////////////////////////////////////////////////////////////
 //[hello_world_worker
 std::size_t hello_world_worker(std::size_t desired)
@@ -71,9 +55,9 @@ std::size_t hello_world_worker(std::size_t desired)
     if (current == desired)
     {
         // The HPX-thread has been run on the desired OS-thread.
-        char const* msg = "hello world from OS-thread {1} on locality {2}\n";
+        char const* msg = "From OS-thread {1} on locality {2} get element of partitioned vector: {3}\n";
 
-        hpx::util::format_to(hpx::cout, msg, desired, hpx::get_locality_id())
+        hpx::util::format_to(hpx::cout, msg, desired, hpx::get_locality_id(), va[hpx::get_locality_id()])
             << std::flush;
 
         return desired;
@@ -164,15 +148,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // Get a list of all available localities.
     std::vector<hpx::id_type> localities = hpx::find_all_localities();
 
-    //HPX_REGISTER_PARTITIONED_VECTOR(double);
-
-    // By default, the number of segments is equal to the current number of
-    // localities
-    //
-    hpx::partitioned_vector<double> va(50);
-    hpx::partitioned_vector<double> vb;
+    //hpx::partitioned_vector<double> vb;
     std::cout << "va: " <<  va.size() << std::endl;
-    std::cout << "vb: " <<  vb.size() << std::endl;
+    //std::cout << "vb: " <<  vb.size() << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Get the number of OS threads

@@ -3,8 +3,8 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 
 #set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/lib")
-find_package(PkgConfig REQUIRED)
-pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+#find_package(PkgConfig REQUIRED)
+#pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 #include_directories(PkgConfig::FFTW)
 #link_libraries     (PkgConfig::FFTW)
 
@@ -37,17 +37,32 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 #                         HPX::iostreams_component
 #                         PkgConfig::FFTW)
 
-add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
-target_link_libraries(par_3d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
+# target_link_libraries(par_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         PkgConfig::FFTW)
 
 add_executable(dist_3d src/dist_3d.cpp ${HEADER_FILES})
 target_link_libraries(dist_3d 
                         HPX::hpx 
                         HPX::wrap_main 
-                        HPX::iostreams_component)
+                        HPX::iostreams_component
+                        HPX::partitioned_vector_component)
                         #PkgConfig::FFTW)
 
+
+
+add_executable(test src/test.cpp ${HEADER_FILES})
+#target_link_directories(test PUBLIC "$HPX_DIR/../../")
+target_link_libraries(test PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
+#target_link_libraries(test libhpx_partitioned_vector)
+# target_link_libraries(test
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         HPX::component
+#                         HPX::plugin)
+                        #PkgConfig::FFTW)
+#add_hpx_executable(test src/test.cpp)
