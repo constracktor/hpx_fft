@@ -16,31 +16,38 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 #                         HPX::wrap_main 
 #                         HPX::iostreams_component)
 
-add_executable(test_fftw src/test_fftw.cpp ${HEADER_FILES})
-target_link_libraries(test_fftw 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(test_fftw src/test_fftw.cpp ${HEADER_FILES})
+# target_link_libraries(test_fftw 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         PkgConfig::FFTW)
 
-add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
-target_link_libraries(fftw_2d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_2d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         PkgConfig::FFTW)
                         
-add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
-target_link_libraries(fftw_3d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         PkgConfig::FFTW)
 
-add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
-target_link_libraries(par_3d 
+# add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
+# target_link_libraries(par_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         PkgConfig::FFTW)
+
+add_executable(dist_3d src/dist_3d.cpp ${HEADER_FILES})
+target_link_libraries(dist_3d 
                         HPX::hpx 
                         HPX::wrap_main 
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+                        HPX::iostreams_component)
+                        #PkgConfig::FFTW)
 
