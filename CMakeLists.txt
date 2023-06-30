@@ -54,9 +54,9 @@ target_link_libraries(dist_3d
 
 
 
-add_executable(test src/test.cpp ${HEADER_FILES})
+#add_executable(test src/test.cpp ${HEADER_FILES})
 #target_link_directories(test PUBLIC "$HPX_DIR/../../")
-target_link_libraries(test PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
+#target_link_libraries(test PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
 #target_link_libraries(test libhpx_partitioned_vector)
 # target_link_libraries(test
 #                         HPX::hpx 
@@ -66,3 +66,6 @@ target_link_libraries(test PUBLIC HPX::hpx HPX::partitioned_vector_component HPX
 #                         HPX::plugin)
                         #PkgConfig::FFTW)
 #add_hpx_executable(test src/test.cpp)
+
+add_executable(stencil src/1d_stencil_8.cpp ${HEADER_FILES})
+target_link_libraries(stencil PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
