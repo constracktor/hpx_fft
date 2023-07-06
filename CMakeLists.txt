@@ -44,13 +44,13 @@ find_package(HPX REQUIRED)
 #                         HPX::iostreams_component
 #                         PkgConfig::FFTW)
 
-add_executable(dist_3d src/dist_3d.cpp ${HEADER_FILES})
-target_link_libraries(dist_3d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        HPX::partitioned_vector_component)
-                        #PkgConfig::FFTW)
+# add_executable(dist_3d src/dist_3d.cpp ${HEADER_FILES})
+# target_link_libraries(dist_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         HPX::partitioned_vector_component)
+#                         #PkgConfig::FFTW)
 
 
 
@@ -67,5 +67,8 @@ target_link_libraries(dist_3d
                         #PkgConfig::FFTW)
 #add_hpx_executable(test src/test.cpp)
 
-add_executable(stencil src/1d_stencil_8.cpp ${HEADER_FILES})
-target_link_libraries(stencil PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
+# add_executable(stencil src/1d_stencil_8.cpp ${HEADER_FILES})
+# target_link_libraries(stencil PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
+
+add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
+target_link_libraries(all_to_all PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
