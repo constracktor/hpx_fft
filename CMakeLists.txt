@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.18)
 project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 
-#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/lib")
-#find_package(PkgConfig REQUIRED)
-#pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
-#include_directories(PkgConfig::FFTW)
-#link_libraries     (PkgConfig::FFTW)
-
+#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/lib/pkgconfig")
+# find_package(PkgConfig REQUIRED)
+# pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+# include_directories(PkgConfig::FFTW)
+# link_libraries     (PkgConfig::FFTW)
+find_package(FFTW3 REQUIRED)
 
 
 # add_executable(sender_receiver src/sender_receiver.cpp ${HEADER_FILES})
@@ -23,12 +23,13 @@ find_package(HPX REQUIRED)
 #                         HPX::iostreams_component
 #                         PkgConfig::FFTW)
 
-# add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
-# target_link_libraries(fftw_2d 
-#                         HPX::hpx 
-#                         HPX::wrap_main 
-#                         HPX::iostreams_component
-#                         PkgConfig::FFTW)
+add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
+target_link_libraries(fftw_2d 
+                        HPX::hpx 
+                        HPX::wrap_main 
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
+                       # PkgConfig::FFTW)
                         
 # add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
 # target_link_libraries(fftw_3d 
@@ -70,5 +71,5 @@ find_package(HPX REQUIRED)
 # add_executable(stencil src/1d_stencil_8.cpp ${HEADER_FILES})
 # target_link_libraries(stencil PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
 
-add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
-target_link_libraries(all_to_all PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)
+# add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
+# target_link_libraries(all_to_all PUBLIC HPX::hpx HPX::partitioned_vector_component HPX::iostreams_component)

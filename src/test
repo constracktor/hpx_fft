@@ -1,0 +1,4 @@
+    auto total_duration_trans = std::chrono::duration_cast<std::chrono::microseconds>(stop_trans_3 - start_trans);
+    auto first_duration_trans = std::chrono::duration_cast<std::chrono::microseconds>(stop_trans_1 - start_trans);
+    auto second_duration_trans = std::chrono::duration_cast<std::chrono::microseconds>(stop_trans_2 - stop_trans_1);
+    auto third_duration_trans = std::chrono::duration_cast<std::chrono::microseconds>(stop_trans_3 - stop_trans_2);

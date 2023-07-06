@@ -236,19 +236,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     fftw_execute(plan_2_c2c_x_b);
 
     print_complex(input_2, dim_r_x, dim_r_y, dim_r_z);
-    // /////////
-    // // backward step two
-    // howmany = dim_r;
-    // idist = dim_r/2 + 1;
-    // odist = dim_r + 2;
-    // istride = 1;
-    // ostride = 1;
-    // fftw_plan plan_3_c2r = fftw_plan_many_dft_c2r(rank, n, howmany,
-    //                         reinterpret_cast<fftw_complex*>(input_3.data()), NULL,
-    //                         istride, idist,
-    //                         input_3.data(), NULL,
-    //                         ostride, odist, FFTW_ESTIMATE);
-    // fftw_execute(plan_3_c2r);
+    
+    /////////
+    // backward step three
     howmany = dim_r_x*dim_r_y;
     idist = dim_r_z + 2;
     odist = dim_r_z/2 + 1; /* the distance in memory between the first element of the first array and the first element of the second array */
