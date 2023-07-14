@@ -20,7 +20,7 @@ export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"
 # Compute benchmark script from 2^start to 2^stop
 POW_START=$1
 POW_STOP=$2
-
+LOOP=$3
 ################################################################################
 # Compile code
 ################################################################################
@@ -32,4 +32,9 @@ make
 # Run benchmark script
 ################################################################################
 mkdir result
-./fftw_2d --n=16 --f="estimate" --l=10
+
+for (( i=2**POW_START; i<=2**POW_STOP; i=i*2 ))
+do
+    ./fftw_2d --n=$i --f="estimate" --l=$LOOP
+done
+
