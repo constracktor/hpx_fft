@@ -35,7 +35,7 @@ mkdir result
 
 for (( i=2**POW_START; i<=2**10; i=i*2 ))
 do
-    MULT_LOOP = 10*$LO0P
+    MULT_LOOP=10*$LO0P
     ./fftw_2d --n=$i --f="estimate" --l=$MULT_LOOP
 done
 for (( i=2**10; i<=2**POW_STOP; i=i*2 ))
