@@ -21,6 +21,8 @@ export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"
 POW_START=$1
 POW_STOP=$2
 LOOP=$3
+
+MULT_LOOP=10*$3
 ################################################################################
 # Compile code
 ################################################################################
@@ -35,7 +37,7 @@ mkdir result
 
 for (( i=2**POW_START; i<=2**10; i=i*2 ))
 do
-    MULT_LOOP=10*$LO0P
+    
     ./fftw_2d --n=$i --f="estimate" --l=$MULT_LOOP
 done
 for (( i=2**10; i<=2**POW_STOP; i=i*2 ))
