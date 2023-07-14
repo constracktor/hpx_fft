@@ -22,7 +22,6 @@ POW_START=$1
 POW_STOP=$2
 LOOP=$3
 
-MULT_LOOP=$((10*$3))
 ################################################################################
 # Compile code
 ################################################################################
@@ -38,9 +37,9 @@ mkdir result
 for (( i=2**POW_START; i<=2**10; i=i*2 ))
 do
     
-    ./fftw_2d --n=$i --f="estimate" --l=$MULT_LOOP
+    ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
 done
-for (( i=2**10; i<=2**POW_STOP; i=i*2 ))
+for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
 do
     ./fftw_2d --n=$i --f="estimate" --l=$LOOP
 done
