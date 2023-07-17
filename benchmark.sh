@@ -32,14 +32,25 @@ make
 ################################################################################
 # Run benchmark script
 ################################################################################
+rm -rf result
 mkdir result
+
+# for (( i=2**POW_START; i<=2**10; i=i*2 ))
+# do
+    
+#     ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
+# done
+# for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
+# do
+#     ./fftw_2d --n=$i --f="estimate" --l=$LOOP
+# done
 
 for (( i=2**POW_START; i<=2**10; i=i*2 ))
 do
     
-    ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
+    ./fftw_2d --n=$i --f="patient" --l=$((10*$LOOP))
 done
 for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
 do
-    ./fftw_2d --n=$i --f="estimate" --l=$LOOP
+    ./fftw_2d --n=$i --f="patient" --l=$LOOP
 done
