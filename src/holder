@@ -1,0 +1,7 @@
+    std::vector<std::vector<std::uint32_t>> values_2(num_localities);
+        
+    for (std::size_t j = 0; j != num_localities; ++j)
+    {
+        values_2[j].resize(3);
+        std::fill(values_2[j].begin(), values_2[j].end(), this_locality);
+    }

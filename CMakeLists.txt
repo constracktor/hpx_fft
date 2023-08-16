@@ -3,30 +3,37 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
-target_link_libraries(fftw_2d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-                       # PkgConfig::FFTW)
+# add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_2d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
+#                        # PkgConfig::FFTW)
                         
-add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
-target_link_libraries(fftw_3d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 
-add_executable(par_2d src/par_2d.cpp ${HEADER_FILES})
-target_link_libraries(par_2d 
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(par_2d src/par_2d.cpp ${HEADER_FILES})
+# target_link_libraries(par_2d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 
-add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
-target_link_libraries(par_3d 
+# add_executable(par_3d src/par_3d.cpp ${HEADER_FILES})
+# target_link_libraries(par_3d 
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
+
+add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
+target_link_libraries(all_to_all
                         HPX::hpx 
                         HPX::wrap_main 
                         HPX::iostreams_component
