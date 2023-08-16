@@ -407,20 +407,20 @@ int hpx_main(hpx::program_options::variables_map& vm)
         runtimes[time.first] = time.second / loop;
     }
 
-    std::cout << "Elapsed fftw 2D (ms): \n total = " << runtimes["fftw"] << std::endl;
+    std::cout << "Elapsed fftw 2D (micros): \n total = " << runtimes["fftw"] << std::endl;
 
-    std::cout << "Elapsed stride (ms): \n total = "  << runtimes["stride_total"] <<
+    std::cout << "Elapsed stride (micros): \n total = "  << runtimes["stride_total"] <<
                                     "\n r2c 1D = " << runtimes["stride_r2c"] <<
                                     "\n c2c 1D = " << runtimes["stride_c2c"]
                                                         << std::endl;
 
-    std::cout << "Elapsed local transpose (ms): \n total = "  << runtimes["trans_total"] <<
+    std::cout << "Elapsed local transpose (micros): \n total = "  << runtimes["trans_total"] <<
                                 "\n r2c 1D = " << runtimes["trans_r2c"] <<
                                 "\n transpose = " << runtimes["trans_local"] <<
                                 "\n c2c 1D = " << runtimes["trans_c2c"]
                                                     << std::endl;
 
-    std::cout << "Elapsed 1D loop with transpose (ms): \n total = "  << runtimes["loop_total"] <<
+    std::cout << "Elapsed 1D loop with transpose (micros): \n total = "  << runtimes["loop_total"] <<
                                         "\n r2c loop = " << runtimes["loop_r2c"] << 
                                         "\n transpose = " << runtimes["loop_local"] <<                              
                                         "\n c2c loop = " << runtimes["loop_c2c"]
