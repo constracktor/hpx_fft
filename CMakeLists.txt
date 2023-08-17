@@ -32,8 +32,15 @@ find_package(FFTW3 REQUIRED)
 #                         HPX::iostreams_component
 #                         FFTW3::fftw3)
 
-add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
-target_link_libraries(all_to_all
+# add_executable(all_to_all src/all_to_all.cpp ${HEADER_FILES})
+# target_link_libraries(all_to_all
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
+
+add_executable(scatter src/scatter.cpp ${HEADER_FILES})
+target_link_libraries(scatter
                         HPX::hpx 
                         HPX::wrap_main 
                         HPX::iostreams_component
