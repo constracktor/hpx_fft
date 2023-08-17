@@ -12,6 +12,9 @@
 #include <hpx/modules/collectives.hpp>
 #include <hpx/modules/testing.hpp>
 
+#include <hpx/iostream.hpp>
+
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -22,113 +25,185 @@
 
 using namespace hpx::collectives;
 
+using vector = std::vector<std::uint32_t, std::allocator<std::uint32_t>>;
+using split_vector = std::vector<vector>;
+
 constexpr char const* scatter_direct_basename = "/test/scatter_direct/";
-
-void test_one_shot_use()
-{
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);
-
-    std::uint32_t this_locality = hpx::get_locality_id();
-
-    // test functionality based on immediate local result value
-    for (std::uint32_t i = 0; i != 10; ++i)
-    {
-        if (this_locality == 0)
-        {
-            std::vector<std::uint32_t> data(num_localities);
-            std::iota(data.begin(), data.end(), 42 + i);
-
-            hpx::future<std::uint32_t> result =
-                scatter_to(scatter_direct_basename, std::move(data),
-                    num_sites_arg(num_localities), this_site_arg(this_locality),
-                    generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-        else
-        {
-            hpx::future<std::uint32_t> result =
-                scatter_from<std::uint32_t>(scatter_direct_basename,
-                    this_site_arg(this_locality), generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-    }
-}
-
-void test_multiple_use()
-{
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);
-
-    std::uint32_t this_locality = hpx::get_locality_id();
-
-    auto scatter_direct_client =
-        hpx::collectives::create_communicator(scatter_direct_basename,
-            num_sites_arg(num_localities), this_site_arg(this_locality));
-
-    // test functionality based on immediate local result value
-    for (std::uint32_t i = 0; i != 10; ++i)
-    {
-        if (this_locality == 0)
-        {
-            std::vector<std::uint32_t> data(num_localities);
-            std::iota(data.begin(), data.end(), 42 + i);
-
-            hpx::future<std::uint32_t> result =
-                scatter_to(scatter_direct_client, std::move(data));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-        else
-        {
-            hpx::future<std::uint32_t> result =
-                scatter_from<std::uint32_t>(scatter_direct_client);
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-    }
-}
 
 void test_multiple_use_with_generation()
 {
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);
-
+    HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
     std::uint32_t this_locality = hpx::get_locality_id();
 
     auto scatter_direct_client =
         hpx::collectives::create_communicator(scatter_direct_basename,
             num_sites_arg(num_localities), this_site_arg(this_locality));
 
-    // test functionality based on immediate local result value
-    for (std::uint32_t i = 0; i != 10; ++i)
+
+    // do stuff with vector
+    std::uint32_t size=4;
+    std::uint32_t sub_size=size/num_localities;
+    std::uint32_t N = 4;
+
+    std::vector<vector> values;
+    std::vector<split_vector> values_div(N);
+
+    // create values and do stuff
+    for(std::uint32_t i = 0; i != N; ++i)
     {
-        if (this_locality == 0)
+        vector v(size);
+        //std::fill(v.begin(), v.end(), this_locality);
+        std::iota(v.begin(), v.end(), 0+10*this_locality);
+        values.push_back(v);
+    }
+
+    // divide value vector
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        for (std::size_t j = 0; j != num_localities; ++j)
         {
-            std::vector<std::uint32_t> data(num_localities);
-            std::iota(data.begin(), data.end(), 42 + i);
-
-            hpx::future<std::uint32_t> result = scatter_to(
-                scatter_direct_client, std::move(data), generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-        else
-        {
-            hpx::future<std::uint32_t> result = scatter_from<std::uint32_t>(
-                scatter_direct_client, generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
+            vector tmp(std::make_move_iterator(values[i].begin()+j*sub_size),
+                                std::make_move_iterator(values[i].begin()+(j+1)*sub_size)); // move;
+            values_div[i].push_back(tmp);
         }
     }
+
+    // communication
+    if (this_locality == 0)
+    {
+
+        split_vector r;   
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            hpx::future<vector> result = scatter_to(
+                scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
+            r.push_back(result.get());
+        }
+
+        std::vector<hpx::future<vector>> r2(N);
+        split_vector r3; 
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            hpx::future<vector> result = scatter_from<vector>(
+                scatter_direct_client, generation_arg(i+1+N));
+            // extract from loop
+            //r3.push_back(result.get());
+            r2[i] = std::move(result);
+        }
+
+
+
+
+
+
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            for (auto v : r[i])
+            {
+                char const* msg = "Locality {1} r: {2}\n";
+                hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                    << std::flush;
+            }
+        }
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            for (auto v : r2[i].get())
+            {
+                char const* msg = "Locality {1} r: {2}\n";
+                hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                    << std::flush;
+            }
+        }
+
+    }
+    else
+    {
+
+        std::vector<hpx::future<vector>> r;
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            hpx::future<vector> result = scatter_from<vector>(
+                scatter_direct_client, generation_arg(i+1));
+            // extract from loop
+            r.push_back(std::move(result));
+        }
+
+        split_vector r2;   
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            hpx::future<vector> result = scatter_to(
+                scatter_direct_client, std::move(values_div[i]), generation_arg(i+1+N));
+            r2.push_back(result.get());
+
+        }
+
+
+
+
+
+
+
+
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            for (auto v : r[i].get())
+            {
+                char const* msg = "Locality {1} r: {2}\n";
+                hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                    << std::flush;
+            }
+        }
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            for (auto v : r2[i])
+            {
+                char const* msg = "Locality {1} r: {2}\n";
+                hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                    << std::flush;
+            }
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    // // test functionality based on immediate local result value
+    // for (std::uint32_t i = 0; i != 10; ++i)
+    // {
+    //     if (this_locality == 0)
+    //     {
+    //         std::vector<std::uint32_t> data(num_localities);
+    //         std::iota(data.begin(), data.end(), 42 + i);
+
+    //         hpx::future<std::uint32_t> result = scatter_to(
+    //             scatter_direct_client, std::move(data), generation_arg(i + 1));
+
+    //         HPX_TEST_EQ(i + 42 + this_locality, result.get());
+    //     }
+    //     else
+    //     {
+    //         hpx::future<std::uint32_t> result = scatter_from<std::uint32_t>(
+    //             scatter_direct_client, generation_arg(i + 1));
+
+    //         HPX_TEST_EQ(i + 42 + this_locality, result.get());
+    //     }
+    // }
 }
 
 int hpx_main()
 {
-    test_one_shot_use();
-    test_multiple_use();
+    // test_one_shot_use();
+    // test_multiple_use();
     test_multiple_use_with_generation();
 
     return hpx::finalize();
@@ -146,3 +221,70 @@ int main(int argc, char* argv[])
 }
 
 #endif
+
+// void test_one_shot_use()
+// {
+//     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+//     HPX_TEST_LTE(std::uint32_t(2), num_localities);
+
+//     std::uint32_t this_locality = hpx::get_locality_id();
+
+//     // test functionality based on immediate local result value
+//     for (std::uint32_t i = 0; i != 10; ++i)
+//     {
+//         if (this_locality == 0)
+//         {
+//             std::vector<std::uint32_t> data(num_localities);
+//             std::iota(data.begin(), data.end(), 42 + i);
+
+//             hpx::future<std::uint32_t> result =
+//                 scatter_to(scatter_direct_basename, std::move(data),
+//                     num_sites_arg(num_localities), this_site_arg(this_locality),
+//                     generation_arg(i + 1));
+
+//             HPX_TEST_EQ(i + 42 + this_locality, result.get());
+//         }
+//         else
+//         {
+//             hpx::future<std::uint32_t> result =
+//                 scatter_from<std::uint32_t>(scatter_direct_basename,
+//                     this_site_arg(this_locality), generation_arg(i + 1));
+
+//             HPX_TEST_EQ(i + 42 + this_locality, result.get());
+//         }
+//     }
+// }
+
+// void test_multiple_use()
+// {
+//     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+//     HPX_TEST_LTE(std::uint32_t(2), num_localities);
+
+//     std::uint32_t this_locality = hpx::get_locality_id();
+
+//     auto scatter_direct_client =
+//         hpx::collectives::create_communicator(scatter_direct_basename,
+//             num_sites_arg(num_localities), this_site_arg(this_locality));
+
+//     // test functionality based on immediate local result value
+//     for (std::uint32_t i = 0; i != 10; ++i)
+//     {
+//         if (this_locality == 0)
+//         {
+//             std::vector<std::uint32_t> data(num_localities);
+//             std::iota(data.begin(), data.end(), 42 + i);
+
+//             hpx::future<std::uint32_t> result =
+//                 scatter_to(scatter_direct_client, std::move(data));
+
+//             HPX_TEST_EQ(i + 42 + this_locality, result.get());
+//         }
+//         else
+//         {
+//             hpx::future<std::uint32_t> result =
+//                 scatter_from<std::uint32_t>(scatter_direct_client);
+
+//             HPX_TEST_EQ(i + 42 + this_locality, result.get());
+//         }
+//     }
+// }
