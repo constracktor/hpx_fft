@@ -70,9 +70,27 @@ void test_multiple_use_with_generation()
     }
 
 
+    // split_vector r(N);   
+    // for(std::uint32_t i = 0; i != N; ++i)
+    // {
+    //     hpx::future<vector> result = scatter_to(
+    //         scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
+    //     r.push_back(result.get());
+    // }
+
     // for(std::uint32_t other_loc; other_loc != num_localities;++other_loc)
     // {
     //     if(this_locality == other_loc)
+    //     {
+    //         split_vector r(N);   
+    //         for(std::uint32_t i = 0; i != N; ++i)
+    //         {
+    //             hpx::future<vector> result = scatter_to(
+    //                 scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
+    //             r.push_back(result.get());
+    //         }
+    //     }
+    //     else
     //     {
 
     //     }
@@ -104,14 +122,14 @@ void test_multiple_use_with_generation()
             hpx::future<vector> result = scatter_from<vector>(
                 scatter_direct_client, generation_arg(i+1+N));
             // extract from loop
-            //r3.push_back(result.get());
-            r2[i] = std::move(result);
+            r3.push_back(result.get());
+           // r2[i] = std::move(result);
         }
 
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            r3.push_back(r2[i].get());
-        }
+        // for(std::uint32_t i = 0; i != N; ++i)
+        // {
+        //     r3.push_back(r2[i].get());
+        // }
 
 
 
