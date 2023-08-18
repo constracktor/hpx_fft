@@ -72,7 +72,7 @@ void test_multiple_use_with_generation()
 
 
 
-    std::vector<hpx::future<vector>> r2(N);
+    std::vector<hpx::future<vector>> r2;
     for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
     {
         if(this_locality != other_locality)
@@ -83,14 +83,14 @@ void test_multiple_use_with_generation()
                 hpx::future<vector> result = scatter_from<vector>(
                     scatter_direct_client, generation_arg(other_locality+1));
                 // extract from loop
-                //r3.push_back(result.get());
-                r2[i] = std::move(result);
+                r2.push_back(result.get());
+                //r2[i] = std::move(result);
             }
         }
     }
 
 
-    split_vector r(N);   
+    std::vector r;//1   
     for(std::uint32_t i = 0; i != N; ++i)
     {
         hpx::future<vector> result = scatter_to(
