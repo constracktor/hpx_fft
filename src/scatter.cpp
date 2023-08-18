@@ -99,15 +99,12 @@ void test_multiple_use_with_generation()
     }
 
     std::vector<vector> r3(num_localities);
+    r3[this_locality] =r[0];
     for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
     {
         if(this_locality != other_locality)
         {
             r3[other_locality] =r2[0].get(); 
-        }
-        else
-        {
-            r3[other_locality] =r[0];
         }
     }
 
