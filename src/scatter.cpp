@@ -127,17 +127,6 @@ void test_multiple_use_with_generation()
             }
     }
 
-
-        for (auto vec : r3)
-        {
-            for (auto v : vec)
-            {
-        
-            char const* msg = "Locality {1} r: {2}\n";
-            hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                << std::flush;
-            }
-        }
     
 
 
