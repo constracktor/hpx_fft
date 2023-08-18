@@ -103,11 +103,11 @@ void test_multiple_use_with_generation()
     {
         if(this_locality != other_locality)
         {
-            r3[other_locality] =r2[i].get(); 
+            r3[other_locality] =r2[0].get(); 
         }
         else
         {
-            r3[this_locality] =r[this_locality];
+            r3[this_locality] =r[0];
         }
     }
 
