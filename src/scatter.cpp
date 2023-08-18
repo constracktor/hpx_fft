@@ -53,8 +53,8 @@ void test_multiple_use_with_generation()
     for(std::uint32_t i = 0; i != N; ++i)
     {
         vector v(size);
-        //std::fill(v.begin(), v.end(), this_locality);
-        std::iota(v.begin(), v.end(), 0+10*this_locality);
+        std::fill(v.begin(), v.end(), this_locality);
+        //std::iota(v.begin(), v.end(), 0+10*this_locality);
         values.push_back(v);
     }
 
