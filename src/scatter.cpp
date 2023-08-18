@@ -107,7 +107,7 @@ void test_multiple_use_with_generation()
         }
         else
         {
-            r3[this_locality] =r[0];
+            r3[other_locality] =r[0];
         }
     }
 
