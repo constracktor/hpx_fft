@@ -92,7 +92,10 @@ void test_multiple_use_with_generation()
             r2[i] = std::move(result);
         }
 
-
+        for(std::uint32_t i = 0; i != N; ++i)
+        {
+            r3.push_back(r2[i].get();
+        }
 
 
 
@@ -108,7 +111,7 @@ void test_multiple_use_with_generation()
         }
         for(std::uint32_t i = 0; i != N; ++i)
         {
-            for (auto v : r2[i].get())
+            for (auto v : r3[i])
             {
                 char const* msg = "Locality {1} r: {2}\n";
                 hpx::util::format_to(hpx::cout, msg, this_locality, v)
