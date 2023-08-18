@@ -70,143 +70,162 @@ void test_multiple_use_with_generation()
     }
 
 
-    // split_vector r(N);   
-    // for(std::uint32_t i = 0; i != N; ++i)
-    // {
-    //     hpx::future<vector> result = scatter_to(
-    //         scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
-    //     r.push_back(result.get());
-    // }
+    split_vector r(N);   
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        hpx::future<vector> result = scatter_to(
+            scatter_direct_client, std::move(values_div[i]), generation_arg(this_locality+1));
+        r.push_back(result.get());
+    }
 
-    // for(std::uint32_t other_loc; other_loc != num_localities;++other_loc)
+    split_vector r3; 
+    for(std::uint32_t other_loc; other_loc != num_localities;++other_loc)
+    {
+        if(this_locality != other_loc)
+        {
+            //std::vector<hpx::future<vector>> r2(N);
+            for(std::uint32_t i = 0; i != N; ++i)
+            {
+                hpx::future<vector> result = scatter_from<vector>(
+                    scatter_direct_client, generation_arg(other_locality+1));
+                // extract from loop
+                r3.push_back(result.get());
+            // r2[i] = std::move(result);
+            }
+        }
+
+    }
+
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        for (auto v : r[i])
+        {
+            char const* msg = "Locality {1} r: {2}\n";
+            hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                << std::flush;
+        }
+    }
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        for (auto v : r3[i])
+        {
+            char const* msg = "Locality {1} r: {2}\n";
+            hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                << std::flush;
+        }
+    }
+
+
+
+
+
+
+
+
+    // // communication
+    // if (this_locality == 0)
     // {
-    //     if(this_locality == other_loc)
+
+    //     split_vector r;   
+    //     for(std::uint32_t i = 0; i != N; ++i)
     //     {
-    //         split_vector r(N);   
-    //         for(std::uint32_t i = 0; i != N; ++i)
+    //         hpx::future<vector> result = scatter_to(
+    //             scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
+    //         r.push_back(result.get());
+    //     }
+
+    //     std::vector<hpx::future<vector>> r2(N);
+    //     split_vector r3; 
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         hpx::future<vector> result = scatter_from<vector>(
+    //             scatter_direct_client, generation_arg(i+1+N));
+    //         // extract from loop
+    //         r3.push_back(result.get());
+    //        // r2[i] = std::move(result);
+    //     }
+
+    //     // for(std::uint32_t i = 0; i != N; ++i)
+    //     // {
+    //     //     r3.push_back(r2[i].get());
+    //     // }
+
+
+
+
+
+
+
+
+
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         for (auto v : r[i])
     //         {
-    //             hpx::future<vector> result = scatter_to(
-    //                 scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
-    //             r.push_back(result.get());
+    //             char const* msg = "Locality {1} r: {2}\n";
+    //             hpx::util::format_to(hpx::cout, msg, this_locality, v)
+    //                 << std::flush;
     //         }
     //     }
-    //     else
+    //     for(std::uint32_t i = 0; i != N; ++i)
     //     {
+    //         for (auto v : r3[i])
+    //         {
+    //             char const* msg = "Locality {1} r: {2}\n";
+    //             hpx::util::format_to(hpx::cout, msg, this_locality, v)
+    //                 << std::flush;
+    //         }
+    //     }
+
+    // }
+    // else
+    // {
+
+    //     std::vector<hpx::future<vector>> r;
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         hpx::future<vector> result = scatter_from<vector>(
+    //             scatter_direct_client, generation_arg(i+1));
+    //         // extract from loop
+    //         r.push_back(std::move(result));
+    //     }
+
+    //     split_vector r2;   
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         hpx::future<vector> result = scatter_to(
+    //             scatter_direct_client, std::move(values_div[i]), generation_arg(i+1+N));
+    //         r2.push_back(result.get());
 
     //     }
+
+
+
+
+
+
+
+
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         for (auto v : r[i].get())
+    //         {
+    //             char const* msg = "Locality {1} r: {2}\n";
+    //             hpx::util::format_to(hpx::cout, msg, this_locality, v)
+    //                 << std::flush;
+    //         }
+    //     }
+    //     for(std::uint32_t i = 0; i != N; ++i)
+    //     {
+    //         for (auto v : r2[i])
+    //         {
+    //             char const* msg = "Locality {1} r: {2}\n";
+    //             hpx::util::format_to(hpx::cout, msg, this_locality, v)
+    //                 << std::flush;
+    //         }
+    //     }
+
     // }
-
-
-
-
-
-
-
-
-    // communication
-    if (this_locality == 0)
-    {
-
-        split_vector r;   
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            hpx::future<vector> result = scatter_to(
-                scatter_direct_client, std::move(values_div[i]), generation_arg(i+1));
-            r.push_back(result.get());
-        }
-
-        std::vector<hpx::future<vector>> r2(N);
-        split_vector r3; 
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            hpx::future<vector> result = scatter_from<vector>(
-                scatter_direct_client, generation_arg(i+1+N));
-            // extract from loop
-            r3.push_back(result.get());
-           // r2[i] = std::move(result);
-        }
-
-        // for(std::uint32_t i = 0; i != N; ++i)
-        // {
-        //     r3.push_back(r2[i].get());
-        // }
-
-
-
-
-
-
-
-
-
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            for (auto v : r[i])
-            {
-                char const* msg = "Locality {1} r: {2}\n";
-                hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                    << std::flush;
-            }
-        }
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            for (auto v : r3[i])
-            {
-                char const* msg = "Locality {1} r: {2}\n";
-                hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                    << std::flush;
-            }
-        }
-
-    }
-    else
-    {
-
-        std::vector<hpx::future<vector>> r;
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            hpx::future<vector> result = scatter_from<vector>(
-                scatter_direct_client, generation_arg(i+1));
-            // extract from loop
-            r.push_back(std::move(result));
-        }
-
-        split_vector r2;   
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            hpx::future<vector> result = scatter_to(
-                scatter_direct_client, std::move(values_div[i]), generation_arg(i+1+N));
-            r2.push_back(result.get());
-
-        }
-
-
-
-
-
-
-
-
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            for (auto v : r[i].get())
-            {
-                char const* msg = "Locality {1} r: {2}\n";
-                hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                    << std::flush;
-            }
-        }
-        for(std::uint32_t i = 0; i != N; ++i)
-        {
-            for (auto v : r2[i])
-            {
-                char const* msg = "Locality {1} r: {2}\n";
-                hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                    << std::flush;
-            }
-        }
-
-    }
 
 
 
