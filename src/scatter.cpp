@@ -79,9 +79,9 @@ void test_multiple_use_with_generation()
     }
 
     split_vector r3; 
-    for(std::uint32_t other_loc; other_loc != num_localities;++other_loc)
+    for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
     {
-        if(this_locality != other_loc)
+        if(this_locality != other_locality)
         {
             //std::vector<hpx::future<vector>> r2(N);
             for(std::uint32_t i = 0; i != N; ++i)
