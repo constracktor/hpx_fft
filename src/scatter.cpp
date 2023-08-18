@@ -83,7 +83,7 @@ void test_multiple_use_with_generation()
                 hpx::future<vector> result = scatter_from<vector>(
                     scatter_direct_client, generation_arg(other_locality+1));
                 // extract from loop
-                r2.push_back(result.get());
+                r2.push_back(std::move(result));
                 //r2[i] = std::move(result);
             }
         }
