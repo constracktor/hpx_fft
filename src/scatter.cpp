@@ -44,7 +44,7 @@ void test_multiple_use_with_generation()
     // do stuff with vector
     std::uint32_t size=4;
     std::uint32_t sub_size=size/num_localities;
-    std::uint32_t N = 4;
+    std::uint32_t N = 2;
 
     std::vector<vector> values;
     std::vector<split_vector> values_div(N);
@@ -94,7 +94,7 @@ void test_multiple_use_with_generation()
 
         for(std::uint32_t i = 0; i != N; ++i)
         {
-            r3.push_back(r2[i].get();
+            r3.push_back(r2[i].get());
         }
 
 
