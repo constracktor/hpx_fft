@@ -70,6 +70,26 @@ void test_multiple_use_with_generation()
     }
 
 
+
+
+    std::vector<hpx::future<vector>> r2(N);
+    for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
+    {
+        if(this_locality != other_locality)
+        {
+            
+            for(std::uint32_t i = 0; i != N; ++i)
+            {
+                hpx::future<vector> result = scatter_from<vector>(
+                    scatter_direct_client, generation_arg(other_locality+1));
+                // extract from loop
+                //r3.push_back(result.get());
+                r2[i] = std::move(result);
+            }
+        }
+    }
+
+
     split_vector r(N);   
     for(std::uint32_t i = 0; i != N; ++i)
     {
@@ -78,42 +98,34 @@ void test_multiple_use_with_generation()
         r.push_back(result.get());
     }
 
-    split_vector r3; 
+    split_vector r3(num_localities);
     for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
     {
         if(this_locality != other_locality)
         {
-            //std::vector<hpx::future<vector>> r2(N);
-            for(std::uint32_t i = 0; i != N; ++i)
+            r3[other_locality] =r2[i].get(); 
+        }
+        else
+        {
+            r3[this_locality] =r[this_locality];
+        }
+    }
+
+
+
+
+
+        for (auto vec : r3)
+        {
+            for (auto v : vec)
             {
-                hpx::future<vector> result = scatter_from<vector>(
-                    scatter_direct_client, generation_arg(other_locality+1));
-                // extract from loop
-                r3.push_back(result.get());
-            // r2[i] = std::move(result);
+        
+            char const* msg = "Locality {1} r: {2}\n";
+            hpx::util::format_to(hpx::cout, msg, this_locality, v)
+                << std::flush;
             }
         }
-
-    }
-
-    for(std::uint32_t i = 0; i != N; ++i)
-    {
-        for (auto v : r[i])
-        {
-            char const* msg = "Locality {1} r: {2}\n";
-            hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                << std::flush;
-        }
-    }
-    for(std::uint32_t i = 0; i != N; ++i)
-    {
-        for (auto v : r3[i])
-        {
-            char const* msg = "Locality {1} r: {2}\n";
-            hpx::util::format_to(hpx::cout, msg, this_locality, v)
-                << std::flush;
-        }
-    }
+    
 
 
 
