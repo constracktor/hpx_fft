@@ -126,6 +126,9 @@ void test_multiple_use_with_generation()
                     << std::flush;
             }
     }
+    char const* msg2 = "\n";
+    hpx::util::format_to(hpx::cout, msg2)
+             << std::flush;
 
     
 
