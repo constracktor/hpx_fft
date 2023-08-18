@@ -98,7 +98,7 @@ void test_multiple_use_with_generation()
         r.push_back(result.get());
     }
 
-    split_vector r3(num_localities);
+    std::vector<vector> r3(num_localities);
     for(std::uint32_t other_locality; other_locality != num_localities;++other_locality)
     {
         if(this_locality != other_locality)
@@ -117,6 +117,7 @@ void test_multiple_use_with_generation()
             char const* msg = "Locality {1}:\n";
             hpx::util::format_to(hpx::cout, msg, this_locality)
                 << std::flush;
+
             for (auto v : r3[i])
             {
                 char const* msg = "From locality {1} result: {2}\n";
