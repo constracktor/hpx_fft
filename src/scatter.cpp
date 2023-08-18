@@ -90,7 +90,7 @@ void test_multiple_use_with_generation()
     }
 
 
-    std::vector r;//1   
+    std::vector<vector> r;//1   
     for(std::uint32_t i = 0; i != N; ++i)
     {
         hpx::future<vector> result = scatter_to(
