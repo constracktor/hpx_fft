@@ -65,15 +65,15 @@ void test_multiple_use_with_generation()
             num_sites_arg(num_localities), this_site_arg(this_locality));
 
 
-    // do stuff with vector
+    // parameters
     std::uint32_t size=8;
     std::uint32_t sub_size=size/num_localities;
     std::uint32_t N = 1;
 
-    // std::vector<vector> values;
-    // std::vector<split_vector> values_div(N);
-
     // // create values and do stuff
+    // std::vector<vector> values_vec;
+    // std::vector<split_vector> values_div_vec(N);
+
     // for(std::uint32_t i = 0; i != N; ++i)
     // {
     //     vector v(size);
@@ -105,11 +105,8 @@ void test_multiple_use_with_generation()
     {
         vector tmp(std::make_move_iterator(values.begin()+j*sub_size),
                             std::make_move_iterator(values.begin()+(j+1)*sub_size)); // move;
-        //values_div.push_back(std::move(tmp));
-        values_div2.push_back(tmp);
+        values_div.push_back(tmp);
     }
-
-
 
     // for (auto vec : values_div2)
     // {
@@ -124,11 +121,8 @@ void test_multiple_use_with_generation()
     //     }
     // }
 
-
-
     std::vector<vector> r3(num_localities);
     std::vector<hpx::shared_future<vector>> r2(num_localities);
-
 
     // send
     hpx::shared_future<vector> result = scatter_to(scatter_communicators[this_locality], std::move(values_div2), generation_arg(1));
