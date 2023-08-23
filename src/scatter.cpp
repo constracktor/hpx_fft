@@ -30,6 +30,142 @@ using split_vector = std::vector<vector>;
 
 constexpr char const* scatter_direct_basename = "/test/scatter_direct/";
 
+void test_multiple_use_with_generation()
+{
+    // parameters
+    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    std::uint32_t this_locality = hpx::get_locality_id();
+    std::uint32_t size=8;
+    std::uint32_t sub_size=size/num_localities;
+    std::uint32_t N = 2;
+    HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
+    // setup communicators
+    std::vector<const char*> scatter_basenames(num_localities);
+    std::vector<communicator> scatter_communicators(num_localities);
+    for (std::size_t i = 0; i != num_localities; ++i)
+    {
+        scatter_basenames[i] = std::move(std::to_string(i).c_str());
+        
+        scatter_communicators[i] = std::move(hpx::collectives::create_communicator(scatter_basenames[i],
+            num_sites_arg(num_localities), this_site_arg(this_locality)));
+    }
+    // create values and do stuff
+    std::vector<vector> values_vec;
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        vector v(size);
+        //std::fill(v.begin(), v.end(), this_locality);
+        std::iota(v.begin(), v.end(), 0+10*this_locality);
+        values_vec.push_back(v);
+    }
+    // divide value vector
+    std::vector<split_vector> values_div_vec(N);
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        for (std::size_t j = 0; j != num_localities; ++j)
+        {
+            vector tmp(std::make_move_iterator(values_vec[i].begin()+j*sub_size),
+                                std::make_move_iterator(values_vec[i].begin()+(j+1)*sub_size)); // move;
+            values_div_vec[i].push_back(tmp);
+        }
+    }
+    // holder fot data
+    std::vector<std::vector<vector>> r3(num_localities);
+    // holder for futures
+    std::vector<std::vector<hpx::shared_future<vector>>> r2(num_localities);
+    // initialize
+    for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
+    {
+        r2[other_locality].resize(N);
+    }
+    // loop over N vectors per locality
+    for(std::uint32_t i = 0; i != N; ++i)
+    {
+        for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
+        {
+            if(this_locality != other_locality)
+            {
+                ///////
+                // receive from other localities
+                hpx::shared_future<vector> result = scatter_from<vector>(scatter_communicators[other_locality], generation_arg(i+1));
+                ///////
+                // store future
+                r2[other_locality][i] = std::move(result);
+            }
+        }
+
+        ///////
+        // send from this locality
+        hpx::shared_future<vector> result = scatter_to(scatter_communicators[this_locality], std::move(values_div_vec[i]), generation_arg(i+1));
+        ///////
+        // store future
+        r2[this_locality][i] = std::move(result);
+
+        // get futures
+        for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
+        {
+            r3[other_locality].push_back(r2[other_locality][i].get());
+        }
+    }   
+    // print data
+    sleep(this_locality);
+    if (1)
+    {
+        char const* msg = "\nLocality {1}:";
+        hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
+        for (auto r4 : r3)
+        {
+            char const* msg = "\n";
+            hpx::util::format_to(hpx::cout, msg) << std::flush;
+            for (auto r5 : r4)
+            {
+                hpx::util::format_to(hpx::cout, msg) << std::flush;
+                for (auto v : r5)
+                {
+                    char const* msg = "{1} - ";
+                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+                }
+            }
+        }
+        char const* msg2 = "\n";
+        hpx::util::format_to(hpx::cout, msg2) << std::flush;
+    }
+}
+
+void test_multiple_use_with_generation4()
+{
+    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    HPX_TEST_LTE(std::uint32_t(2), num_localities);
+
+    std::uint32_t this_locality = hpx::get_locality_id();
+
+    auto scatter_direct_client =
+        hpx::collectives::create_communicator(scatter_direct_basename,
+            num_sites_arg(num_localities), this_site_arg(this_locality));
+
+    // test functionality based on immediate local result value
+    for (std::uint32_t i = 0; i != 10; ++i)
+    {
+        if (this_locality == 0)
+        {
+            std::vector<std::uint32_t> data(num_localities);
+            std::iota(data.begin(), data.end(), 42 + i);
+
+            hpx::future<std::uint32_t> result = scatter_to(
+                scatter_direct_client, std::move(data), generation_arg(i + 1));
+
+            HPX_TEST_EQ(i + 42 + this_locality, result.get());
+        }
+        else
+        {
+            hpx::future<std::uint32_t> result = scatter_from<std::uint32_t>(
+                scatter_direct_client, generation_arg(i + 1));
+
+            HPX_TEST_EQ(i + 42 + this_locality, result.get());
+        }
+    }
+}
+
 void test_multiple_use_with_generation3()
 {
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
@@ -201,142 +337,6 @@ void test_multiple_use_with_generation3()
     char const* msg2 = "\n";
     hpx::util::format_to(hpx::cout, msg2) << std::flush;
         }
-}
-
-void test_multiple_use_with_generation()
-{
-    // parameters
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    std::uint32_t this_locality = hpx::get_locality_id();
-    std::uint32_t size=8;
-    std::uint32_t sub_size=size/num_localities;
-    std::uint32_t N = 2;
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
-    // setup communicators
-    std::vector<const char*> scatter_basenames(num_localities);
-    std::vector<communicator> scatter_communicators(num_localities);
-    for (std::size_t i = 0; i != num_localities; ++i)
-    {
-        scatter_basenames[i] = std::move(std::to_string(i).c_str());
-        
-        scatter_communicators[i] = std::move(hpx::collectives::create_communicator(scatter_basenames[i],
-            num_sites_arg(num_localities), this_site_arg(this_locality)));
-    }
-    // create values and do stuff
-    std::vector<vector> values_vec;
-    for(std::uint32_t i = 0; i != N; ++i)
-    {
-        vector v(size);
-        //std::fill(v.begin(), v.end(), this_locality);
-        std::iota(v.begin(), v.end(), 0+10*this_locality);
-        values_vec.push_back(v);
-    }
-    // divide value vector
-    std::vector<split_vector> values_div_vec(N);
-    for(std::uint32_t i = 0; i != N; ++i)
-    {
-        for (std::size_t j = 0; j != num_localities; ++j)
-        {
-            vector tmp(std::make_move_iterator(values_vec[i].begin()+j*sub_size),
-                                std::make_move_iterator(values_vec[i].begin()+(j+1)*sub_size)); // move;
-            values_div_vec[i].push_back(tmp);
-        }
-    }
-    // holder fot data
-    std::vector<std::vector<vector>> r3(num_localities);
-    // holder for futures
-    std::vector<std::vector<hpx::shared_future<vector>>> r2(num_localities);
-    // initialize
-    for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
-    {
-        r2[other_locality].resize(N);
-    }
-    // loop over N vectors per locality
-    for(std::uint32_t i = 0; i != N; ++i)
-    {
-        for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
-        {
-            if(this_locality != other_locality)
-            {
-                ///////
-                // receive from other localities
-                hpx::shared_future<vector> result = scatter_from<vector>(scatter_communicators[other_locality], generation_arg(i+1));
-                ///////
-                // store future
-                r2[other_locality][i] = std::move(result);
-            }
-        }
-
-        ///////
-        // send from this locality
-        hpx::shared_future<vector> result = scatter_to(scatter_communicators[this_locality], std::move(values_div_vec[i]), generation_arg(i+1));
-        ///////
-        // store future
-        r2[this_locality][i] = std::move(result);
-
-        // get futures
-        for(std::uint32_t other_locality = 0; other_locality != num_localities; ++other_locality)
-        {
-            r3[other_locality].push_back(r2[other_locality][i].get());
-        }
-    }   
-    // print data
-    sleep(this_locality);
-    if (1)
-    {
-        char const* msg = "\nLocality {1}:";
-        hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
-        for (auto r4 : r3)
-        {
-            char const* msg = "\n";
-            hpx::util::format_to(hpx::cout, msg) << std::flush;
-            for (auto r5 : r4)
-            {
-                hpx::util::format_to(hpx::cout, msg) << std::flush;
-                for (auto v : r5)
-                {
-                    char const* msg = "{1} - ";
-                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
-                }
-            }
-        }
-        char const* msg2 = "\n";
-        hpx::util::format_to(hpx::cout, msg2) << std::flush;
-    }
-}
-
-void test_multiple_use_with_generation4()
-{
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);
-
-    std::uint32_t this_locality = hpx::get_locality_id();
-
-    auto scatter_direct_client =
-        hpx::collectives::create_communicator(scatter_direct_basename,
-            num_sites_arg(num_localities), this_site_arg(this_locality));
-
-    // test functionality based on immediate local result value
-    for (std::uint32_t i = 0; i != 10; ++i)
-    {
-        if (this_locality == 0)
-        {
-            std::vector<std::uint32_t> data(num_localities);
-            std::iota(data.begin(), data.end(), 42 + i);
-
-            hpx::future<std::uint32_t> result = scatter_to(
-                scatter_direct_client, std::move(data), generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-        else
-        {
-            hpx::future<std::uint32_t> result = scatter_from<std::uint32_t>(
-                scatter_direct_client, generation_arg(i + 1));
-
-            HPX_TEST_EQ(i + 42 + this_locality, result.get());
-        }
-    }
 }
 
 int hpx_main()
