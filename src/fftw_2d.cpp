@@ -12,8 +12,6 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
-// FFTW
-#include <fftw3.h>
 
 
 void print_real(const std::vector<double>& input, int dim_r, int scaling = 0)
