@@ -28,14 +28,17 @@ using namespace hpx::collectives;
 using vector = std::vector<std::uint32_t, std::allocator<std::uint32_t>>;
 using split_vector = std::vector<vector>;
 
+#define N_X 8
+#define N_Y 8 
+
 void test_multiple_use_with_generation()
 {
     // parameters
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::uint32_t this_locality = hpx::get_locality_id();
-    std::uint32_t size=8;
-    std::uint32_t sub_size=size/num_localities;
-    std::uint32_t N = 8;
+    std::uint32_t size= N_Y;
+    std::uint32_t sub_size= size / num_localities;
+    std::uint32_t N = N_X / num_localities;
     HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
     // setup communicators
     std::vector<const char*> scatter_basenames(num_localities);
@@ -53,7 +56,8 @@ void test_multiple_use_with_generation()
     {
         vector v(size);
         //std::fill(v.begin(), v.end(), this_locality);
-        std::iota(v.begin(), v.end(), 0+10*this_locality);
+        //std::iota(v.begin(), v.end(), 0+10*this_locality);
+        std::iota(v.begin(), v.end(), 0);
         values_vec[i] = std::move(v);
     });
     // divide value vector
@@ -124,6 +128,49 @@ void test_multiple_use_with_generation()
         char const* msg2 = "\n";
         hpx::util::format_to(hpx::cout, msg2) << std::flush;
     }
+
+    // local transpose
+    // create transpose values data structure
+    std::vector<vector> trans_values_vec(sub_size);
+    // IMPORTANT: rearrange loops
+    hpx::experimental::for_loop(hpx::execution::par, 0, sub_size, [&](auto i)
+    {
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto j)
+        {   
+            hpx::experimental::for_loop(hpx::execution::par, 0, N, [&](auto k)
+            {
+                trans_values_vec[i].push_back(r3[j][k][i]);
+            });
+        });
+    });
+
+    if (1)
+    {
+        char const* msg = "\nTrans Locality {1}:";
+        hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
+        for (auto r5 : trans_values_vec)
+        {
+            char const* msg = "\n";
+            hpx::util::format_to(hpx::cout, msg) << std::flush;
+            for (auto v : r5)
+            {
+                char const* msg = "{1} - ";
+                hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+            }
+        }
+        char const* msg2 = "\n";
+        hpx::util::format_to(hpx::cout, msg2) << std::flush;
+    }
+
+
+
+
+
+
+
+
+
+
 }
 
 void test_multiple_use_with_generation3()
