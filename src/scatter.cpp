@@ -35,7 +35,7 @@ void test_multiple_use_with_generation()
     std::uint32_t this_locality = hpx::get_locality_id();
     std::uint32_t size=8;
     std::uint32_t sub_size=size/num_localities;
-    std::uint32_t N = 2;
+    std::uint32_t N = 8;
     HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
     // setup communicators
     std::vector<const char*> scatter_basenames(num_localities);
