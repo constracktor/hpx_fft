@@ -36,10 +36,11 @@ using split_vector = std::vector<vector>;
 
 void test_multiple_use_with_generation()
 {
+    ////////////////////////////////////////////////////////////////
+    // Parameters and Data structures
     // hpx parameters
     std::uint32_t this_locality = hpx::get_locality_id();
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
     // fft dimension parameters
     std::uint32_t dim_c_x = N_X; 
     std::uint32_t dim_r_y = N_Y;
@@ -48,51 +49,40 @@ void test_multiple_use_with_generation()
     // division parameters
     std::uint32_t n_x_local = dim_c_x / num_localities;
     std::uint32_t n_y_local = dim_c_y / num_localities;
-    
-    
-    
-    
+    // communicators
     std::vector<const char*> scatter_basenames(num_localities);
     std::vector<communicator> scatter_communicators(num_localities);
-    
+    // value vectors
     std::vector<vector> values_vec(n_x_local);
     std::vector<vector> trans_values_vec(n_y_local);
     std::vector<split_vector> values_div_vec(n_x_local);
-    
+    std::vector<split_vector> communication_vec(num_localities);
+    // holder for communication futures
+    std::vector<hpx::shared_future<vector>> communication_tmp_futures(num_localities);
+    // FFTW plans
     unsigned FFTW_PLAN_FLAG = FFTW_ESTIMATE;
     std::vector<fftw_plan> plans_1D_r2c(n_x_local);
     std::vector<fftw_plan> plans_1D_c2c(n_y_local);
-    
-    // holder fot data
-    std::vector<std::vector<vector>> communication_vec(num_localities);
-    // holder for futures
-    std::vector<hpx::shared_future<vector>> communication_tmp_futures(num_localities);
     ////////////////////////////////////////////////////////////////
     // setup communicators
     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
     {
         scatter_basenames[i] = std::move(std::to_string(i).c_str());
-        
         scatter_communicators[i] = std::move(hpx::collectives::create_communicator(scatter_basenames[i],
             num_sites_arg(num_localities), this_site_arg(this_locality)));
     });
-
     // initialize values
     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
     {
         vector v(2* dim_c_y);
         //std::fill(v.begin(), v.end() - 2, 1.0);
-        //std::iota(v.begin(), v.end(), 0+10*this_locality);
         std::iota(v.begin(), v.end() - 2, 0.0);
         values_vec[i] = std::move(v);
+        values_div_vec[i].resize(num_localities);
     });
     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
     {
         trans_values_vec[i].resize(2*dim_c_x);
-    });
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
-    {
-        values_div_vec[i].resize(num_localities);
     });
     ////////////////////////////////////////////////////////////////
     //FFTW plans
@@ -158,7 +148,6 @@ void test_multiple_use_with_generation()
             ///////
             // store future
             communication_tmp_futures[this_locality] = std::move(result);
-
             // get futures
             hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
             {
@@ -178,8 +167,7 @@ void test_multiple_use_with_generation()
                 trans_values_vec[k][j* num_localities*2 + 2*i] = communication_vec[i][j][2*k];
                 trans_values_vec[k][j* num_localities*2 + 2*i+1] = communication_vec[i][j][2*k+1];
             });
-        });
-        
+        });    
     });
     ////////////////////////////////////////////////////////////////
     // FFTW 1D y-direction
