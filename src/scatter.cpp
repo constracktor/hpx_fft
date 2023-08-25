@@ -39,8 +39,7 @@ void test_multiple_use_with_generation()
     // parameters
     std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     std::uint32_t this_locality = hpx::get_locality_id();
-    //std::uint32_t n_y_local= N_Y / num_localities; // real dim
-    std::uint32_t n_x_local = N_X / num_localities; // complex dim
+    std::uint32_t n_x_local = N_X / num_localities;
     HPX_TEST_LTE(std::uint32_t(2), num_localities);//does not run on one locality
     // fft parameters
     std::uint32_t dim_r_y = N_Y;
