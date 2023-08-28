@@ -1,8 +1,36 @@
 cmake_minimum_required(VERSION 3.18)
 project(hpx_fft CXX)
-find_package(HPX REQUIRED)
-find_package(FFTW3 REQUIRED)
 
+###########################################################
+# # HPX
+# find_package(HPX REQUIRED)
+# find_package(FFTW3 REQUIRED)
+
+# add_executable(scatter src/scatter.cpp ${HEADER_FILES})
+# target_link_libraries(scatter
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
+
+###########################################################
+# FFTW
+set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+find_package(PkgConfig REQUIRED)
+pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+find_library(
+    FFTW_MPI_LIB
+    NAMES "fftw3_mpi"
+    PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
+)
+
+add_executable(mpi_2d src/mpi_2d.cpp ${HEADER_FILES})
+target_link_libraries(mpi_2d
+                        PkgConfig::FFTW
+                        ${FFTW_MPI_LIB})
+
+###########################################################
+# SEQUENTIAL
 # add_executable(fftw_2d src/fftw_2d.cpp ${HEADER_FILES})
 # target_link_libraries(fftw_2d 
 #                         HPX::hpx 
@@ -11,6 +39,8 @@ find_package(FFTW3 REQUIRED)
 #                         FFTW3::fftw3)
 #                        # PkgConfig::FFTW)
                         
+###########################################################
+# OBSOLETE
 # add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
 # target_link_libraries(fftw_3d 
 #                         HPX::hpx 
@@ -38,20 +68,6 @@ find_package(FFTW3 REQUIRED)
 #                         HPX::wrap_main 
 #                         HPX::iostreams_component
 #                         FFTW3::fftw3)
-
-add_executable(scatter src/scatter.cpp ${HEADER_FILES})
-target_link_libraries(scatter
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-
-# OBSOLETE
-#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/lib/pkgconfig")
-# find_package(PkgConfig REQUIRED)
-# pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
-# include_directories(PkgConfig::FFTW)
-# link_libraries     (PkgConfig::FFTW)
 
 # add_executable(sender_receiver src/sender_receiver.cpp ${HEADER_FILES})
 # target_link_libraries(sender_receiver 

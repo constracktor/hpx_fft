@@ -12,7 +12,8 @@ export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
 export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
-
+# for mpi version
+export CXX=mpic++ 
 
 ################################################################################
 # Command-line options
@@ -27,7 +28,7 @@ LOOP=$3
 ################################################################################
 rm -rf build && mkdir build && cd build
 $CMAKE_COMMAND .. -DCMAKE_BUILD_TYPE=Release -DHPX_DIR="${HPX_DIR}/cmake/HPX" -DFFTW3_DIR="${FFTW_DIR}/cmake/fftw3"
-make
+make VERBOSE=1
 
 ################################################################################
 # Run benchmark script
