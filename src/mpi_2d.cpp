@@ -3,7 +3,6 @@
 #include <chrono>
 #include <map>
 #include <string>
-
 #include <thread>
 #include <fstream>
 
@@ -13,7 +12,6 @@ using vector = std::vector<double, std::allocator<double>>;
 
 #define N_X 8
 #define N_Y 14 
-
 
 void print_real(const std::vector<double>& input, int dim_x, int dim_y, int scaling = 0)
 {
@@ -50,10 +48,8 @@ void print_complex(const std::vector<double>& input, int dim_x, int dim_y)
 
 int main(int argc, char* argv[])
 {
-    // std::cout << "You have entered " << argv[1] << " arguments";
-    // std::string string{argv[1]};
-    // int integer1{std::stoi(argv[2])};
-    // int integer2{std::stoi(argv[3])};
+    //       nodes      N_X N_Y loop  plan
+    // srun -n 2 mpi_2d  8  14   1  estimate
     ////////////////////////////////////////////////
     // Parameters and Data Structures
     // fft dimension parameters
