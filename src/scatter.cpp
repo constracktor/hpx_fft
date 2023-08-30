@@ -10,23 +10,18 @@
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/modules/collectives.hpp>
-#include <hpx/modules/testing.hpp>
-
 #include <hpx/iostream.hpp>
 
 
 #include <algorithm>
-#include <cstddef>
-#include <cstdint>
 #include <iostream>
 #include <string>
-#include <utility>
 #include <vector>
 
 // FFTW
 #include <fftw3.h>
 
-using namespace hpx::collectives;
+//using namespace hpx::collectives;
 
 using vector = std::vector<double, std::allocator<double>>;
 using split_vector = std::vector<vector>;
@@ -39,23 +34,26 @@ void test_multiple_use_with_generation()
     ////////////////////////////////////////////////////////////////
     // Parameters and Data structures
     // hpx parameters
-    std::uint32_t this_locality = hpx::get_locality_id();
-    std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    const std::uint32_t this_locality = hpx::get_locality_id();
+    const std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    std::uint32_t generation_counter = 1;
     // fft dimension parameters
-    std::uint32_t dim_c_x = N_X; 
-    std::uint32_t dim_r_y = N_Y;
-    std::uint32_t dim_c_y = dim_r_y / 2 + 1;
-    std::uint32_t dim_c_y_part = 2 * dim_c_y / num_localities;
+    const std::uint32_t dim_c_x = N_X; 
+    const std::uint32_t dim_r_y = N_Y;
+    const std::uint32_t dim_c_y = dim_r_y / 2 + 1;
+    const std::uint32_t dim_c_y_part = 2 * dim_c_y / num_localities;
+    const std::uint32_t dim_c_x_part = 2 * dim_c_x / num_localities;
     // division parameters
-    std::uint32_t n_x_local = dim_c_x / num_localities;
-    std::uint32_t n_y_local = dim_c_y / num_localities;
+    const std::uint32_t n_x_local = dim_c_x / num_localities;
+    const std::uint32_t n_y_local = dim_c_y / num_localities;
     // communicators
     std::vector<const char*> scatter_basenames(num_localities);
-    std::vector<communicator> scatter_communicators(num_localities);
+    std::vector<hpx::collectives::communicator> scatter_communicators(num_localities);
     // value vectors
     std::vector<vector> values_vec(n_x_local);
     std::vector<vector> trans_values_vec(n_y_local);
     std::vector<split_vector> values_div_vec(n_x_local);
+    std::vector<split_vector> trans_values_div_vec(n_y_local);
     std::vector<split_vector> communication_vec(num_localities);
     // holder for communication futures
     std::vector<hpx::shared_future<vector>> communication_tmp_futures(num_localities);
@@ -69,38 +67,37 @@ void test_multiple_use_with_generation()
     {
         scatter_basenames[i] = std::move(std::to_string(i).c_str());
         scatter_communicators[i] = std::move(hpx::collectives::create_communicator(scatter_basenames[i],
-            num_sites_arg(num_localities), this_site_arg(this_locality)));
-    });
-    // initialize values
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
-    {
-        vector v(2* dim_c_y);
-        //std::fill(v.begin(), v.end() - 2, 1.0);
-        std::iota(v.begin(), v.end() - 2, 0.0);
-        values_vec[i] = std::move(v);
-        values_div_vec[i].resize(num_localities);
-    });
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
-    {
-        trans_values_vec[i].resize(2*dim_c_x);
+            hpx::collectives::num_sites_arg(num_localities), hpx::collectives::this_site_arg(this_locality)));
     });
     ////////////////////////////////////////////////////////////////
     //FFTW plans
     // forward step one: r2c in y-direction
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto i)
     {
-        plans_1D_r2c[i] =  fftw_plan_dft_r2c_1d(dim_r_y,
+        values_vec[i].resize(2*dim_c_y);
+        values_div_vec[i].resize(num_localities);
+
+        plans_1D_r2c[i] = fftw_plan_dft_r2c_1d(dim_r_y,
                             values_vec[i].data(),
                             reinterpret_cast<fftw_complex*>(values_vec[i].data()),
                             FFTW_PLAN_FLAG);
     });
     // forward step two: c2c in x-direction
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto i)
     {
-        plans_1D_c2c[i] =  fftw_plan_dft_1d(dim_c_x, 
+        trans_values_vec[i].resize(2*dim_c_x);
+        trans_values_div_vec[i].resize(num_localities);
+        
+        plans_1D_c2c[i] = fftw_plan_dft_1d(dim_c_x, 
                             reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()), 
                             reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()), 
                             FFTW_FORWARD, FFTW_PLAN_FLAG);
+    });
+    ////////////////////////////////////////////////////////////////
+    // initialize values
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
+    {
+        std::iota(values_vec[i].begin(), values_vec[i].end() - 2, 0.0);
     });
     /////////////////////////////////////////////////////////////////
     // FFTW 1D in x-direction 
@@ -122,41 +119,36 @@ void test_multiple_use_with_generation()
     });
     ////////////////////////////////////////////////////////////////
     // communication
-    if(num_localities == 0)
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto i)
     {
-        communication_vec = std::move(values_div_vec);
-    }
-    else
-    {
-        hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto i)
+        ///////
+        // receive from other localities
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
         {
-            ///////
-            // receive from other localities
-            hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
+            if(this_locality != other_locality)
             {
-                if(this_locality != other_locality)
-                {
-                    hpx::shared_future<vector> result = scatter_from<vector>(scatter_communicators[other_locality], generation_arg(i+1));
-                    ///////
-                    // store future
-                    communication_tmp_futures[other_locality] = std::move(result);
-                }
-            });
-            ///////
-            // send from this locality
-            hpx::shared_future<vector> result = scatter_to(scatter_communicators[this_locality], std::move(values_div_vec[i]), generation_arg(i+1));
-            ///////
-            // store future
-            communication_tmp_futures[this_locality] = std::move(result);
-            // get futures
-            hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
-            {
-                communication_vec[other_locality].push_back(communication_tmp_futures[other_locality].get());
-            });
+                hpx::shared_future<vector> result = hpx::collectives::scatter_from<vector>(scatter_communicators[other_locality], hpx::collectives::generation_arg(generation_counter));
+                ///////
+                // store future
+                communication_tmp_futures[other_locality] = std::move(result);
+            }
         });
-    }
+        ///////
+        // send from this locality
+        hpx::shared_future<vector> result = hpx::collectives::scatter_to(scatter_communicators[this_locality], std::move(values_div_vec[i]), hpx::collectives::generation_arg(generation_counter));
+        ///////
+        // store future
+        communication_tmp_futures[this_locality] = std::move(result);
+        // get futures
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
+        {
+            communication_vec[other_locality].resize(n_x_local);
+            communication_vec[other_locality][i] = communication_tmp_futures[other_locality].get();
+        });
+        ++generation_counter;
+    });
     ////////////////////////////////////////////////////////////////
-    // local transpose
+    // local transpose: change leading dimension from y to x
     // optimize loops
     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
     {   
@@ -178,25 +170,254 @@ void test_multiple_use_with_generation()
     });
     ////////////////////////////////////////////////////////////////
     // print result
+    // sleep(this_locality);
+    // if (1)
+    // {
+    //     char const* msg = "\nLocality {1}:";
+    //     hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
+    //     for (auto r5 : trans_values_vec)
+    //     {
+    //         char const* msg = "\n";
+    //         hpx::util::format_to(hpx::cout, msg) << std::flush;
+    //         std::uint32_t counter = 0;
+    //         for (auto v : r5)
+    //         {
+    //             if(counter%2 == 0)
+    //             {
+    //                 char const* msg = "({1} ";
+    //                 hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //             }
+    //             else
+    //             {
+    //                 char const* msg = "{1}) ";
+    //                 hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //             }
+    //             ++counter;
+    //         }
+    //     }
+    //     char const* msg2 = "\n";
+    //     hpx::util::format_to(hpx::cout, msg2) << std::flush;
+    // }
+    ////////////////////////////////////////////////////////////////
+    // divide trans value vector
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
+    {
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto j)
+        {
+            vector tmp(std::make_move_iterator(trans_values_vec[i].begin()+j*dim_c_x_part),
+                                std::make_move_iterator(trans_values_vec[i].begin()+(j+1)*dim_c_x_part)); // move;
+            trans_values_div_vec[i][j] = std::move(tmp);
+
+        });
+    });
+
+    // sleep(this_locality);
+    // if (1)
+    // {
+    //     char const* msg = "\nLocality {1}:";
+    //     hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
+    //     for (auto r4 :trans_values_div_vec)
+    //     {
+    //         char const* msg = "\n";
+    //         hpx::util::format_to(hpx::cout, msg) << std::flush;
+    //         for (auto r5 : r4)
+    //         {
+    //             char const* msg = "\n";
+    //             hpx::util::format_to(hpx::cout, msg) << std::flush;
+    //             std::uint32_t counter = 0;
+    //             for (auto v : r5)
+    //             {
+    //                 if(counter%2 == 0)
+    //                 {
+    //                     char const* msg = "({1} ";
+    //                     hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //                 }
+    //                 else
+    //                 {
+    //                     char const* msg = "{1}) ";
+    //                     hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //                 }
+    //                 ++counter;
+    //             }
+    //         }
+    //     }
+    //     char const* msg2 = "\n";
+    //     hpx::util::format_to(hpx::cout, msg2) << std::flush;
+    // }
+
+    ////////////////////////////////////////////////////////////////
+    // communication
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto i)
+    {
+        ///////
+        // receive from other localities
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
+        {
+            if(this_locality != other_locality)
+            {
+                hpx::shared_future<vector> result = hpx::collectives::scatter_from<vector>(scatter_communicators[other_locality], hpx::collectives::generation_arg(generation_counter));
+                ///////
+                // store future
+                communication_tmp_futures[other_locality] = std::move(result);
+            }
+        });
+        ///////
+        // send from this locality
+        hpx::shared_future<vector> result = hpx::collectives::scatter_to(scatter_communicators[this_locality], std::move(trans_values_div_vec[i]), hpx::collectives::generation_arg(generation_counter));
+        ///////
+        // store future
+        communication_tmp_futures[this_locality] = std::move(result);
+        // get futures
+        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto other_locality)
+        {
+            communication_vec[other_locality].resize(n_y_local);
+            communication_vec[other_locality][i] = communication_tmp_futures[other_locality].get();
+        });
+        ++generation_counter;
+    });
+
+    // sleep(this_locality);
+    // if (1)
+    // {
+    //     char const* msg = "\nLocality {1}:";
+    //     hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
+    //     for (auto r4 :communication_vec)
+    //     {
+    //         char const* msg = "\n";
+    //         hpx::util::format_to(hpx::cout, msg) << std::flush;
+    //         for (auto r5 : r4)
+    //         {
+    //             char const* msg = "\n";
+    //             hpx::util::format_to(hpx::cout, msg) << std::flush;
+    //             std::uint32_t counter = 0;
+    //             for (auto v : r5)
+    //             {
+    //                 if(counter%2 == 0)
+    //                 {
+    //                     char const* msg = "({1} ";
+    //                     hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //                 }
+    //                 else
+    //                 {
+    //                     char const* msg = "{1}) ";
+    //                     hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+    //                 }
+    //                 ++counter;
+    //             }
+    //         }
+    //     }
+    //     char const* msg2 = "\n";
+    //     hpx::util::format_to(hpx::cout, msg2) << std::flush;
+    // }
+
+    ////////////////////////////////////////////////////////////////
+    // local transpose: change leading dimension from y to x
+    // optimize loops
+    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
+    {   
+        hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto j)
+        {
+            hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto k)
+            {
+                values_vec[k][j* num_localities*2 + 2*i] = communication_vec[i][j][2*k];
+                values_vec[k][j* num_localities*2 + 2*i+1] = communication_vec[i][j][2*k+1];
+            });
+        });    
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // // divide value vector
+    // hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
+    // {
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto j)
+    //     {
+    //         vector tmp(std::make_move_iterator(values_vec[i].begin()+j*dim_c_y_part),
+    //                             std::make_move_iterator(values_vec[i].begin()+(j+1)*dim_c_y_part)); // move;
+    //         values_div_vec[i][j] = std::move(tmp);
+
+    //     });
+    // });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // print result
     sleep(this_locality);
     if (1)
     {
         char const* msg = "\nLocality {1}:";
         hpx::util::format_to(hpx::cout, msg, this_locality) << std::flush;
-        for (auto r5 : trans_values_vec)
+        for (auto r5 : values_vec)
         {
             char const* msg = "\n";
             hpx::util::format_to(hpx::cout, msg) << std::flush;
+            std::uint32_t counter = 0;
             for (auto v : r5)
             {
-                char const* msg = "{1} - ";
-                hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+                if(counter%2 == 0)
+                {
+                    char const* msg = "({1} ";
+                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+                }
+                else
+                {
+                    char const* msg = "{1}) ";
+                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+                }
+                ++counter;
             }
         }
         char const* msg2 = "\n";
         hpx::util::format_to(hpx::cout, msg2) << std::flush;
     }
+
     ////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////
+    // Cleanup
+    // FFTW cleanup
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
+    {
+        fftw_destroy_plan(plans_1D_r2c[i]);
+    });
+    // forward step two: c2c in x-direction
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
+    {
+        fftw_destroy_plan(plans_1D_c2c[i]);
+    });
+    fftw_cleanup();
+
+
+
+
+
+
+
+
 }
 
 int hpx_main()
@@ -213,8 +434,7 @@ int main(int argc, char* argv[])
     hpx::init_params init_args;
     init_args.cfg = cfg;
 
-    HPX_TEST_EQ(hpx::init(argc, argv, init_args), 0);
-    return hpx::util::report_errors();
+    return hpx::init(argc, argv, init_args);
 }
 
 #endif

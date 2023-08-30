@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 3.18)
 project(hpx_fft CXX)
 
 ###########################################################
-# # HPX
-# find_package(HPX REQUIRED)
-# find_package(FFTW3 REQUIRED)
+# HPX
+find_package(HPX REQUIRED)
+find_package(FFTW3 REQUIRED)
 
-# add_executable(scatter src/scatter.cpp ${HEADER_FILES})
-# target_link_libraries(scatter
-#                         HPX::hpx 
-#                         HPX::wrap_main 
-#                         HPX::iostreams_component
-#                         FFTW3::fftw3)
+add_executable(scatter src/scatter.cpp ${HEADER_FILES})
+target_link_libraries(scatter
+                        HPX::hpx 
+                        HPX::wrap_main 
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
 
 ###########################################################
 # FFTW
