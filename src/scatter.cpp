@@ -12,6 +12,8 @@
 #include <hpx/modules/collectives.hpp>
 #include <hpx/iostream.hpp>
 
+#include <hpx/timing/high_resolution_timer.hpp>
+
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -252,7 +254,7 @@ void test_multiple_use_with_generation()
     }
     ////////////////////////////////////////////////////////////////
     // TODO Backwards transform
-
+    auto t = hpx::timing::high_resolution_timer();
 
     ////////////////////////////////////////////////
     // Cleanup
