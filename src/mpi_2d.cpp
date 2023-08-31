@@ -10,8 +10,8 @@
 
 using vector = std::vector<double, std::allocator<double>>;
 
-#define N_X 8
-#define N_Y 14 
+// #define N_X 8
+// #define N_Y 14 
 
 void print_real(const std::vector<double>& input, int dim_x, int dim_y, int scaling = 0)
 {
@@ -57,7 +57,6 @@ int main(int argc, char* argv[])
     const std::uint32_t dim_r_y = std::stoi(argv[2]);//N_Y;
     const std::uint32_t dim_c_y = dim_r_y / 2 + 1;
     // fftw flag
-    std::uint32_t loop = std::stoi(argv[3]);//1;    // Number of loops to average
     std::string plan_flag = argv[4];
     unsigned FFTW_PLAN_FLAG = FFTW_ESTIMATE;
     if( plan_flag == "measure" )
@@ -72,11 +71,11 @@ int main(int argc, char* argv[])
     {
         FFTW_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-
+    std::uint32_t loop = std::stoi(argv[3]);//1;    // Number of loops to average
     ////////////////////////////////////////////////
     // Time measurement
     auto t = std::chrono::steady_clock();
-    using duration = std::chrono::duration<double, std::micro >;
+    using duration = std::chrono::duration<double>;
     // runtime storage
     std::map<std::string, double> runtimes;
     std::map<std::string, double> plan_times;
@@ -228,16 +227,16 @@ int main(int argc, char* argv[])
         }
 
         runtime_file << n_ranks << ";" 
-                    << N_X << ";"
-                    << N_Y << ";"
+                    << dim_c_x << ";"
+                    << dim_r_y << ";"
                     << loop << ";"
                     << plan_flag << ";"
                     << runtimes["fftw_r2c"] << ";"
                     << runtimes["fftw_c2r"] << ";\n";
 
         plan_file << n_ranks << ";" 
-                    << N_X << ";"
-                    << N_Y << ";"
+                    << dim_c_x << ";"
+                    << dim_r_y << ";"
                     << loop << ";" 
                     << plan_flag << ";"
                     << plan_times["plan_fftw_r2c"] << ";" 
