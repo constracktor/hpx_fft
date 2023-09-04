@@ -70,8 +70,8 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     {
         FFTW_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-    std::vector<fftw_plan> plans_1D_r2c(n_x_local);
-    std::vector<fftw_plan> plans_1D_c2c(n_y_local);
+    fftw_plan plan_1D_r2c;
+    fftw_plan plan_1D_c2c;
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();
     const std::uint32_t loop = vm["loop"].as<std::uint32_t>();//1;    // Number of loops to average
@@ -112,22 +112,18 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     ////////////////////////////////////////////////////////////////
     //FFTW plans
     // forward step one: r2c in y-direction
-    hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto i)
-    {
-        plans_1D_r2c[i] = fftw_plan_dft_r2c_1d(dim_r_y,
-                            values_vec[i].data(),
-                            reinterpret_cast<fftw_complex*>(values_vec[i].data()),
+    plan_1D_r2c = fftw_plan_dft_r2c_1d(dim_r_y,
+                            values_vec[0].data(),
+                            reinterpret_cast<fftw_complex*>(values_vec[0].data()),
                             FFTW_PLAN_FLAG);
-    });
     // forward step two: c2c in x-direction
-    hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto i)
-    {
-        plans_1D_c2c[i] = fftw_plan_dft_1d(dim_c_x, 
-                            reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()), 
-                            reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()), 
+    plan_1D_c2c = fftw_plan_dft_1d(dim_c_x, 
+                            reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
+                            reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
                             FFTW_FORWARD, FFTW_PLAN_FLAG);
-    });
 
+    // fftw_plan fftw_create_plan(int n, fftw_direction dir,
+    //                        int flags);
     ////////////////////////////////////////////////////////////////
     // initialize values
     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
@@ -141,7 +137,11 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     // FFTW 1D in y-direction 
     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
     {
-        fftw_execute(plans_1D_r2c[i]);
+        //fftw_execute(plans_1D_r2c[i]);
+        fftw_execute_dft_r2c(plan_1D_r2c, values_vec[i].data(), reinterpret_cast<fftw_complex*>(values_vec[i].data()));
+
+
+
         hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto j)
         {
             std::move(values_vec[i].begin() + j * dim_c_y_part, values_vec[i].begin() + (j+1) * dim_c_y_part, values_prep[j].begin() + i * dim_c_y_part);
@@ -189,7 +189,8 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     // forward step two
     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
     {
-        fftw_execute(plans_1D_c2c[i]);
+        fftw_execute_dft(plan_1D_c2c, reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()), reinterpret_cast<fftw_complex*>(trans_values_vec[i].data()));
+
         hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto j)
         {
             // remove from loop
@@ -301,15 +302,9 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     ////////////////////////////////////////////////
     // Cleanup
     // FFTW cleanup
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
-    {
-        fftw_destroy_plan(plans_1D_r2c[i]);
-    });
+        fftw_destroy_plan(plan_1D_r2c);
     // forward step two: c2c in x-direction
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
-    {
-        fftw_destroy_plan(plans_1D_c2c[i]);
-    });
+        fftw_destroy_plan(plan_1D_c2c);
     fftw_cleanup();
 }
 
