@@ -13,6 +13,13 @@ target_link_libraries(scatter
                         HPX::iostreams_component
                         FFTW3::fftw3)
 
+add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
+target_link_libraries(fft_hpx
+                        HPX::hpx 
+                        HPX::wrap_main 
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
+
 ###########################################################
 # FFTW
 set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
