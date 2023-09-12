@@ -29,7 +29,7 @@ LOOP=$3
 rm -rf build && mkdir build && cd build
 $CMAKE_COMMAND .. -DCMAKE_BUILD_TYPE=Release -DHPX_DIR="${HPX_DIR}/cmake/HPX" -DFFTW3_DIR="${FFTW_DIR}/cmake/fftw3"
 #make VERBOSE=1
-make
+make -j 8
 
 ################################################################################
 # Run benchmark script

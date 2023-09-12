@@ -98,8 +98,42 @@ std::vector<hpx::shared_future<vector>> communicate_scatter(
     return std::move(communication_futures);
 }
 
+std::vector<hpx::shared_future<vector>> communicate_all_to_all(
+                         std::vector<hpx::shared_future<void>>& ready,
+                         std::vector<hpx::collectives::communicator> communicators,
+                         split_vector& input, 
+                         const std::uint32_t num_localities,
+                         std::uint32_t& generation_counter)
+{
+    const std::uint32_t this_locality = hpx::get_locality_id();
+    std::vector<hpx::shared_future<vector>> communication_futures(num_localities);
+    hpx::wait_all(ready);
+    if(0)//num_localities == 1)
+    {
+        communication_futures[0] = hpx::make_ready_future(std::move(input[0]));
+    }
+    else
+    {
+        for (std::uint32_t i = 0; i < num_localities; ++i) 
+        {  
+            if(this_locality != i)
+            {
+                // receive from other locality
+                communication_futures[i] = hpx::collectives::scatter_from<vector>(communicators[i], hpx::collectives::generation_arg(generation_counter));
+            }
+            else
+            {
+                // send from this locality
+                communication_futures[this_locality] = hpx::collectives::scatter_to(communicators[this_locality], std::move(input), hpx::collectives::generation_arg(generation_counter));
+            }
+        }
+        ++generation_counter;
+    }
+    return std::move(communication_futures);
+}
 
-void local_transpose(const vector& input, 
+
+oid local_transpose(const vector& input, 
                       std::vector<vector>& output, 
                       const std::uint32_t part_size, 
                       const std::uint32_t offset, 
