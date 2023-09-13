@@ -407,7 +407,7 @@ void test_multiple_use_with_generation(hpx::program_options::variables_map& vm)
     // wait till finished
     for(std::uint32_t i = 0; i < n_x_local; ++i)
     {
-        hpx:wait_all(futures2[i]);
+        hpx::wait_all(futures2[i]);
     };
 
 
