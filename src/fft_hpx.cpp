@@ -145,29 +145,181 @@ hpx::shared_future<vector_2d> communicate_all_to_all(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 2d FFT functions
 
+// task based
 void fft_2d_task_all_to_all(vector_2d& values_vec, const unsigned PLAN_FLAG)
 {
-
-        ////////////////////////////////
-    // all to all
-    // auto futures1 = communicate_all_to_all(
-    //                     std::ref(split_y_futures),
-    //                     scatter_communicators[0],
-    //                     std::ref(trans_values_prep), 
-    //                     generation_counter);
-    // communication_vec = futures1.get();
+     ////////////////////////////////////////////////////////////////
+    // Parameters and Data structures
+    // hpx parameters
+    const std::uint32_t this_locality = hpx::get_locality_id();
+    const std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    std::uint32_t generation_counter = 1;
+    // fft dimension parameters
+    const std::uint32_t n_x_local = values_vec.size();
+    const std::uint32_t dim_c_x = n_x_local * num_localities;
+    const std::uint32_t dim_c_y = values_vec[0].size() / 2;
+    const std::uint32_t dim_r_y = 2 * dim_c_y - 2;
+    const std::uint32_t n_y_local = dim_c_y / num_localities;
+    const std::uint32_t dim_c_y_part = 2 * dim_c_y / num_localities;
+    const std::uint32_t dim_c_x_part = 2 * dim_c_x / num_localities;
+    // transpose parameters
+    std::uint32_t factor_out = 2 * num_localities;
+    std::uint32_t factor_in, offset_in, offset_out;
+    // communicators
+    const char* all_to_all_basename = "0";
+    hpx::collectives::communicator all_to_all_communicator;
+    // value vectors
+    vector_2d trans_values_vec(n_y_local);
+    vector_2d values_prep(num_localities);
+    vector_2d trans_values_prep(num_localities);
+    vector_2d communication_vec(num_localities);
+    // void futures
+    std::vector<hpx::shared_future<void>> r2c_futures(n_x_local);
+    std::vector<hpx::shared_future<void>> split_x_futures(n_x_local);
+    std::vector<std::vector<hpx::shared_future<void>>> comm_x_futures(n_y_local);
+    std::vector<hpx::shared_future<void>> c2c_futures(n_x_local);
+    std::vector<hpx::shared_future<void>> split_y_futures(n_y_local);
+    std::vector<std::vector<hpx::shared_future<void>>> comm_y_futures(n_x_local);
+    // holder for communication futures
+    hpx::shared_future<vector_2d> communication_future;
+    // FFTW plans
+    fft_backend_plan plan_1d_r2c;
+    fft_backend_plan plan_1d_c2c;
+    // time measurement
+    auto t = hpx::chrono::high_resolution_timer();
+    ////////////////////////////////////////////////////////////////
+    // setup communicator
+        all_to_all_communicator = hpx::collectives::create_communicator(all_to_all_basename,
+            hpx::collectives::num_sites_arg(num_localities), hpx::collectives::this_site_arg(this_locality));
+    ////////////////////////////////////////////////////////////////
+    // allocate data
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto i)
+    {
+        comm_y_futures[i].resize(num_localities);
+    });
+    // forward step two: c2c in x-direction
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto i)
+    {
+        trans_values_vec[i].resize(2*dim_c_x);
+        comm_x_futures[i].resize(num_localities);
+    });        
+    hpx::experimental::for_loop(hpx::execution::seq, 0, num_localities, [&](auto j)
+    {
+        values_prep[j].resize(n_x_local * dim_c_y_part);
+        trans_values_prep[j].resize(n_y_local * dim_c_x_part);
+    });
+    ////////////////////////////////////////////////////////////////
+    //FFTW plans
+    // forward step one: r2c in y-direction
+    plan_1d_r2c = fftw_plan_dft_r2c_1d(dim_r_y,
+                                       values_vec[0].data(),
+                                       reinterpret_cast<fftw_complex*>(values_vec[0].data()),
+                                       PLAN_FLAG);
+    // forward step two: c2c in x-direction
+    plan_1d_c2c = fftw_plan_dft_1d(dim_c_x, 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
+                                   FFTW_FORWARD,
+                                   PLAN_FLAG);
+    /////////////////////////////////////////////////////////////////
+    // COMPUTATION
+    auto start_total = t.now();
     ////////////////////////////////
-
-
+    // FFTW 1d in y-direction 
+    for(std::uint32_t i = 0; i < n_x_local; ++i)
+    {
+        r2c_futures[i] = hpx::async(&fft_1d_r2c_inplace,
+                                    plan_1d_r2c,
+                                    std::ref(values_vec[i]));
+        split_x_futures[i] = hpx::async(&split_vector_when_ready, 
+                                        r2c_futures[i],
+                                        std::cref(values_vec[i]),
+                                        std::ref(values_prep),
+                                        num_localities, i);
+    };
     ////////////////////////////////
-    // all to all
-    // auto futures = communicate_all_to_all(
-    //                     std::ref(split_x_futures),
-    //                     scatter_communicators[0],
-    //                     std::ref(values_prep), 
-    //                     generation_counter);
-    // communication_vec = futures.get();
-    ////////////////////////////////
+    // Communication in x-direction                                        
+    communication_future = communicate_all_to_all(std::ref(split_x_futures),
+                                                all_to_all_communicator,
+                                                std::ref(values_prep), 
+                                                generation_counter);
+    communication_vec = communication_future.get();
+    /////////////////////////////////
+    // Local tranpose in x-direction
+    factor_in = dim_c_y_part;
+    for(std::uint32_t k = 0; k < n_y_local; ++k)
+    {
+        offset_in = 2 * k;
+        for(std::uint32_t i = 0; i < num_localities; ++i)
+        {
+            offset_out = 2 * i;            
+            comm_x_futures[k][i] = hpx::async(&transpose, 
+                                              std::cref(communication_vec[i]),
+                                              std::ref(trans_values_vec[k]),
+                                              factor_in, factor_out,
+                                              offset_in, offset_out);
+        };
+    };
+    /////////////////////////////////
+    // FFTW 1d x-direction
+    for(std::uint32_t i = 0; i < n_y_local; ++i)
+    {
+        c2c_futures[i] = hpx::async(&fft_1d_c2c_inplace_when_ready,
+                                    std::ref(comm_x_futures[i]),
+                                    plan_1d_c2c, 
+                                    std::ref(trans_values_vec[i]));
+        split_y_futures[i] = hpx::async(&split_vector_when_ready,
+                                        c2c_futures[i],
+                                        std::cref(trans_values_vec[i]),
+                                        std::ref(trans_values_prep),
+                                        num_localities, i);
+    };
+    //////////////////////////////////
+    // Communication in y-direction 
+    communication_future = communicate_all_to_all(std::ref(split_y_futures),
+                                                all_to_all_communicator,
+                                                std::ref(trans_values_prep), 
+                                                generation_counter);
+    communication_vec = communication_future.get();
+    //////////////////////////////////////////////////////////////////
+    // Local tranpose in x-direction
+    factor_in = dim_c_x_part;
+    for(std::uint32_t k = 0; k < n_x_local; ++k)
+    {
+        offset_in = 2 * k;
+        for(std::uint32_t i = 0; i < num_localities; ++i)
+        {
+            offset_out = 2 * i;
+            comm_y_futures[k][i] = hpx::async(&transpose,
+                                                 std::cref(communication_vec[i]),
+                                                 std::ref(values_vec[k]),
+                                                 factor_in, factor_out,
+                                                 offset_in, offset_out);
+        };
+    };
+    /////////////////////////////////////////////////////////////////
+    // wait till finished
+    for(std::uint32_t i = 0; i < n_x_local; ++i)
+    {
+        hpx::wait_all(comm_y_futures[i]);
+    };
+    ////////////////////////////////////////////////////////////////
+    auto stop_total = t.now();
+    auto total = stop_total - start_total;
+    // print result    
+    if (this_locality==0)
+    {
+        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\n";
+        hpx::util::format_to(hpx::cout, msg, 
+                            this_locality, 
+                            total) << std::flush;
+    }
+    ////////////////////////////////////////////////
+    // Cleanup
+    // FFTW cleanup
+    fftw_destroy_plan(plan_1d_r2c);
+    fftw_destroy_plan(plan_1d_c2c);
+    fftw_cleanup();
 }
 
 void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
@@ -204,7 +356,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     std::vector<hpx::shared_future<void>> split_y_futures(n_y_local);
     std::vector<std::vector<hpx::shared_future<void>>> comm_y_futures(n_x_local);
     // holder for communication futures
-    std::vector<hpx::shared_future<vector_1d>> communication_tmp_futures(num_localities);
+    std::vector<hpx::shared_future<vector_1d>> communication_futures(num_localities);
     // FFTW plans
     fft_backend_plan plan_1d_r2c;
     fft_backend_plan plan_1d_c2c;
@@ -266,7 +418,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     };
     ////////////////////////////////
     // Communication in x-direction                                        
-    communication_tmp_futures = communicate_scatter(std::ref(split_x_futures),
+    communication_futures = communicate_scatter(std::ref(split_x_futures),
                                                     scatter_communicators,
                                                     std::ref(values_prep), 
                                                     num_localities,
@@ -281,7 +433,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
         {
             offset_out = 2 * i;            
             comm_x_futures[k][i] = hpx::dataflow(hpx::unwrapping(&transpose), 
-                                                 communication_tmp_futures[i],
+                                                 communication_futures[i],
                                                  std::ref(trans_values_vec[k]),
                                                  factor_in, factor_out,
                                                  offset_in, offset_out);
@@ -303,7 +455,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     };
     //////////////////////////////////
     // Communication in y-direction 
-    communication_tmp_futures = communicate_scatter(std::ref(split_y_futures),
+    communication_futures = communicate_scatter(std::ref(split_y_futures),
                                                     scatter_communicators,
                                                     std::ref(trans_values_prep), 
                                                     num_localities,
@@ -318,7 +470,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
         {
             offset_out = 2 * i;
             comm_y_futures[k][i] = hpx::dataflow(hpx::unwrapping(&transpose),
-                                                 communication_tmp_futures[i],
+                                                 communication_futures[i],
                                                  std::ref(values_vec[k]),
                                                  factor_in, factor_out,
                                                  offset_in, offset_out);
@@ -380,7 +532,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         FFT_BACKEND_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
     //
-    //const std::uint32_t loop = vm["loop"].as<std::uint32_t>();//1;    // Number of loops to average
+    std::string run_flag = vm["run"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
 
     ////////////////////////////////////////////////////////////////
@@ -392,8 +544,16 @@ int hpx_main(hpx::program_options::variables_map& vm)
     });
 
     ////////////////////////////////////////////////////////////////
-    // computation    
-    fft_2d_task_scatter(std::ref(values_vec), FFT_BACKEND_PLAN_FLAG);
+    // computation   
+    if( run_flag == "task_scatter" )
+    {
+        fft_2d_task_scatter(std::ref(values_vec), FFT_BACKEND_PLAN_FLAG);
+    }
+    else if ( run_flag == "task_ata")
+    {
+        fft_2d_task_all_to_all(std::ref(values_vec), FFT_BACKEND_PLAN_FLAG);
+    } 
+    
 
     ////////////////////////////////////////////////////////////////
     // print results
@@ -401,9 +561,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         const std::uint32_t this_locality = hpx::get_locality_id();
         sleep(this_locality);
-        std::string msg = "\nLocality {1}\n";
+        std::string msg = "\nAlgorithm {1}\nLocality {2}\n";
         hpx::util::format_to(hpx::cout, msg, 
-                        this_locality) << std::flush;
+                        run_flag, this_locality) << std::flush;
         for (auto r5 : values_vec)
         {
             std::string msg = "\n";
@@ -440,7 +600,7 @@ int main(int argc, char* argv[])
     ("nx", value<std::uint32_t>()->default_value(8), "Total x dimension")
     ("ny", value<std::uint32_t>()->default_value(14), "Total y dimension")
     ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
-    ("loop",value<std::uint32_t>()->default_value(1), "Total x dimension");
+    ("run",value<std::string>()->default_value("task_scatter"), "Choose 2d FFT algorithm");
 
     // Initialize and run HPX, this example requires to run hpx_main on all
     // localities
@@ -459,7 +619,7 @@ int main(int argc, char* argv[])
     // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
     // {
     //     // transpose
-    //     //communication_vec[i] = communication_tmp_futures[i].get();
+    //     //communication_vec[i] = communication_futures[i].get();
     //     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto j)
     //     {
     //         hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto k)
