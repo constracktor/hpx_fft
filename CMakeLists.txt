@@ -6,12 +6,7 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(scatter src/scatter.cpp ${HEADER_FILES})
-target_link_libraries(scatter
-                        HPX::hpx 
-                        HPX::wrap_main 
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+
 
 add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
 target_link_libraries(fft_hpx
@@ -54,6 +49,13 @@ target_link_libraries(mpi_2d
                         
 ###########################################################
 # OBSOLETE
+# add_executable(scatter src/scatter.cpp ${HEADER_FILES})
+# target_link_libraries(scatter
+#                         HPX::hpx 
+#                         HPX::wrap_main 
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
+
 # add_executable(fftw_3d src/fftw_3d.cpp ${HEADER_FILES})
 # target_link_libraries(fftw_3d 
 #                         HPX::hpx 
