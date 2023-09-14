@@ -782,9 +782,9 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
                             this_locality, 
                             total,
                             first_fftw,
-                            frist_trans,
+                            frist_fftw,//trans,
                             second_fftw,
-                            second_trans) << std::flush;
+                            second_fftw) << std::flush;
     }
 }
 
