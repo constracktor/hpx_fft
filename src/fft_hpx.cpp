@@ -11,6 +11,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/modules/collectives.hpp>
 #include <hpx/iostream.hpp>
+#include <hpx/modules/testing.hpp>
 
 #include <hpx/timing/high_resolution_timer.hpp>
 
@@ -73,6 +74,18 @@ void transpose(const vector_1d& input,
         output[index_out]     = input[index_in];
         output[index_out + 1] = input[index_in + 1];
     }
+}
+
+void transpose_shared(const vector_1d& input, 
+                      vector_2d& output, 
+                      const std::uint32_t index_trans)
+{
+    const std::uint32_t dim_input = input.size() / 2;
+    for( std::uint32_t index = 0; index < dim_input; ++index)
+    {
+        output[index][2 * index_trans] = input[2 * index];
+        output[index][2 * index_trans + 1] = input[2 * index + 1];
+    }     
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -698,18 +711,6 @@ void fft_2d_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     fftw_cleanup();
 }
 
-void transpose_shared(const vector_1d& input, 
-                      vector_2d& output, 
-                      const std::uint32_t index_trans)
-{
-    const std::uint32_t dim_input = input.size()/2;
-    for( std::uint32_t index=0;index<dim_input;++index)
-    {
-        output[index][2*index_trans] = input[2*index];
-        output[index][2*index_trans + 1] = input[2*index + 1];
-    }     
-}
-
 void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
 {
     // test if one locality
@@ -722,8 +723,8 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
     // value vectors
     vector_2d trans_values_vec(dim_c_y);
     // FFTW plans
-    fftw_plan plan_1D_r2c;
-    fftw_plan plan_1D_c2c;
+    fftw_plan plan_1d_r2c;
+    fftw_plan plan_1d_c2c;
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();
     ////////////////////////////////////////////////////////////////
@@ -737,12 +738,12 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
     ////////////////////////////////////////////////////////////////
     //FFTW plans
     // forward step one: r2c in y-direction
-    plan_1D_r2c = fftw_plan_dft_r2c_1d(dim_r_y,
+    plan_1d_r2c = fftw_plan_dft_r2c_1d(dim_r_y,
                             values_vec[0].data(),
                             reinterpret_cast<fftw_complex*>(values_vec[0].data()),
                             PLAN_FLAG);
     // forward step two: c2c in x-direction
-    plan_1D_c2c = fftw_plan_dft_1d(dim_c_x, 
+    plan_1d_c2c = fftw_plan_dft_1d(dim_c_x, 
                             reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
                             reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
                             FFTW_FORWARD, PLAN_FLAG);
@@ -751,30 +752,38 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
     // COMPUTATION
     auto start_total = t.now();
     /////////////////////////////////////////////////////////////////
+    // FFTW 1D in y-direction 
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x, [&](auto i)
     {
-        // FFTW 1D in y-direction 
-        fft_1d_r2c_inplace(plan_1D_r2c, std::ref(values_vec[i]);
-        // Local tranpose in x-direction
+        fft_1d_r2c_inplace(plan_1d_r2c, std::ref(values_vec[i]));
+    });
+    auto start_first_trans = t.now();
+    // Local tranpose in x-direction
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x, [&](auto i)
+    {
         transpose_shared(std::cref(values_vec[i]), std::ref(trans_values_vec), i);
     });
     auto start_second_fft = t.now();
-    // forward step two
+     // FFTW 1D x-direction
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y, [&](auto i)
     {
-        // FFTW 1D x-direction
-        fft_1d_r2c_inplace(plan_1D_c2c, std::ref(trans_values_vec[i]);
-        // Local tranpose in y-direction
+        fft_1d_r2c_inplace(plan_1d_c2c, std::ref(trans_values_vec[i]));
+    });
+    auto start_second_trans = t.now();
+    // Local tranpose in y-direction
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y, [&](auto i)
+    {
         transpose_shared(std::cref(trans_values_vec[i]), std::ref(values_vec), i);
     });
     ////////////////////////////////////////////////////////////////
     auto stop_total = t.now();
     auto total = stop_total - start_total;
-    auto first_fftw = start_second_fft - start_total;
-    auto second_fftw = stop_total - start_second_fft;
-
+    auto first_fftw = start_first_trans - start_total;
+    auto first_trans = start_second_fft - start_first_trans;
+    auto second_fftw = start_second_trans - start_second_fft;
+    auto second_trans = stop_total - start_second_trans;
     // print result    
-    if (this_locality==0)
+    if (1)
     {
         const std::uint32_t this_locality = hpx::get_locality_id();
         std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
@@ -782,9 +791,9 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
                             this_locality, 
                             total,
                             first_fftw,
-                            frist_fftw,//trans,
+                            first_trans,
                             second_fftw,
-                            second_fftw) << std::flush;
+                            second_trans) << std::flush;
     }
 }
 
