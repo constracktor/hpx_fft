@@ -145,7 +145,6 @@ hpx::shared_future<vector_2d> communicate_all_to_all(
                          vector_2d& input,
                          std::uint32_t& generation_counter)
 {
-    const std::uint32_t this_locality = hpx::get_locality_id();
     hpx::shared_future<vector_2d> communication_future;
     hpx::wait_all(ready);
 
@@ -178,7 +177,7 @@ void fft_2d_task_all_to_all(vector_2d& values_vec, const unsigned PLAN_FLAG)
     // transpose parameters
     std::uint32_t factor_out = 2 * num_localities;
     std::uint32_t factor_in;
-    // communicators
+    // communicator
     const char* all_to_all_basename = "0";
     hpx::collectives::communicator all_to_all_communicator;
     // value vectors
@@ -439,7 +438,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     {
         for(std::uint32_t i = 0; i < num_localities; ++i)
         {          
-            comm_x_futures[k][i] = hpx::dataflow(hpx::unwrapping(&transpose), 
+            comm_x_futures[k][i] = hpx::dataflow(hpx::annotated_function(hpx::unwrapping(&transpose),"test"), 
                                                  communication_futures[i],
                                                  std::ref(trans_values_vec[k]),
                                                  factor_in, factor_out,
@@ -497,6 +496,172 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
         hpx::util::format_to(hpx::cout, msg, 
                             this_locality, 
                             total) << std::flush;
+    }
+    ////////////////////////////////////////////////
+    // Cleanup
+    // FFTW cleanup
+    fftw_destroy_plan(plan_1d_r2c);
+    fftw_destroy_plan(plan_1d_c2c);
+    fftw_cleanup();
+}
+
+// synchronized
+void fft_2d_all_to_all(vector_2d& values_vec, const unsigned PLAN_FLAG)
+{
+    ////////////////////////////////////////////////////////////////
+    // Parameters and Data structures
+    // hpx parameters
+    const std::uint32_t this_locality = hpx::get_locality_id();
+    const std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    std::uint32_t generation_counter = 1;
+    // fft dimension parameters
+    const std::uint32_t n_x_local = values_vec.size();
+    const std::uint32_t dim_c_x = n_x_local * num_localities;
+    const std::uint32_t dim_c_y = values_vec[0].size() / 2;
+    const std::uint32_t dim_r_y = 2 * dim_c_y - 2;
+    const std::uint32_t n_y_local = dim_c_y / num_localities;
+    const std::uint32_t dim_c_y_part = 2 * dim_c_y / num_localities;
+    const std::uint32_t dim_c_x_part = 2 * dim_c_x / num_localities;
+    // transpose parameters
+    std::uint32_t factor_out = 2 * num_localities;
+    std::uint32_t factor_in;
+    // communicator
+    const char* all_to_all_basename = "0";
+    hpx::collectives::communicator all_to_all_communicator;
+    // value vectors
+    vector_2d trans_values_vec(n_y_local);
+    vector_2d values_prep(num_localities);
+    vector_2d trans_values_prep(num_localities);
+    vector_2d communication_vec(num_localities);
+    // holder for communication futures
+    hpx::shared_future<vector_2d> communication_future;
+    // FFTW plans
+    fft_backend_plan plan_1d_r2c;
+    fft_backend_plan plan_1d_c2c;
+    // time measurement
+    auto t = hpx::chrono::high_resolution_timer();
+    ////////////////////////////////////////////////////////////////
+    // setup communicator
+        all_to_all_communicator = hpx::collectives::create_communicator(all_to_all_basename,
+            hpx::collectives::num_sites_arg(num_localities), hpx::collectives::this_site_arg(this_locality));
+    ////////////////////////////////////////////////////////////////
+    // allocate data
+    // forward step two: c2c in x-direction
+    hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto i)
+    {
+        trans_values_vec[i].resize(2*dim_c_x);
+    });        
+    hpx::experimental::for_loop(hpx::execution::seq, 0, num_localities, [&](auto j)
+    {
+        values_prep[j].resize(n_x_local * dim_c_y_part);
+        trans_values_prep[j].resize(n_y_local * dim_c_x_part);
+
+        if (n_y_local * dim_c_x_part > n_x_local * dim_c_y_part)
+        {
+            communication_vec[j].resize(n_y_local * dim_c_x_part);
+        }
+        else
+        {
+            communication_vec[j].resize(n_x_local * dim_c_y_part);
+        }
+    });
+    ////////////////////////////////////////////////////////////////
+    //FFTW plans
+    // forward step one: r2c in y-direction
+    plan_1d_r2c = fftw_plan_dft_r2c_1d(dim_r_y,
+                                       values_vec[0].data(),
+                                       reinterpret_cast<fftw_complex*>(values_vec[0].data()),
+                                       PLAN_FLAG);
+    // forward step two: c2c in x-direction
+    plan_1d_c2c = fftw_plan_dft_1d(dim_c_x, 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec[0].data()), 
+                                   FFTW_FORWARD,
+                                   PLAN_FLAG);
+    /////////////////////////////////////////////////////////////////
+    // COMPUTATION
+    auto start_total = t.now();
+    ////////////////////////////////
+    // FFTW 1d in y-direction 
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto i)
+    {
+        fft_1d_r2c_inplace(plan_1d_r2c, std::ref(values_vec[i]));
+        split_vector(std::cref(values_vec[i]),std::ref(values_prep), num_localities, i);
+    });
+    ////////////////////////////////
+    // Communication in x-direction                                        
+    auto start_first_comm = t.now();
+    // all to all communication
+    communication_future = hpx::collectives::all_to_all(all_to_all_communicator, std::move(values_prep), hpx::collectives::generation_arg(generation_counter));
+    ++generation_counter;
+    communication_vec = communication_future.get();
+    /////////////////////////////////
+    // Local tranpose in x-direction
+    auto start_first_trans = t.now();
+    factor_in = dim_c_y_part;
+    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
+    {
+        hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto j)
+        {
+            hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto k)
+            {
+                trans_values_vec[k][factor_out * j + 2 * i] = communication_vec[i][factor_in * j + 2 * k];
+                trans_values_vec[k][factor_out * j + 2 * i + 1] = communication_vec[i][factor_in * j + 2 * k + 1];
+            });
+        });    
+    });
+    /////////////////////////////////
+    // FFTW 1d x-direction
+     auto start_second_fft = t.now();
+    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto i)
+    {
+        fft_1d_c2c_inplace(plan_1d_c2c, std::ref(trans_values_vec[i]));
+        split_vector(std::cref(trans_values_vec[i]),std::ref(trans_values_prep), num_localities, i);
+    });
+    //////////////////////////////////
+    // Communication in y-direction 
+    auto start_second_comm = t.now();
+    // all to all communication
+    communication_future = hpx::collectives::all_to_all(all_to_all_communicator, std::move(trans_values_prep), hpx::collectives::generation_arg(generation_counter));
+    ++generation_counter;
+    communication_vec = communication_future.get();
+    //////////////////////////////////////////////////////////////////
+    // Local tranpose in x-direction
+    auto start_second_trans = t.now();
+    factor_in = dim_c_x_part;
+    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
+    {
+        hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto j)
+        {
+            hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto k)
+            {
+                values_vec[k][factor_out * j + 2 * i] = communication_vec[i][factor_in * j + 2 * k];
+                values_vec[k][factor_out * j + 2 * i + 1] = communication_vec[i][factor_in * j + 2 * k + 1];
+            });
+        });    
+    });
+    ////////////////////////////////////////////////////////////////
+    auto stop_total = t.now();
+    auto total = stop_total - start_total;
+    auto first_fftw = start_first_comm - start_total;
+    auto first_comm = start_first_trans - start_first_comm;
+    auto first_trans= start_second_fft - start_first_trans;
+    auto second_fftw = start_second_comm - start_second_fft;
+    auto second_comm = start_second_trans - start_second_comm;
+    auto second_trans= stop_total - start_second_trans;
+    // print result    
+    if (this_locality==0)
+    {
+        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst comm   : {4}\nFirst trans  : {5}\nFFTW c2c     : {6}\nSecond comm  : {7}\nSecond trans : {8}\n";
+        hpx::util::format_to(hpx::cout, msg, 
+                            this_locality, 
+                            total,
+                            first_fftw,
+                            first_comm,
+                            first_trans,
+                            second_fftw,
+                            second_comm,
+                            second_trans) << std::flush;
     }
     ////////////////////////////////////////////////
     // Cleanup
@@ -852,6 +1017,10 @@ int hpx_main(hpx::program_options::variables_map& vm)
     else if ( run_flag == "scatter")
     {
         fft_2d_scatter(std::ref(values_vec), FFT_BACKEND_PLAN_FLAG);
+    } 
+    else if ( run_flag == "ata")
+    {
+        fft_2d_all_to_all(std::ref(values_vec), FFT_BACKEND_PLAN_FLAG);
     } 
     else if ( run_flag == "shared")
     {
