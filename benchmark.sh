@@ -7,10 +7,10 @@ set +x
 ################################################################################
 # Variables
 ################################################################################
-export APEX_SCREEN_OUTPUT=1
+#export APEX_SCREEN_OUTPUT=0
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
-#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
-export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_v1.8.1"
+export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
+#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_v1.8.1"
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
 export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
