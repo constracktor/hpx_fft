@@ -104,7 +104,7 @@ void fft_1d_c2c_inplace_when_ready(std::vector<hpx::shared_future<void>>& ready,
                                   const fft_backend_plan plan, 
                                   vector_1d& input)
 {
-    hpx:wait_all(ready);
+    hpx::wait_all(ready);
     fft_1d_c2c_inplace(plan, std::ref(input));
 }
 
@@ -415,10 +415,10 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     // FFTW 1d in y-direction 
     for(std::uint32_t i = 0; i < n_x_local; ++i)
     {
-        r2c_futures[i] = hpx::async(&fft_1d_r2c_inplace,
+        r2c_futures[i] = hpx::async(hpx::annotated_function(&fft_1d_r2c_inplace, "fft_r2c"),
                                     plan_1d_r2c,
                                     std::ref(values_vec[i]));
-        split_x_futures[i] = hpx::async(&split_vector_when_ready, 
+        split_x_futures[i] = hpx::async(hpx::annotated_function(&split_vector_when_ready, "split_x"), 
                                         r2c_futures[i],
                                         std::cref(values_vec[i]),
                                         std::ref(values_prep),
@@ -438,7 +438,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     {
         for(std::uint32_t i = 0; i < num_localities; ++i)
         {          
-            comm_x_futures[k][i] = hpx::dataflow(hpx::annotated_function(hpx::unwrapping(&transpose),"test"), 
+            comm_x_futures[k][i] = hpx::dataflow(hpx::annotated_function(hpx::unwrapping(&transpose),"transpose_x"), 
                                                  communication_futures[i],
                                                  std::ref(trans_values_vec[k]),
                                                  factor_in, factor_out,
@@ -449,11 +449,11 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
     // FFTW 1d x-direction
     for(std::uint32_t i = 0; i < n_y_local; ++i)
     {
-        c2c_futures[i] = hpx::async(&fft_1d_c2c_inplace_when_ready,
+        c2c_futures[i] = hpx::async(hpx::annotated_function(&fft_1d_c2c_inplace_when_ready, "fft_r2c"),
                                     std::ref(comm_x_futures[i]),
                                     plan_1d_c2c, 
                                     std::ref(trans_values_vec[i]));
-        split_y_futures[i] = hpx::async(&split_vector_when_ready,
+        split_y_futures[i] = hpx::async(hpx::annotated_function(&split_vector_when_ready,"split_y"),
                                         c2c_futures[i],
                                         std::cref(trans_values_vec[i]),
                                         std::ref(trans_values_prep),
@@ -467,13 +467,13 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
                                                     num_localities,
                                                     generation_counter);
     //////////////////////////////////////////////////////////////////
-    // Local tranpose in x-direction
+    // Local tranpose in y-direction
     factor_in = dim_c_x_part;
     for(std::uint32_t k = 0; k < n_x_local; ++k)
     {
         for(std::uint32_t i = 0; i < num_localities; ++i)
         {
-            comm_y_futures[k][i] = hpx::dataflow(hpx::unwrapping(&transpose),
+            comm_y_futures[k][i] = hpx::dataflow(hpx::annotated_function(hpx::unwrapping(&transpose), "transpose_y"),
                                                  communication_futures[i],
                                                  std::ref(values_vec[k]),
                                                  factor_in, factor_out,

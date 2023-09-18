@@ -7,10 +7,10 @@ set +x
 ################################################################################
 # Variables
 ################################################################################
-#export APEX_SCREEN_OUTPUT=0
+export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
-export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
-#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_v1.8.1"
+#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
+export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_v1.9.1"
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
 export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
@@ -36,25 +36,27 @@ make -j 8
 ################################################################################
 # Run benchmark script
 ################################################################################
-rm -rf result
-mkdir result
+./fft_hpx --nx=8192 --ny=8192 -t 1 --run=task_scatter
+
+# rm -rf result
+# mkdir result
+
+# # for (( i=2**POW_START; i<=2**10; i=i*2 ))
+# # do
+    
+# #     ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
+# # done
+# # for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
+# # do
+# #     ./fftw_2d --n=$i --f="estimate" --l=$LOOP
+# # done
 
 # for (( i=2**POW_START; i<=2**10; i=i*2 ))
 # do
     
-#     ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
+#     ./fftw_2d --n=$i --f="patient" --l=$((10*$LOOP))
 # done
 # for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
 # do
-#     ./fftw_2d --n=$i --f="estimate" --l=$LOOP
+#     ./fftw_2d --n=$i --f="patient" --l=$LOOP
 # done
-
-for (( i=2**POW_START; i<=2**10; i=i*2 ))
-do
-    
-    ./fftw_2d --n=$i --f="patient" --l=$((10*$LOOP))
-done
-for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
-do
-    ./fftw_2d --n=$i --f="patient" --l=$LOOP
-done
