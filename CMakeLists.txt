@@ -12,6 +12,10 @@ target_link_libraries(fft_hpx
                         HPX::iostreams_component
                         FFTW3::fftw3)
 
+add_executable(hello src/main.cpp ${HEADER_FILES})
+target_link_libraries(hello
+                        HPX::hpx
+                        HPX::iostreams_component)
 
 ###########################################################
 # FFTW
