@@ -21,30 +21,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
         { 
             // this is guaranteed not to block as the continuation 
             // will be called only after `f` has become ready`)
-            //r.get();
             hpx::async(hpx::annotated_function(&print_hello_world, "hello_world2"), 10);
         });
     f2.get();
-  //  hpx::future<int> f = hpx::async([]{ return 42; });
-
-// hpx::future<int> f2 = f.then(
-//     [](hpx::future<int> r) 
-//     {
-//         // this is guaranteed not to block as the continuation 
-//         // will be called only after `f` has become ready (note:
-//         // `f` has been moved-to `r`)
-//         int result = r.get();
-
-//         // 'reinitialize' the future
-//         r = hpx::async([]{ return 21; });
-
-//         // ...do things with 'r'
-
-//         return result;
-//     });
-
-// f2 now represents the result of executing the chain of the two lambdas
-//std::cout << f2.get() << '\n';        // prints '42'
 
     return hpx::finalize();
 }

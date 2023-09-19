@@ -418,15 +418,30 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
         r2c_futures[i] = hpx::async(hpx::annotated_function(&fft_1d_r2c_inplace, "fft_r2c"),
                                     plan_1d_r2c,
                                     std::ref(values_vec[i]));
-                        
-        split_x_futures[i] = hpx::async(hpx::annotated_function(&split_vector_when_ready, "split_x"), 
-                                        r2c_futures[i],
+        
+
+
+        split_x_futures[i] = r2c_futures[i].then(
+        [](hpx::future<void> r)
+        {
+            hpx::async(hpx::annotated_function(&split_vector, "split_x"), 
                                         std::cref(values_vec[i]),
                                         std::ref(values_prep),
                                         num_localities, i);
+        });
     };
     ////////////////////////////////
-    // Communication in x-direction                                        
+    // Communication in x-direction       
+    //     future<tuple<shared_future<int>, future<string>>> all_f = 
+    //     when_all(shared_future1, future2);
+
+    // future<int> result = all_f.then(
+    //     [](future<tuple<shared_future<int>, future<string>>> f) -> int 
+    //     {
+    //          return do_work(f.get());
+    //     });
+
+    return result.get();                                 
     communication_futures = communicate_scatter(std::ref(split_x_futures),
                                                     scatter_communicators,
                                                     std::ref(values_prep), 
