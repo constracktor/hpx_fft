@@ -12,7 +12,7 @@ target_link_libraries(fft_hpx
                         HPX::iostreams_component
                         FFTW3::fftw3)
 
-add_executable(hello src/main.cpp ${HEADER_FILES})
+add_executable(hello src/hello.cpp ${HEADER_FILES})
 target_link_libraries(hello
                         HPX::hpx
                         HPX::iostreams_component)
@@ -28,8 +28,8 @@ find_library(
     PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
 )
 
-add_executable(mpi_2d src/mpi_2d.cpp ${HEADER_FILES})
-target_link_libraries(mpi_2d
+add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
+target_link_libraries(fftw_mpi
                         PkgConfig::FFTW
                         ${FFTW_MPI_LIB})
 

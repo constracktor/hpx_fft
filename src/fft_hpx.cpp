@@ -144,7 +144,7 @@ hpx::shared_future<vector_2d> communicate_all_to_all(
                          hpx::collectives::communicator communicator,
                          vector_2d& input,
                          std::uint32_t& generation_counter)
-{
+{  
     hpx::shared_future<vector_2d> communication_future;
     hpx::wait_all(ready);
 
@@ -418,6 +418,7 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
         r2c_futures[i] = hpx::async(hpx::annotated_function(&fft_1d_r2c_inplace, "fft_r2c"),
                                     plan_1d_r2c,
                                     std::ref(values_vec[i]));
+                        
         split_x_futures[i] = hpx::async(hpx::annotated_function(&split_vector_when_ready, "split_x"), 
                                         r2c_futures[i],
                                         std::cref(values_vec[i]),
@@ -1087,18 +1088,3 @@ int main(int argc, char* argv[])
 }
 
 #endif
-
-    // auto start_second_comm = t.now();
-    // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
-    // {
-    //     // transpose
-    //     //communication_vec[i] = communication_futures[i].get();
-    //     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local, [&](auto j)
-    //     {
-    //         hpx::experimental::for_loop(hpx::execution::seq, 0, n_x_local, [&](auto k)
-    //         {
-    //             values_vec[k][j* num_localities*2 + 2*i] = communication_vec[i][2*k + j * dim_c_x_part];
-    //             values_vec[k][j* num_localities*2 + 2*i+1] = communication_vec[i][2*k+1 + j * dim_c_x_part];
-    //         });
-    //     });    
-    // });

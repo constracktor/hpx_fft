@@ -7,7 +7,7 @@ set +x
 ################################################################################
 # Variables
 ################################################################################
-export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1
+export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1 APEX_TASKTREE_OUTPUT=1
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
 export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_sgscl1_v1.9.1"
@@ -36,8 +36,8 @@ make -j 8
 ################################################################################
 # Run benchmark script
 ################################################################################
-./fft_hpx --nx=8192 --ny=8192 --hpx:threads=1 --run=task_scatter
-
+#./fft_hpx --nx=8192 --ny=8192 --hpx:threads=1 --run=task_scatter
+srun -N 1 ./hello hpx:threads=1
 # rm -rf result
 # mkdir result
 
