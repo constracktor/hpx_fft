@@ -43,17 +43,18 @@ void fft_1d_c2c_inplace(const fft_backend_plan plan,
     fftw_execute_dft(plan, reinterpret_cast<fftw_complex*>(input.data()), reinterpret_cast<fftw_complex*>(input.data()));
 }
 
-void split_vector(const vector_1d& input, 
-                  vector_2d& output, 
-                  const std::uint32_t num_localities, 
-                  const std::uint32_t offset)
-{
-    const std::uint32_t part_size = input.size() / num_localities;
-    std::cout << offset << std::endl;
-    for (std::uint32_t j = 0; j < num_localities; ++j) 
-    {
-        std::move(input.begin() + j * part_size, input.begin() + (j+1) * part_size, output[j].begin() + offset * part_size);
-    }
+void split_vector(     const vector_1d& input){
+, 
+//                  vector_2d& output, 
+//                   const std::uint32_t num_localities, 
+//                   const std::uint32_t offset)
+// {
+//     const std::uint32_t part_size = input.size() / num_localities;
+//     std::cout << output.size() << std::endl;
+//     for (std::uint32_t j = 0; j < num_localities; ++j) 
+//     {
+//         //std::move(input.begin() + j * part_size, input.begin() + (j+1) * part_size, output[j].begin() + offset * part_size);
+//     }
         std::cout << "end" <<std::endl;
 
 }
@@ -419,16 +420,20 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
                                     plan_1d_r2c,
                                     std::ref(values_vec[i]));
         
-        split_x_futures[i] = r2c_futures[i].then(
-        [&](hpx::future<void> r)
-        {
-            r.get();
-            std::cout << i << std::endl;
-            hpx::async(hpx::annotated_function(&split_vector, "split_x"), 
-                                        std::cref(values_vec[i]),
-                                        std::ref(values_prep),
-                                        num_localities, i);
-        });
+        // split_x_futures[i] = r2c_futures[i].then(
+        // [=, &values_vec](hpx::future<void> r) mutable
+        // {
+        //     r.get();
+        //     std::cout << i << std::endl;
+        //     return hpx::async(hpx::annotated_function(&split_vector, "split_x"), 
+        //                                 std::cref(values_vec[i]),
+        //                                 std::ref(values_prep),
+        //                                 num_localities, i);
+        // });
+                split_x_futures[i] = r2c_futures[i].then(hpx::unwrapping(&split_vector(std::cref(values_vec[i])))); 
+                                    //     std::cref(values_vec[i]),
+                                    //     std::ref(values_prep),
+                                    //    num_localities, i);
     };
 
 
@@ -449,28 +454,29 @@ void fft_2d_task_scatter(vector_2d& values_vec, const unsigned PLAN_FLAG)
 
 
 
-            for (auto r5 : values_prep)
-        {
-            std::string msg = "\n";
-            hpx::util::format_to(hpx::cout, msg) << std::flush;
-            std::uint32_t counter = 0;
-            for (auto v : r5)
-            {
-                if(counter%2 == 0)
-                {
-                    std::string msg = "({1} ";
-                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
-                }
-                else
-                {
-                    std::string msg = "{1}) ";
-                    hpx::util::format_to(hpx::cout, msg, v) << std::flush;
-                }
-                ++counter;
-            }
-        }
-        std::string msg2 = "\n";
-        hpx::util::format_to(hpx::cout, msg2) << std::flush;
+        //     for (auto r5 : values_prep)
+        // {
+        //     std::string msg = "\n";
+        //     hpx::util::format_to(hpx::cout, msg) << std::flush;
+        //     std::uint32_t counter = 0;
+        //     for (auto v : r5)
+        //     {
+        //         if(counter%2 == 0)
+        //         {
+        //             std::string msg = "({1} ";
+        //             hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+        //         }
+        //         else
+        //         {
+        //             std::string msg = "{1}) ";
+        //             hpx::util::format_to(hpx::cout, msg, v) << std::flush;
+        //         }
+        //         ++counter;
+        //     }
+        // }
+        // std::string msg2 = "\n";
+        // hpx::util::format_to(hpx::cout, msg2) << std::flush;
+        
     // //scatter communication
     // communication_futures = communicate_scatter(std::ref(scatter_communicators),
     //                                             std::ref(values_prep), 
