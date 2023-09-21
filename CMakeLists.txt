@@ -6,16 +6,17 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 
 add_executable(hello src/hello.cpp ${HEADER_FILES})
 target_link_libraries(hello
                         HPX::hpx
-                        HPX::iostreams_component)
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
 
 ###########################################################
 # FFTW
@@ -28,10 +29,10 @@ find_library(
     PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
 )
 
-add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
-target_link_libraries(fftw_mpi
-                        PkgConfig::FFTW
-                        ${FFTW_MPI_LIB})
+# add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_mpi
+#                         PkgConfig::FFTW
+#                         ${FFTW_MPI_LIB})
 
 ###########################################################
 # SEQUENTIAL
