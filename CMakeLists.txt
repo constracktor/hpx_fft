@@ -12,11 +12,17 @@ find_package(FFTW3 REQUIRED)
 #                         HPX::iostreams_component
 #                         FFTW3::fftw3)
 
-add_executable(hello src/hello.cpp ${HEADER_FILES})
-target_link_libraries(hello
+add_executable(fft_hpx_task src/fft_hpx_task.cpp ${HEADER_FILES})
+target_link_libraries(fft_hpx_task
                         HPX::hpx
                         HPX::iostreams_component
                         FFTW3::fftw3)
+
+# add_executable(hello src/hello.cpp ${HEADER_FILES})
+# target_link_libraries(hello
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 
 ###########################################################
 # FFTW
