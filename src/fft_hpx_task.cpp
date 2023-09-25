@@ -17,6 +17,10 @@ using real = double;
 using vector_1d = std::vector<real, std::allocator<real>>;
 using vector_2d = std::vector<vector_1d>;
 
+// TODO:
+// - remove names again
+// - shared
+// - new total time measurement
 
 struct fft_server : hpx::components::component_base<fft_server>
 {
@@ -211,7 +215,7 @@ HPX_REGISTER_COMPONENT(fft_server_type, fft_server)
 // invocation.
 
 typedef fft_server::fft_2d_r2c_action fft_2d_r2c_action;
-HPX_REGISTER_ACTION(fft_2d_r2c_action)
+HPX_REGISTER_ACTION(fft_2d_r2c_action, "fun_name")
 
 typedef fft_server::initialize_action initialize_action;
 HPX_REGISTER_ACTION(initialize_action)
