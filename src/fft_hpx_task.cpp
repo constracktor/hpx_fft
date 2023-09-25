@@ -215,7 +215,10 @@ HPX_REGISTER_COMPONENT(fft_server_type, fft_server)
 // invocation.
 
 typedef fft_server::fft_2d_r2c_action fft_2d_r2c_action;
-HPX_REGISTER_ACTION(fft_2d_r2c_action, "fun_name")
+HPX_REGISTER_ACTION(fft_2d_r2c_action)
+
+typedef fft_server::fft_split_r2c_action fft_split_r2c_action;
+HPX_REGISTER_ACTION(fft_split_r2c_action)
 
 typedef fft_server::initialize_action initialize_action;
 HPX_REGISTER_ACTION(initialize_action)
