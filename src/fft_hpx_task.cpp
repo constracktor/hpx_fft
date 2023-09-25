@@ -544,7 +544,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     future_initialize.get();
     auto start_total = t.now();
     hpx::future<vector_2d> future_result = fft_computer.fft_2d_r2c();
-    values_vec = result.get();
+    values_vec = future_result.get();
     auto stop_total = t.now();
 
     auto total = stop_total - start_total;
