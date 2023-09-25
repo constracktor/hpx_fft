@@ -228,7 +228,13 @@ struct fft : hpx::components::client_base<fft, fft_server>
         return hpx::async(hpx::annotated_function(initialize_action(), "initialization"), get_id(), std::move(values_vec), COMM_FLAG);
     }
 
-    ~fft() = default;
+    ~fft()
+    {
+        fftw_destroy_plan(plan_1d_r2c_);
+        fftw_destroy_plan(plan_1d_c2c_);
+        fftw_cleanup();
+    }
+
 };
 
 vector_2d fft_server::fft_2d_r2c()
@@ -447,10 +453,8 @@ void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG)
     }
     // communication specific initialization
     COMM_FLAG_ = COMM_FLAG;
-    std::cout << COMM_FLAG_ << std::endl;
     if (COMM_FLAG_ == "scatter")
     {
-        std::cout << "in there " << std::endl;
         communication_vec_.resize(num_localities_);
         communication_futures_.resize(num_localities_);
         // setup communicators
@@ -479,17 +483,6 @@ void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG)
         std::cout << "Specify communication scheme: scatter or all_to_all\n";
         hpx::finalize();
     }
-    // // setup communicators
-    //         communication_vec_.resize(num_localities_);
-    //     communication_futures_.resize(num_localities_);
-    // basenames_.resize(num_localities_);
-    // communicators_.resize(num_localities_);
-    // for(std::size_t i = 0; i < num_localities_; ++i)
-    // {
-    //     basenames_[i] = std::move(std::to_string(i).c_str());
-    //     communicators_[i] = std::move(hpx::collectives::create_communicator(basenames_[i],
-    //         hpx::collectives::num_sites_arg(num_localities_), hpx::collectives::this_site_arg(this_locality_)));
-    // }
 }
 
 
