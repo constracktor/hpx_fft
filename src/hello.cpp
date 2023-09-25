@@ -27,8 +27,8 @@ struct fft_server : hpx::components::component_base<fft_server>
         HPX_DEFINE_COMPONENT_ACTION(fft_server, initialize, initialize_action)
 
         
-        vector_2d do_work();
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, do_work, do_work_action)
+        vector_2d fft_2d_r2c();
+        HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_2d_r2c, fft_2d_r2c_action)
 
     private:
 
@@ -171,7 +171,7 @@ struct fft_server : hpx::components::component_base<fft_server>
         std::vector<hpx::future<void>> split_y_futures_; 
         std::vector<std::vector<hpx::future<void>>> comm_y_futures_;
         // communicators
-        std::vector<const char*> scatter_basenames_;
+        std::vector<const char*> basenames_;
         std::vector<hpx::collectives::communicator> communicators_;
 };
 
@@ -186,8 +186,8 @@ HPX_REGISTER_COMPONENT(fft_server_type, fft_server)
 // HPX_REGISTER_ACTION() exposes the component member function for remote
 // invocation.
 
-typedef fft_server::do_work_action do_work_action;
-HPX_REGISTER_ACTION(do_work_action)
+typedef fft_server::fft_2d_r2c_action fft_2d_r2c_action;
+HPX_REGISTER_ACTION(fft_2d_r2c_action)
 
 typedef fft_server::initialize_action initialize_action;
 HPX_REGISTER_ACTION(initialize_action)
@@ -204,9 +204,9 @@ struct fft : hpx::components::client_base<fft, fft_server>
     {
     }
 
-    hpx::future<vector_2d> do_work()
+    hpx::future<vector_2d> fft_2d_r2c()
     {
-        return hpx::async(hpx::annotated_function(do_work_action(), "total"), get_id());
+        return hpx::async(hpx::annotated_function(fft_2d_r2c_action(), "total"), get_id());
     }
 
     hpx::future<void> initialize(vector_2d values_vec)
@@ -217,10 +217,10 @@ struct fft : hpx::components::client_base<fft, fft_server>
     ~fft() = default;
 };
 
-vector_2d fft_server::do_work()
+vector_2d fft_server::fft_2d_r2c()
 {
     ////////////////////////////////
-    // FFTW 1d in y-direction 
+    // FFTW 1d r2c in first dimension
     for(std::uint32_t i = 0; i < n_x_local_; ++i)
     {
         r2c_futures_[i] = hpx::async(hpx::annotated_function(fft_1d_r2c_inplace_action(), "fft_r2c"), get_id(), i);
@@ -231,9 +231,10 @@ vector_2d fft_server::do_work()
                 return hpx::async(hpx::annotated_function(split_r2c_action(), "split_r2c"), get_id(), i);
             }); 
     }
-    // synchronization step 
+    // local synchronization step for communication
     hpx::shared_future<std::vector<hpx::future<void>>> all_split_x_futures = hpx::when_all(split_x_futures_);
-    // communication
+    /////////////////////////////////
+    // Communication to get data for FFt in second dimension
     ++generation_counter_;
     for (std::size_t i = 0; i < num_localities_; ++i) 
     {
@@ -245,7 +246,7 @@ vector_2d fft_server::do_work()
             });
     }
     /////////////////////////////////
-    // Local tranpose in x-direction
+    // Local tranpose for cohesive memory
     for(std::size_t k = 0; k < n_y_local_; ++k)
     {
         for(std::size_t i = 0; i < num_localities_; ++i)
@@ -259,12 +260,11 @@ vector_2d fft_server::do_work()
         }
     }
     /////////////////////////////////
-    // FFTW 1d x-direction
+    // FFTW 1d c2c in second dimension
     for(std::size_t i = 0; i < n_y_local_; ++i)
     {
         // synchronize for 1d FFT
         hpx::future<std::vector<hpx::future<void>>> all_comm_x_i_futures = hpx::when_all(comm_x_futures_[i]);
-        
         c2c_futures_[i] = hpx::when_all(all_comm_x_i_futures).then(
             [=](hpx::future<void> r)
             {
@@ -277,12 +277,11 @@ vector_2d fft_server::do_work()
                 r.get();
                 return hpx::async(hpx::annotated_function(split_c2c_action(), "split_c2c"), get_id(), i);
             }); 
-
     }
-    // synchronization step 
+    // local synchronization step for communication
     hpx::shared_future<std::vector<hpx::future<void>>> all_split_y_futures = hpx::when_all(split_y_futures_);
-    all_split_y_futures.get(); 
-    // communication
+    /////////////////////////////////
+    // Communication to get original data layout
     ++generation_counter_;
     for (std::size_t i = 0; i < num_localities_; ++i) 
     {
@@ -294,7 +293,7 @@ vector_2d fft_server::do_work()
             });
     }
     /////////////////////////////////
-    // Local tranpose in y-direction
+    // Local tranpose back to original dimension
     for(std::size_t k = 0; k < n_x_local_; ++k)
     {
         for(std::size_t i = 0; i < num_localities_; ++i)
@@ -371,12 +370,12 @@ void fft_server::initialize(vector_2d values_vec)
         comm_y_futures_[i].resize(num_localities_);
     }
     // setup communicators
-    scatter_basenames_.resize(num_localities_);
+    basenames_.resize(num_localities_);
     communicators_.resize(num_localities_);
     for(std::size_t i = 0; i < num_localities_; ++i)
     {
-        scatter_basenames_[i] = std::move(std::to_string(i).c_str());
-        communicators_[i] = std::move(hpx::collectives::create_communicator(scatter_basenames_[i],
+        basenames_[i] = std::move(std::to_string(i).c_str());
+        communicators_[i] = std::move(hpx::collectives::create_communicator(basenames_[i],
             hpx::collectives::num_sites_arg(num_localities_), hpx::collectives::this_site_arg(this_locality_)));
     }
 }
@@ -413,7 +412,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         [&test](hpx::future<void> r)
         {
            r.get();
-           return test.do_work();
+           return test.fft_2d_r2c();
         });
     a = result.get();
 
