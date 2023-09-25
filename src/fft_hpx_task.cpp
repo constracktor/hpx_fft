@@ -18,7 +18,6 @@ using vector_1d = std::vector<real, std::allocator<real>>;
 using vector_2d = std::vector<vector_1d>;
 
 // TODO:
-// - remove names again
 // - shared
 // - new total time measurement
 
@@ -74,8 +73,8 @@ struct fft_server : hpx::components::component_base<fft_server>
         void split_r2c(const std::size_t i)
         {
             for (std::size_t j = 0; j < num_localities_; ++j) 
-            {
-                std::move(values_vec_[i].begin() + j * dim_c_y_part_, values_vec_[i].begin() + (j+1) * dim_c_y_part_, values_prep_[j].begin() + i * dim_c_y_part_);
+            { //std::move same performance
+                std::copy(values_vec_[i].begin() + j * dim_c_y_part_, values_vec_[i].begin() + (j+1) * dim_c_y_part_, values_prep_[j].begin() + i * dim_c_y_part_);
             }
         }
         HPX_DEFINE_COMPONENT_ACTION(fft_server, split_r2c, split_r2c_action)
@@ -111,8 +110,8 @@ struct fft_server : hpx::components::component_base<fft_server>
         void split_c2c(const std::size_t i)
         {
             for (std::size_t j = 0; j < num_localities_; ++j) 
-            {
-                std::move(trans_values_vec_[i].begin() + j * dim_c_x_part_, trans_values_vec_[i].begin() + (j+1) * dim_c_x_part_, trans_values_prep_[j].begin() + i * dim_c_x_part_);
+            { //std::move same performance
+                std::copy(trans_values_vec_[i].begin() + j * dim_c_x_part_, trans_values_vec_[i].begin() + (j+1) * dim_c_x_part_, trans_values_prep_[j].begin() + i * dim_c_x_part_);
             }
         }
         HPX_DEFINE_COMPONENT_ACTION(fft_server, split_c2c, split_c2c_action)
@@ -339,7 +338,7 @@ vector_2d fft_server::fft_2d_r2c()
     }
     // local synchronization step for communication
     hpx::shared_future<std::vector<hpx::future<void>>> all_split_c2c_futures = hpx::when_all(split_c2c_futures_);
-    //all_split_c2c_futures.get();// why required?!
+    all_split_c2c_futures.get();// why required?!
     /////////////////////////////////
     // Communication to get original data layout
     ++generation_counter_;
