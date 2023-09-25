@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <string>
- #include <fftw3.h>
+#include <fftw3.h>
 
 // use typedef later
 using real = double;
@@ -30,6 +30,13 @@ struct fft_server : hpx::components::component_base<fft_server>
         
         vector_2d fft_2d_r2c();
         HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_2d_r2c, fft_2d_r2c_action)
+
+        virtual ~fft_server()
+        {
+            fftw_destroy_plan(plan_1d_r2c_);
+            fftw_destroy_plan(plan_1d_c2c_);
+            fftw_cleanup();
+        }
 
     private:
 
@@ -228,13 +235,7 @@ struct fft : hpx::components::client_base<fft, fft_server>
         return hpx::async(hpx::annotated_function(initialize_action(), "initialization"), get_id(), std::move(values_vec), COMM_FLAG);
     }
 
-    ~fft()
-    {
-        fftw_destroy_plan(plan_1d_r2c_);
-        fftw_destroy_plan(plan_1d_c2c_);
-        fftw_cleanup();
-    }
-
+    ~fft() = default;
 };
 
 vector_2d fft_server::fft_2d_r2c()
