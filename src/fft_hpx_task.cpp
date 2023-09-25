@@ -6,6 +6,7 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/modules/collectives.hpp>
 #include <hpx/iostream.hpp>
+#include <hpx/timing/high_resolution_timer.hpp>
 
 #include <iostream>
 #include <string>
@@ -45,7 +46,6 @@ struct fft_server : hpx::components::component_base<fft_server>
         }
 
     private:
-
         void communicate_scatter_r2c(const std::size_t i)
         {
             if(this_locality_ != i)
@@ -536,17 +536,26 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
     ////////////////////////////////////////////////////////////////
     // computation   
+    // time measurement
+    auto t = hpx::chrono::high_resolution_timer();
     // create object: deleted when out of scope
-    fft test;
-    auto re = test.initialize(std::move(values_vec), run_flag);
-    hpx::future<vector_2d> result = re.then(
-        [&test](hpx::future<void> r)
-        {
-           r.get();
-           return test.fft_2d_r2c();
-        });
-    vector_2d a = result.get();
-    
+    fft fft_computer;
+    hpx::future<void> future_initialize = fft_computer.initialize(std::move(values_vec), run_flag);
+    future_initialize.get();
+    auto start_total = t.now();
+    hpx::future<vector_2d> future_result = fft_computer.fft_2d_r2c();
+    values_vec = result.get();
+    auto stop_total = t.now();
+
+    auto total = stop_total - start_total;
+    const std::uint32_t this_locality = hpx::get_locality_id();   
+    if (this_locality==0)
+    {
+        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\n";
+        hpx::util::format_to(hpx::cout, msg, 
+                            this_locality, 
+                            total) << std::flush;
+    }
 
     ////////////////////////////////////////////////////////////////
     // print results
@@ -557,7 +566,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         std::string msg = "\nAlgorithm {1}\nLocality {2}\n";
         hpx::util::format_to(hpx::cout, msg, 
                         run_flag, this_locality) << std::flush;
-        for (auto r5 : a)
+        for (auto r5 : values_vec)
         {
             std::string msg = "\n";
             hpx::util::format_to(hpx::cout, msg) << std::flush;
