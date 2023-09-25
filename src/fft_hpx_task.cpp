@@ -191,12 +191,12 @@ struct fft_server : hpx::components::component_base<fft_server>
         vector_2d communication_vec_;  
         // future vector
         std::vector<hpx::future<void>> r2c_futures_;
-        std::vector<hpx::future<void>> split_x_futures_; 
+        std::vector<hpx::future<void>> split_r2c_futures_; 
         std::vector<hpx::shared_future<void>> communication_futures_;
-        std::vector<std::vector<hpx::future<void>>> comm_x_futures_;  
+        std::vector<std::vector<hpx::future<void>>> comm_r2c_futures_;  
         std::vector<hpx::future<void>> c2c_futures_;
-        std::vector<hpx::future<void>> split_y_futures_; 
-        std::vector<std::vector<hpx::future<void>>> comm_y_futures_;
+        std::vector<hpx::future<void>> split_c2c_futures_; 
+        std::vector<std::vector<hpx::future<void>>> comm_c2c_futures_;
         // communicators
         std::string COMM_FLAG_;
         std::vector<const char*> basenames_;
@@ -252,7 +252,7 @@ vector_2d fft_server::fft_2d_r2c()
     for(std::uint32_t i = 0; i < n_x_local_; ++i)
     {
         r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
-        split_x_futures_[i] = r2c_futures_[i].then(
+        split_r2c_futures_[i] = r2c_futures_[i].then(
             [=](hpx::future<void> r)
             {
                 r.get();
@@ -260,7 +260,7 @@ vector_2d fft_server::fft_2d_r2c()
             }); 
     }
     // local synchronization step for communication
-    hpx::shared_future<std::vector<hpx::future<void>>> all_split_x_futures = hpx::when_all(split_x_futures_);
+    hpx::shared_future<std::vector<hpx::future<void>>> all_split_r2c_futures = hpx::when_all(split_r2c_futures_);
     /////////////////////////////////
     // Communication to get data for FFt in second dimension
     ++generation_counter_;
@@ -268,7 +268,7 @@ vector_2d fft_server::fft_2d_r2c()
     {
         for (std::size_t i = 0; i < num_localities_; ++i) 
         {
-            communication_futures_[i] = all_split_x_futures.then(
+            communication_futures_[i] = all_split_r2c_futures.then(
                 [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
                 {
                     r.get();
@@ -281,7 +281,7 @@ vector_2d fft_server::fft_2d_r2c()
         {
             for(std::size_t i = 0; i < num_localities_; ++i)
             {          
-                comm_x_futures_[k][i] = communication_futures_[i].then(
+                comm_r2c_futures_[k][i] = communication_futures_[i].then(
                         [=](hpx::shared_future<void> r)
                         {
                             r.get();
@@ -292,7 +292,7 @@ vector_2d fft_server::fft_2d_r2c()
     }
     else if (COMM_FLAG_ == "all_to_all")
     {
-        communication_futures_[0] = all_split_x_futures.then(
+        communication_futures_[0] = all_split_r2c_futures.then(
             [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
             {
                 r.get();
@@ -304,7 +304,7 @@ vector_2d fft_server::fft_2d_r2c()
         {
             for(std::size_t i = 0; i < num_localities_; ++i)
             {          
-                comm_x_futures_[k][i] = communication_futures_[0].then(
+                comm_r2c_futures_[k][i] = communication_futures_[0].then(
                         [=](hpx::shared_future<void> r)
                         {
                             r.get();
@@ -323,14 +323,14 @@ vector_2d fft_server::fft_2d_r2c()
     for(std::size_t i = 0; i < n_y_local_; ++i)
     {
         // synchronize for 1d FFT
-        hpx::future<std::vector<hpx::future<void>>> all_comm_x_i_futures = hpx::when_all(comm_x_futures_[i]);
-        c2c_futures_[i] = all_comm_x_i_futures.then(
+        hpx::future<std::vector<hpx::future<void>>> all_comm_r2c_i_futures = hpx::when_all(comm_r2c_futures_[i]);
+        c2c_futures_[i] = all_comm_r2c_i_futures.then(
             [=](hpx::future<void> r)
             {
                 r.get();
                 return hpx::async(fft_1d_c2c_inplace_action(), get_id(), i);
             });     
-        split_y_futures_[i] = c2c_futures_[i].then(
+        split_c2c_futures_[i] = c2c_futures_[i].then(
             [=](hpx::future<void> r)
             {
                 r.get();
@@ -338,8 +338,8 @@ vector_2d fft_server::fft_2d_r2c()
             }); 
     }
     // local synchronization step for communication
-    hpx::shared_future<std::vector<hpx::future<void>>> all_split_y_futures = hpx::when_all(split_y_futures_);
-    //all_split_y_futures.get();// why required?!
+    hpx::shared_future<std::vector<hpx::future<void>>> all_split_c2c_futures = hpx::when_all(split_c2c_futures_);
+    //all_split_c2c_futures.get();// why required?!
     /////////////////////////////////
     // Communication to get original data layout
     ++generation_counter_;
@@ -347,7 +347,7 @@ vector_2d fft_server::fft_2d_r2c()
     {
         for (std::size_t i = 0; i < num_localities_; ++i) 
         {
-            communication_futures_[i] = all_split_y_futures.then(
+            communication_futures_[i] = all_split_c2c_futures.then(
                 [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
                 {
                     r.get();
@@ -360,7 +360,7 @@ vector_2d fft_server::fft_2d_r2c()
         {
             for(std::size_t i = 0; i < num_localities_; ++i)
             {          
-                comm_y_futures_[k][i] = communication_futures_[i].then(
+                comm_c2c_futures_[k][i] = communication_futures_[i].then(
                     [=](hpx::shared_future<void> r)
                     {
                         r.get();
@@ -371,7 +371,7 @@ vector_2d fft_server::fft_2d_r2c()
     }
     else if (COMM_FLAG_ == "all_to_all")
     {
-        communication_futures_[0] = all_split_y_futures.then(
+        communication_futures_[0] = all_split_c2c_futures.then(
             [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
             {
                 r.get();
@@ -383,7 +383,7 @@ vector_2d fft_server::fft_2d_r2c()
         {
             for(std::size_t i = 0; i < num_localities_; ++i)
             {          
-                comm_y_futures_[k][i] = communication_futures_[0].then(
+                comm_c2c_futures_[k][i] = communication_futures_[0].then(
                     [=](hpx::shared_future<void> r)
                     {
                         r.get();
@@ -400,7 +400,7 @@ vector_2d fft_server::fft_2d_r2c()
     // wait for every task to finish
     for(std::size_t i = 0; i < n_x_local_; ++i)
     {
-        hpx::wait_all(comm_y_futures_[i]);
+        hpx::wait_all(comm_c2c_futures_[i]);
     };
     return std::move(values_vec_);
 }
@@ -446,18 +446,18 @@ void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG)
                                    PLAN_FLAG);
     // resize futures
     r2c_futures_.resize(n_x_local_);
-    split_x_futures_.resize(n_x_local_);
+    split_r2c_futures_.resize(n_x_local_);
     c2c_futures_.resize(n_y_local_);
-    split_y_futures_.resize(n_y_local_);
-    comm_x_futures_.resize(n_y_local_);
-    comm_y_futures_.resize(n_x_local_);
+    split_c2c_futures_.resize(n_y_local_);
+    comm_r2c_futures_.resize(n_y_local_);
+    comm_c2c_futures_.resize(n_x_local_);
     for(std::size_t i = 0; i < n_y_local_; ++i)
     {
-        comm_x_futures_[i].resize(num_localities_);
+        comm_r2c_futures_[i].resize(num_localities_);
     }
     for(std::size_t i = 0; i < n_x_local_; ++i)
     {
-        comm_y_futures_[i].resize(num_localities_);
+        comm_c2c_futures_[i].resize(num_localities_);
     }
     // communication specific initialization
     COMM_FLAG_ = COMM_FLAG;
