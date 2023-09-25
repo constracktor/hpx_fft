@@ -206,12 +206,12 @@ struct fft : hpx::components::client_base<fft, fft_server>
 
     hpx::future<vector_2d> do_work()
     {
-        return hpx::async(do_work_action(), get_id());
+        return hpx::async(hpx::annotated_function(do_work_action(), "total"), get_id());
     }
 
     hpx::future<void> initialize(vector_2d values_vec)
     {
-        return hpx::async(initialize_action(), get_id(), std::move(values_vec));
+        return hpx::async(hpx::annotated_function(initialize_action(), "initialization"), get_id(), std::move(values_vec));
     }
 
     ~fft() = default;
@@ -223,12 +223,12 @@ vector_2d fft_server::do_work()
     // FFTW 1d in y-direction 
     for(std::uint32_t i = 0; i < n_x_local_; ++i)
     {
-        r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
+        r2c_futures_[i] = hpx::async(hpx::annotated_function(fft_1d_r2c_inplace_action(), "fft_r2c"), get_id(), i);
         split_x_futures_[i] = r2c_futures_[i].then(
             [=](hpx::future<void> r)
             {
                 r.get();
-                return hpx::async(split_r2c_action(), get_id(), i);
+                return hpx::async(hpx::annotated_function(split_r2c_action(), "split_r2c"), get_id(), i);
             }); 
     }
     // synchronization step 
@@ -241,7 +241,7 @@ vector_2d fft_server::do_work()
             [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
             {
                 r.get();
-                return hpx::async(communicate_scatter_r2c_action(), get_id(), i);
+                return hpx::async(hpx::annotated_function(communicate_scatter_r2c_action(), "communicate_r2c"), get_id(), i);
             });
     }
     /////////////////////////////////
@@ -254,7 +254,7 @@ vector_2d fft_server::do_work()
                     [=](hpx::shared_future<void> r)
                     {
                         r.get();
-                        return hpx::async(transpose_r2c_action(), get_id(), k, i);
+                        return hpx::async(hpx::annotated_function(transpose_r2c_action(), "transpose_r2c"), get_id(), k, i);
                     });
         }
     }
@@ -269,13 +269,13 @@ vector_2d fft_server::do_work()
             [=](hpx::future<void> r)
             {
                 r.get();
-                return hpx::async(fft_1d_c2c_inplace_action(), get_id(), i);
+                return hpx::async(hpx::annotated_function(fft_1d_c2c_inplace_action(), "fft_c2c"), get_id(), i);
             });     
         split_y_futures_[i] = c2c_futures_[i].then(
             [=](hpx::future<void> r)
             {
                 r.get();
-                return hpx::async(split_c2c_action(), get_id(), i);
+                return hpx::async(hpx::annotated_function(split_c2c_action(), "split_c2c"), get_id(), i);
             }); 
 
     }
@@ -290,7 +290,7 @@ vector_2d fft_server::do_work()
             [=](hpx::shared_future<std::vector<hpx::future<void>>> r)
             {
                 r.get();
-                return hpx::async(communicate_scatter_c2c_action(), get_id(), i);
+                return hpx::async(hpx::annotated_function(communicate_scatter_c2c_action(), "communicate_c2c"), get_id(), i);
             });
     }
     /////////////////////////////////
@@ -303,7 +303,7 @@ vector_2d fft_server::do_work()
                 [=](hpx::shared_future<void> r)
                 {
                     r.get();
-                    return hpx::async(hpx::annotated_function(transpose_c2c_action(), "test"), get_id(), k, i);
+                    return hpx::async(hpx::annotated_function(transpose_c2c_action(), "transpose_c2c"), get_id(), k, i);
                 });
         }
     }
