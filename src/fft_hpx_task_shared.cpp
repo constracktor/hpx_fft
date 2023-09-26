@@ -3,6 +3,7 @@
 #if !defined(HPX_COMPUTE_DEVICE_CODE)
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
+#include <hpx/modules/testing.hpp>
 #include <hpx/iostream.hpp>
 #include <hpx/timing/high_resolution_timer.hpp>
 
@@ -219,11 +220,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // Parameters and Data structures
     // hpx parameters
     const std::size_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    if (std::size_t(1) != num_localities)
-    {
-        std::cout << "Shared-memory FFT - More than on one locality provided\n";
-        hpx::finalize();
-    }
+    // test if one locality
+    HPX_TEST_LTE(std::size_t(1), num_localities);
+    //std::size_t generation_counter = 1;
     // fft dimension parameters
     const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
     const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
