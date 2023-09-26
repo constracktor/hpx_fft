@@ -3,7 +3,6 @@
 #if !defined(HPX_COMPUTE_DEVICE_CODE)
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
-#include <hpx/modules/testing.hpp>
 #include <hpx/iostream.hpp>
 #include <hpx/timing/high_resolution_timer.hpp>
 
@@ -17,6 +16,9 @@
 using real = double;
 using vector_1d = std::vector<real, std::allocator<real>>;
 using vector_2d = std::vector<vector_1d>;
+
+// TODO
+// - planning fftw flag
 
 struct fft_server : hpx::components::component_base<fft_server>
 {
@@ -213,16 +215,17 @@ void fft_server::initialize(vector_2d values_vec)
     trans_c2c_futures_.resize(n_y_local_);
 }
 
-
 int hpx_main(hpx::program_options::variables_map& vm)
 {
      ////////////////////////////////////////////////////////////////
     // Parameters and Data structures
     // hpx parameters
     const std::size_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    // test if one locality
-    HPX_TEST_LTE(std::size_t(1), num_localities);
-    //std::size_t generation_counter = 1;
+    if (std::size_t(1) != num_localities)
+    {
+        std::cout << "Localities " << num_localities << " instead of 1: Abort\n";
+        return hpx::finalize();
+    }
     // fft dimension parameters
     const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
     const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
