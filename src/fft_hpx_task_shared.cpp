@@ -246,8 +246,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         FFT_BACKEND_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-    //
-    std::string run_flag = vm["run"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
 
     ////////////////////////////////////////////////////////////////
