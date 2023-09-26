@@ -283,11 +283,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // print results
     if (print_result)
     {
-        const std::size_t this_locality = hpx::get_locality_id();
-        sleep(this_locality);
-        std::string msg = "\nAlgorithm {1}\nLocality {2}\n";
-        hpx::util::format_to(hpx::cout, msg, 
-                        run_flag, this_locality) << std::flush;
         for (auto r5 : values_vec)
         {
             std::string msg = "\n";
@@ -323,8 +318,7 @@ int main(int argc, char* argv[])
     ("result", value<bool>()->default_value(0), "print generated results (default: false)")
     ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
     ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
-    ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
-    ("run",value<std::string>()->default_value("scatter"), "Choose 2d FFT algorithm communication: scatter or all_to_all");
+    ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)");
 
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
