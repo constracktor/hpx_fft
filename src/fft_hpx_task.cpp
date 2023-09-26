@@ -18,10 +18,8 @@ using real = double;
 using vector_1d = std::vector<real, std::allocator<real>>;
 using vector_2d = std::vector<vector_1d>;
 
-// TODO:
-// - shared
-// - new total time measurement
-
+// TODO
+// - planning fftw flag
 struct fft_server : hpx::components::component_base<fft_server>
 {
 
@@ -81,15 +79,15 @@ struct fft_server : hpx::components::component_base<fft_server>
 
         void transpose_r2c(const std::size_t k, const std::size_t i)
         {
-            std::uint32_t index_in;
-            std::uint32_t index_out;
-            const std::uint32_t offset_in = 2 * k;
-            const std::uint32_t offset_out = 2 * i;
-            const std::uint32_t factor_in = dim_c_y_part_;
-            const std::uint32_t factor_out = 2 * num_localities_;
-            const std::uint32_t dim_input = communication_vec_[i].size() / factor_in;
+            std::size_t index_in;
+            std::size_t index_out;
+            const std::size_t offset_in = 2 * k;
+            const std::size_t offset_out = 2 * i;
+            const std::size_t factor_in = dim_c_y_part_;
+            const std::size_t factor_out = 2 * num_localities_;
+            const std::size_t dim_input = communication_vec_[i].size() / factor_in;
 
-            for(std::uint32_t j = 0; j < dim_input; ++j)
+            for(std::size_t j = 0; j < dim_input; ++j)
             {
                 // compute indices once use twice
                 index_in = factor_in * j + offset_in;
@@ -118,15 +116,15 @@ struct fft_server : hpx::components::component_base<fft_server>
 
         void transpose_c2c(const std::size_t k, const std::size_t i)
         {
-            std::uint32_t index_in;
-            std::uint32_t index_out;
-            const std::uint32_t offset_in = 2 * k;
-            const std::uint32_t offset_out = 2 * i;
-            const std::uint32_t factor_in = dim_c_x_part_;
-            const std::uint32_t factor_out = 2 * num_localities_;
-            const std::uint32_t dim_input = communication_vec_[i].size() / factor_in;
+            std::size_t index_in;
+            std::size_t index_out;
+            const std::size_t offset_in = 2 * k;
+            const std::size_t offset_out = 2 * i;
+            const std::size_t factor_in = dim_c_x_part_;
+            const std::size_t factor_out = 2 * num_localities_;
+            const std::size_t dim_input = communication_vec_[i].size() / factor_in;
 
-            for(std::uint32_t j = 0; j < dim_input; ++j)
+            for(std::size_t j = 0; j < dim_input; ++j)
             {
                 // compute indices once use twice
                 index_in = factor_in * j + offset_in;
@@ -248,7 +246,7 @@ vector_2d fft_server::fft_2d_r2c()
 {
     ////////////////////////////////
     // FFTW 1d r2c in first dimension
-    for(std::uint32_t i = 0; i < n_x_local_; ++i)
+    for(std::size_t i = 0; i < n_x_local_; ++i)
     {
         r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
         split_r2c_futures_[i] = r2c_futures_[i].then(
@@ -498,14 +496,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
      ////////////////////////////////////////////////////////////////
     // Parameters and Data structures
     // hpx parameters
-    const std::uint32_t num_localities = hpx::get_num_localities(hpx::launch::sync);
-    //std::uint32_t generation_counter = 1;
+    const std::size_t num_localities = hpx::get_num_localities(hpx::launch::sync);
+    //std::size_t generation_counter = 1;
     // fft dimension parameters
-    const std::uint32_t dim_c_x = vm["nx"].as<std::uint32_t>();//N_X; 
-    const std::uint32_t dim_r_y = vm["ny"].as<std::uint32_t>();//N_Y;
-    const std::uint32_t dim_c_y = dim_r_y / 2 + 1;
+    const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
+    const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
+    const std::size_t dim_c_y = dim_r_y / 2 + 1;
     // division parameters
-    const std::uint32_t n_x_local = dim_c_x / num_localities;
+    const std::size_t n_x_local = dim_c_x / num_localities;
     // value vector
     vector_2d values_vec(n_x_local);
     // FFTW plans
@@ -548,7 +546,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto stop_total = t.now();
 
     auto total = stop_total - start_total;
-    const std::uint32_t this_locality = hpx::get_locality_id();   
+    const std::size_t this_locality = hpx::get_locality_id();   
     if (this_locality==0)
     {
         std::string msg = "\nLocality {1}:\nTotal runtime: {2}\n";
@@ -561,7 +559,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     // print results
     if (print_result)
     {
-        const std::uint32_t this_locality = hpx::get_locality_id();
+        const std::size_t this_locality = hpx::get_locality_id();
         sleep(this_locality);
         std::string msg = "\nAlgorithm {1}\nLocality {2}\n";
         hpx::util::format_to(hpx::cout, msg, 
@@ -570,7 +568,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         {
             std::string msg = "\n";
             hpx::util::format_to(hpx::cout, msg) << std::flush;
-            std::uint32_t counter = 0;
+            std::size_t counter = 0;
             for (auto v : r5)
             {
                 if(counter%2 == 0)
@@ -599,8 +597,8 @@ int main(int argc, char* argv[])
     options_description desc_commandline;
     desc_commandline.add_options()
     ("result", value<bool>()->default_value(0), "print generated results (default: false)")
-    ("nx", value<std::uint32_t>()->default_value(8), "Total x dimension")
-    ("ny", value<std::uint32_t>()->default_value(14), "Total y dimension")
+    ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
+    ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
     ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
     ("run",value<std::string>()->default_value("scatter"), "Choose 2d FFT algorithm communication: scatter or all_to_all");
 
