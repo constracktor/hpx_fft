@@ -561,7 +561,7 @@ void fft_2d_shared(vector_2d& values_vec, const unsigned PLAN_FLAG)
      // FFTW 1D x-direction
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y, [&](auto i)
     {
-        fft_1d_r2c_inplace(plan_1d_c2c, std::ref(trans_values_vec[i]));
+        fft_1d_c2c_inplace(plan_1d_c2c, std::ref(trans_values_vec[i]));
     });
     auto start_second_trans = t.now();
     // Local tranpose in y-direction

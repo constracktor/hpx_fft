@@ -50,8 +50,7 @@ struct fft
 
         void transpose_shared_y_to_x(const std::size_t index_trans)
         {
-            const std::size_t dim_input = dim_c_y_;
-            for( std::size_t index = 0; index < dim_input; ++index)
+            for( std::size_t index = 0; index < dim_c_y_; ++index)
             {
                 trans_values_vec_[index][2 * index_trans] = values_vec_[index_trans][2 * index];
                 trans_values_vec_[index][2 * index_trans + 1] = values_vec_[index_trans][2 * index + 1];
@@ -60,8 +59,7 @@ struct fft
 
         void transpose_shared_x_to_y(const std::size_t index_trans)
         {
-            const std::size_t dim_input = dim_c_x_;
-            for( std::size_t index = 0; index < dim_input; ++index)
+            for( std::size_t index = 0; index < dim_c_x_; ++index)
             {
                 values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
                 values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
@@ -70,7 +68,6 @@ struct fft
    
     private:
         // parameters
-        std::size_t n_x_local_, n_y_local_;
         std::size_t dim_r_y_, dim_c_y_, dim_c_x_;
         // FFTW plans
         unsigned PLAN_FLAG_;
@@ -80,6 +77,62 @@ struct fft
         vector_2d values_vec_;
         vector_2d trans_values_vec_;
 };
+
+// vector_2d fft::fft_2d_r2c()
+// {
+//     // additional time measurement
+//     auto t = hpx::chrono::high_resolution_timer();
+//     /////////////////////////////////////////////////////////////////
+//     // first dimension
+//     auto start_total = t.now();
+//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+//     {
+//         // 1d FFT r2c in y-direction
+//         fft_1d_r2c_inplace(i);
+//     });
+//     auto start_first_trans = t.now();
+//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+//     {
+//         // transpose from y-direction to x-direction
+//         transpose_shared_y_to_x(i);
+//     });
+//     // second dimension
+//     auto start_second_fft = t.now();
+//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+//     {
+//         // 1D FFT c2c in x-direction
+//         fft_1d_c2c_inplace(i);
+//     });
+//     auto start_second_trans = t.now();
+//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+//     {
+//         // transpose from x-direction to y-direction
+//         transpose_shared_x_to_y(i);
+//     });
+//     ////////////////////////////////////////////////////////////////
+//     // additional runtimes
+//     auto stop_total = t.now();
+//     auto total = stop_total - start_total;
+//     auto first_fftw = start_first_trans - start_total;
+//     auto first_trans = start_second_fft - start_first_trans;
+//     auto second_fftw = start_second_trans - start_second_fft;
+//     auto second_trans = stop_total - start_second_trans;
+//     // print result    
+//     if (1)
+//     {
+//         const std::uint32_t this_locality = hpx::get_locality_id();
+//         std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
+//         hpx::util::format_to(hpx::cout, msg, 
+//                             this_locality, 
+//                             total,
+//                             first_fftw,
+//                             first_trans,
+//                             second_fftw,
+//                             second_trans) << std::flush;
+//     }
+//     ///////////////////////////////////////////////////////////////7
+//     return std::move(values_vec_);
+// }
 
 vector_2d fft::fft_2d_r2c()
 {
@@ -94,25 +147,26 @@ vector_2d fft::fft_2d_r2c()
         fft_1d_r2c_inplace(i);
     });
     auto start_first_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::async, 0, dim_c_x_, [&](auto i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
     });
     // second dimension
     auto start_second_fft = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::post, 0, dim_c_y_, [&](auto i)
     {
-        // 1D FFT in x-direction
-        fft_1d_r2c_inplace(i);
+        // 1D FFT c2c in x-direction
+        fft_1d_c2c_inplace(i);
     });
     auto start_second_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_y_, [&](auto i)
     {
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
     });
     ////////////////////////////////////////////////////////////////
+    // additional runtimes
     auto stop_total = t.now();
     auto total = stop_total - start_total;
     auto first_fftw = start_first_trans - start_total;
@@ -132,6 +186,8 @@ vector_2d fft::fft_2d_r2c()
                             second_fftw,
                             second_trans) << std::flush;
     }
+    ///////////////////////////////////////////////////////////////7
+    return std::move(values_vec_);
 }
 
 void fft::initialize(vector_2d values_vec, const unsigned PLAN_FLAG)
@@ -139,14 +195,12 @@ void fft::initialize(vector_2d values_vec, const unsigned PLAN_FLAG)
     // move data into own data structure
     values_vec_ = std::move(values_vec);
     // parameters
-    n_x_local_ = values_vec_.size();
-    dim_c_x_ = n_x_local_;
+    dim_c_x_ = values_vec_.size();
     dim_c_y_ = values_vec_[0].size() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
-    n_y_local_ = dim_c_y_;
     // resize transposed data structure
-    trans_values_vec_.resize(n_y_local_);
-    for(std::size_t i = 0; i < n_y_local_; ++i)
+    trans_values_vec_.resize(dim_c_y_);
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         trans_values_vec_[i].resize(2 * dim_c_x_);
     }
@@ -210,10 +264,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
     const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
     const std::size_t dim_c_y = dim_r_y / 2 + 1;
-    // division parameter
-    const std::size_t n_x_local = dim_c_x / num_localities;
     // data vector
-    vector_2d values_vec(n_x_local);
+    vector_2d values_vec(dim_c_x);
     // FFTW plans
     unsigned FFT_BACKEND_PLAN_FLAG = FFTW_ESTIMATE;
     if( plan_flag == "measure" )
@@ -230,7 +282,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
     ////////////////////////////////////////////////////////////////
     // initialize values
-    for(std::size_t i = 0; i < n_x_local; ++i)
+    for(std::size_t i = 0; i < dim_c_x; ++i)
     {
         values_vec[i].resize(2*dim_c_y);
         std::iota(values_vec[i].begin(), values_vec[i].end() - 2, 0.0);

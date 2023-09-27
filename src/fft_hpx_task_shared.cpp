@@ -55,8 +55,7 @@ struct fft_server : hpx::components::component_base<fft_server>
 
         void transpose_shared_y_to_x(const std::size_t index_trans)
         {
-            const std::size_t dim_input = dim_c_y_;
-            for( std::size_t index = 0; index < dim_input; ++index)
+            for( std::size_t index = 0; index < dim_c_y_; ++index)
             {
                 trans_values_vec_[index][2 * index_trans] = values_vec_[index_trans][2 * index];
                 trans_values_vec_[index][2 * index_trans + 1] = values_vec_[index_trans][2 * index + 1];
@@ -66,8 +65,7 @@ struct fft_server : hpx::components::component_base<fft_server>
 
         void transpose_shared_x_to_y(const std::size_t index_trans)
         {
-            const std::size_t dim_input = dim_c_x_;
-            for( std::size_t index = 0; index < dim_input; ++index)
+            for( std::size_t index = 0; index < dim_c_x_; ++index)
             {
                 values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
                 values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
@@ -77,7 +75,6 @@ struct fft_server : hpx::components::component_base<fft_server>
    
     private:
         // parameters
-        std::size_t n_x_local_, n_y_local_;
         std::size_t dim_r_y_, dim_c_y_, dim_c_x_;
         // FFTW plans
         unsigned PLAN_FLAG_;
@@ -133,7 +130,7 @@ struct fft : hpx::components::client_base<fft, fft_server>
 vector_2d fft_server::fft_2d_r2c()
 {
     // first dimension
-    for(std::size_t i = 0; i < n_x_local_; ++i)
+    for(std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // 1d FFT r2c in y-direction
         r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(),get_id(), i);
@@ -149,7 +146,7 @@ vector_2d fft_server::fft_2d_r2c()
     hpx::shared_future<vector_future> all_trans_y_to_x_futures = hpx::when_all(trans_y_to_x_futures_);
     all_trans_y_to_x_futures.get(); // around 5% faster
     // second dimension
-    for(std::size_t i = 0; i < n_y_local_; ++i)
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // 1D FFT in x-direction
         c2c_futures_[i] = hpx::async(fft_1d_c2c_inplace_action(), get_id(), i);
@@ -178,14 +175,12 @@ void fft_server::initialize(vector_2d values_vec, const unsigned PLAN_FLAG)
     // move data into own data structure
     values_vec_ = std::move(values_vec);
     // parameters
-    n_x_local_ = values_vec_.size();
-    dim_c_x_ = n_x_local_;
+    dim_c_x_ = values_vec_.size();
     dim_c_y_ = values_vec_[0].size() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
-    n_y_local_ = dim_c_y_;
     // resize transposed data structure
-    trans_values_vec_.resize(n_y_local_);
-    for(std::size_t i = 0; i < n_y_local_; ++i)
+    trans_values_vec_.resize(dim_c_y_);
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         trans_values_vec_[i].resize(2 * dim_c_x_);
     }
@@ -203,10 +198,10 @@ void fft_server::initialize(vector_2d values_vec, const unsigned PLAN_FLAG)
                                    FFTW_FORWARD,
                                    PLAN_FLAG);
     // resize futures
-    r2c_futures_.resize(n_x_local_);
-    trans_y_to_x_futures_.resize(n_x_local_);
-    c2c_futures_.resize(n_y_local_);
-    trans_c2c_futures_.resize(n_y_local_);
+    r2c_futures_.resize(dim_c_x_);
+    trans_y_to_x_futures_.resize(dim_c_x_);
+    c2c_futures_.resize(dim_c_y_);
+    trans_c2c_futures_.resize(dim_c_y_);
 }
 
 void print_vector_2d(const vector_2d& input)
@@ -254,10 +249,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
     const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
     const std::size_t dim_c_y = dim_r_y / 2 + 1;
-    // division parameter
-    const std::size_t n_x_local = dim_c_x / num_localities;
     // data vector
-    vector_2d values_vec(n_x_local);
+    vector_2d values_vec(dim_c_x);
     // FFTW plans
     unsigned FFT_BACKEND_PLAN_FLAG = FFTW_ESTIMATE;
     if( plan_flag == "measure" )
@@ -274,7 +267,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
     ////////////////////////////////////////////////////////////////
     // initialize values
-    for(std::size_t i = 0; i < n_x_local; ++i)
+    for(std::size_t i = 0; i < dim_c_x; ++i)
     {
         values_vec[i].resize(2*dim_c_y);
         std::iota(values_vec[i].begin(), values_vec[i].end() - 2, 0.0);
