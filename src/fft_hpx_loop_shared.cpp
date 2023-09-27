@@ -88,29 +88,29 @@ vector_2d fft::fft_2d_r2c()
     /////////////////////////////////////////////////////////////////
     // first dimension
     auto start_total = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // 1d FFT r2c in y-direction
         fft_1d_r2c_inplace(i);
     });
     auto start_first_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
     });
     // second dimension
     auto start_second_fft = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // 1D FFT in x-direction
         fft_1d_r2c_inplace(i);
     });
     auto start_second_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // transpose from x-direction to y-direction
-        transpose_shared(i);
+        transpose_shared_x_to_y(i);
     });
     ////////////////////////////////////////////////////////////////
     auto stop_total = t.now();
@@ -238,15 +238,12 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     ////////////////////////////////////////////////////////////////
     // computation   
-    auto start_total = t.now();
     // create and initialize object (deleted when out of scope)
     fft fft_computer;
-    hpx::future<void> future_initialize = fft_computer.initialize(std::move(values_vec), 
-                                                                  FFT_BACKEND_PLAN_FLAG);
-    future_initialize.get();
+    auto start_total = t.now();
+    fft_computer.initialize(std::move(values_vec), FFT_BACKEND_PLAN_FLAG);
     auto stop_init = t.now();
-    hpx::future<vector_2d> future_result = fft_computer.fft_2d_r2c();
-    values_vec = future_result.get();
+    values_vec = fft_computer.fft_2d_r2c();
     auto stop_total = t.now();
 
     ////////////////////////////////////////////////////////////////

@@ -282,9 +282,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     ////////////////////////////////////////////////////////////////
     // computation   
-    auto start_total = t.now();
     // create and initialize object (deleted when out of scope)
     fft fft_computer;
+    auto start_total = t.now();
     hpx::future<void> future_initialize = fft_computer.initialize(std::move(values_vec), 
                                                                   FFT_BACKEND_PLAN_FLAG);
     future_initialize.get();
