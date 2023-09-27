@@ -241,7 +241,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
         std::cout << "Localities " << num_localities << " instead of 1: Abort runtime\n";
         return hpx::finalize();
     }
-    std::string plan_flag = vm["plan"].as<std::string>();
+    const std::string plan_flag = vm["plan"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();

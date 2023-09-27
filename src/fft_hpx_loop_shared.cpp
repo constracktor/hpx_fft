@@ -24,7 +24,7 @@ struct fft
 
         void initialize(vector_2d values_vec, const unsigned PLAN_FLAG);
 
-        vector_2d fft_2d_r2c();
+        vector_2d fft_2d_r2c_par();
 
         vector_2d fft_2d_r2c_seq();
 
@@ -80,7 +80,7 @@ struct fft
         vector_2d trans_values_vec_;
 };
 
-vector_2d fft::fft_2d_r2c()
+vector_2d fft::fft_2d_r2c_par()
 {
     // additional time measurement
     auto t = hpx::chrono::high_resolution_timer();
@@ -143,30 +143,30 @@ vector_2d fft::fft_2d_r2c_seq()
     /////////////////////////////////////////////////////////////////
     // first dimension
     auto start_total = t.now();
-    hpx::experimental::for_loop(hpx::execution::seq 0, dim_c_x_, [&](auto i)
+    for (std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // 1d FFT r2c in y-direction
         fft_1d_r2c_inplace(i);
-    });
+    }
     auto start_first_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_x_, [&](auto i)
+    for (std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
-    });
+    }
     // second dimension
     auto start_second_fft = t.now();
-    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_y_, [&](auto i)
+    for (std::size_t i = 0; i < dim_c_y_; ++i)
     {
-        // 1D FFT c2c in x-direction
-        fft_1d_c2c_inplace(i);
-    });
+        // 1d FFT c2c in x-direction
+        fft_1d_r2c_inplace(i);
+    }
     auto start_second_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_y_, [&](auto i)
+    for (std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
-    });
+    }
     ////////////////////////////////////////////////////////////////
     // additional runtimes
     auto stop_total = t.now();
@@ -258,7 +258,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
         std::cout << "Localities " << num_localities << " instead of 1: Abort runtime\n";
         return hpx::finalize();
     }
-    std::string plan_flag = vm["plan"].as<std::string>();
+    const std::string run_flag = vm["run"].as<std::string>();
+    const std::string plan_flag = vm["plan"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();
@@ -297,7 +298,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto start_total = t.now();
     fft_computer.initialize(std::move(values_vec), FFT_BACKEND_PLAN_FLAG);
     auto stop_init = t.now();
-    values_vec = fft_computer.fft_2d_r2c();
+    if( run_flag == "seq" )
+    {
+        values_vec = fft_computer.fft_2d_r2c_seq();
+    }
+    else
+    {
+        values_vec = fft_computer.fft_2d_r2c_par();
+    }
     auto stop_total = t.now();
 
     ////////////////////////////////////////////////////////////////
@@ -305,13 +313,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
     auto total = stop_total - start_total;
     auto init = stop_init - start_total;
     auto fft2d = stop_total - stop_init;
-    std::string msg = "\nLocality 0 - shared\nTotal runtime:  {1}\n"
+    std::string msg = "\nLocality 0 - shared - {4}\nTotal runtime:  {1}\n"
                       "Initialization: {2}\n"
                       "FFT runtime:    {3}\n\n";
     hpx::util::format_to(hpx::cout, msg,  
                         total,
                         init,
-                        fft2d) << std::flush;
+                        fft2d,
+                        run_flag) << std::flush;
     // optional: print results 
     if (print_result)
     {
@@ -329,7 +338,8 @@ int main(int argc, char* argv[])
     ("result", value<bool>()->default_value(0), "print generated results (default: false)")
     ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
     ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
-    ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)");
+    ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
+    ("run",value<std::string>()->default_value("par"), "Choose 2d FFT algorithm: par or seq");
 
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
