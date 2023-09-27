@@ -26,6 +26,8 @@ struct fft
 
         vector_2d fft_2d_r2c();
 
+        vector_2d fft_2d_r2c_seq();
+
         virtual ~fft()
         {
             fftw_destroy_plan(plan_1d_r2c_);
@@ -78,62 +80,6 @@ struct fft
         vector_2d trans_values_vec_;
 };
 
-// vector_2d fft::fft_2d_r2c()
-// {
-//     // additional time measurement
-//     auto t = hpx::chrono::high_resolution_timer();
-//     /////////////////////////////////////////////////////////////////
-//     // first dimension
-//     auto start_total = t.now();
-//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
-//     {
-//         // 1d FFT r2c in y-direction
-//         fft_1d_r2c_inplace(i);
-//     });
-//     auto start_first_trans = t.now();
-//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
-//     {
-//         // transpose from y-direction to x-direction
-//         transpose_shared_y_to_x(i);
-//     });
-//     // second dimension
-//     auto start_second_fft = t.now();
-//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
-//     {
-//         // 1D FFT c2c in x-direction
-//         fft_1d_c2c_inplace(i);
-//     });
-//     auto start_second_trans = t.now();
-//     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
-//     {
-//         // transpose from x-direction to y-direction
-//         transpose_shared_x_to_y(i);
-//     });
-//     ////////////////////////////////////////////////////////////////
-//     // additional runtimes
-//     auto stop_total = t.now();
-//     auto total = stop_total - start_total;
-//     auto first_fftw = start_first_trans - start_total;
-//     auto first_trans = start_second_fft - start_first_trans;
-//     auto second_fftw = start_second_trans - start_second_fft;
-//     auto second_trans = stop_total - start_second_trans;
-//     // print result    
-//     if (1)
-//     {
-//         const std::uint32_t this_locality = hpx::get_locality_id();
-//         std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
-//         hpx::util::format_to(hpx::cout, msg, 
-//                             this_locality, 
-//                             total,
-//                             first_fftw,
-//                             first_trans,
-//                             second_fftw,
-//                             second_trans) << std::flush;
-//     }
-//     ///////////////////////////////////////////////////////////////7
-//     return std::move(values_vec_);
-// }
-
 vector_2d fft::fft_2d_r2c()
 {
     // additional time measurement
@@ -147,14 +93,70 @@ vector_2d fft::fft_2d_r2c()
         fft_1d_r2c_inplace(i);
     });
     auto start_first_trans = t.now();
-    hpx::experimental::for_loop(hpx::execution::async, 0, dim_c_x_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
     });
     // second dimension
     auto start_second_fft = t.now();
-    hpx::experimental::for_loop(hpx::execution::post, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    {
+        // 1D FFT c2c in x-direction
+        fft_1d_c2c_inplace(i);
+    });
+    auto start_second_trans = t.now();
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    {
+        // transpose from x-direction to y-direction
+        transpose_shared_x_to_y(i);
+    });
+    ////////////////////////////////////////////////////////////////
+    // additional runtimes
+    auto stop_total = t.now();
+    auto total = stop_total - start_total;
+    auto first_fftw = start_first_trans - start_total;
+    auto first_trans = start_second_fft - start_first_trans;
+    auto second_fftw = start_second_trans - start_second_fft;
+    auto second_trans = stop_total - start_second_trans;
+    // print result    
+    if (1)
+    {
+        const std::uint32_t this_locality = hpx::get_locality_id();
+        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
+        hpx::util::format_to(hpx::cout, msg, 
+                            this_locality, 
+                            total,
+                            first_fftw,
+                            first_trans,
+                            second_fftw,
+                            second_trans) << std::flush;
+    }
+    ///////////////////////////////////////////////////////////////7
+    return std::move(values_vec_);
+}
+
+vector_2d fft::fft_2d_r2c_seq()
+{
+    // additional time measurement
+    auto t = hpx::chrono::high_resolution_timer();
+    /////////////////////////////////////////////////////////////////
+    // first dimension
+    auto start_total = t.now();
+    hpx::experimental::for_loop(hpx::execution::seq 0, dim_c_x_, [&](auto i)
+    {
+        // 1d FFT r2c in y-direction
+        fft_1d_r2c_inplace(i);
+    });
+    auto start_first_trans = t.now();
+    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_x_, [&](auto i)
+    {
+        // transpose from y-direction to x-direction
+        transpose_shared_y_to_x(i);
+    });
+    // second dimension
+    auto start_second_fft = t.now();
+    hpx::experimental::for_loop(hpx::execution::seq, 0, dim_c_y_, [&](auto i)
     {
         // 1D FFT c2c in x-direction
         fft_1d_c2c_inplace(i);
