@@ -49,7 +49,6 @@ void split_vector(const vector_1d& input,
                   const std::uint32_t offset)
 {
     const std::uint32_t part_size = input.size() / num_localities;
-    std::cout << output.size() << std::endl;
     for (std::uint32_t j = 0; j < num_localities; ++j) 
     {
         std::move(input.begin() + j * part_size, input.begin() + (j+1) * part_size, output[j].begin() + offset * part_size);
