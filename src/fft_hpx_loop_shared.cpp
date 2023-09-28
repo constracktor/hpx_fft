@@ -111,9 +111,9 @@ vector_2d fft::fft_2d_r2c_par()
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
     });
+    auto stop_total = t.now();
     ////////////////////////////////////////////////////////////////
     // additional runtimes
-    auto stop_total = t.now();
     auto total = stop_total - start_total;
     auto first_fftw = start_first_trans - start_total;
     auto first_trans = start_second_fft - start_first_trans;

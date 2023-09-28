@@ -1,7 +1,4 @@
-    std::vector<std::vector<std::uint32_t>> values_2(num_localities);
-        
-    for (std::size_t j = 0; j != num_localities; ++j)
-    {
-        values_2[j].resize(3);
-        std::fill(values_2[j].begin(), values_2[j].end(), this_locality);
-    }
+    auto second_fftw = start_second_split - start_second_fft;
+    auto second_split = start_second_comm - start_second_split;
+    auto second_comm = start_second_trans - start_second_comm;
+    auto second_trans = stop - start_second_trans;
