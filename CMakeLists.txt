@@ -70,6 +70,12 @@ target_link_libraries(fftw_omp
                         ${FFTW_OMP_LIB}
                         OpenMP::OpenMP_CXX)
 
+add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp ${HEADER_FILES})
+target_link_libraries(fftw_mpi_omp
+                        PkgConfig::FFTW
+                        ${FFTW_MPI_LIB}
+                        ${FFTW_OMP_LIB}
+                        OpenMP::OpenMP_CXX)
 
 
 ###########################################################
