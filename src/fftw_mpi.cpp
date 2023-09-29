@@ -93,10 +93,10 @@ int main(int argc, char* argv[])
     std::ptrdiff_t size_local, local_n0, local_0_start;
     fftw_mpi_init();
     // get local data size and allocate
-    size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y+2, comm,
-                                         &local_n0, &local_0_start);
-    vector input(size_local);
 
+    size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y, comm,
+                                         &local_n0, &local_0_start);
+    vector input(2*size_local);
     ////////////////////////////////////////////////
     // FFTW plans
     // forward
@@ -128,18 +128,18 @@ int main(int argc, char* argv[])
     // intialize from 0 with complex spacers at the end
     for(int i=0; i<int(local_n0); ++i)
     {
-         for(int j=0; j<dim_r_y; ++j)
+        for(int j=0; j<dim_r_y; ++j)
         {
-            input[(dim_r_y+2)*i + j] = j;//(dim_r_y)*i + j;
+            input[(dim_r_y+2)*i + j] = j;
         }
     }
 
-    // ////
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-    // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-    // std::cout << "Before:" << std::endl;
-    // print_real(input, dim_c_x / n_ranks, dim_r_y, 0);
-    // ////
+    ////
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+    std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+    std::cout << "Before:" << std::endl;
+    print_real(input, local_n0, dim_r_y, 0);
+    ////
 
     ////////////////////////////////////////////////
     // Compute FFTW
@@ -153,20 +153,20 @@ int main(int argc, char* argv[])
         auto stop_fftw_r2c = t.now();
         runtimes["fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
 
-        // ////
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-        // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-        // std::cout << "FFT: FFTW 2D" << std::endl;
-        // print_complex(input, dim_c_x / n_ranks, dim_r_y);
-        // ////
+        ////
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+        std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+        std::cout << "FFT: FFTW 2D" << std::endl;
+        print_complex(input, dim_c_x / n_ranks, dim_r_y);
+        ////
         
-        // backward
-        MPI_Barrier(comm);
-        auto start_fftw_c2r = t.now();
-        fftw_execute(plan_c2r_2d);
-        MPI_Barrier(comm);
-        auto stop_fftw_c2r = t.now();
-        runtimes["fftw_c2r"] += duration(stop_fftw_c2r - start_fftw_c2r).count();
+        // // backward
+        // MPI_Barrier(comm);
+        // auto start_fftw_c2r = t.now();
+        // fftw_execute(plan_c2r_2d);
+        // MPI_Barrier(comm);
+        // auto stop_fftw_c2r = t.now();
+        // runtimes["fftw_c2r"] += duration(stop_fftw_c2r - start_fftw_c2r).count();
 
         // ////
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
@@ -175,11 +175,11 @@ int main(int argc, char* argv[])
         // print_real(input, dim_c_x / n_ranks, dim_r_y, n_ranks);
         // ////
 
-        // rescale for next iteration
-        for (std::size_t i=0; i != size_local; ++i)
-        {
-            input[i] = input[i] / (dim_r_y * dim_c_x);
-        }
+        // // rescale for next iteration
+        // for (std::size_t i=0; i != size_local; ++i)
+        // {
+        //     input[i] = input[i] / (dim_r_y * dim_c_x);
+        // }
     }
 
     ////////////////////////////////////////////////

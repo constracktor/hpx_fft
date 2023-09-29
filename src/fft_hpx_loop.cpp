@@ -58,7 +58,7 @@ struct fft
         {
             for (std::size_t j = 0; j < num_localities_; ++j) 
             { //std::move same performance
-                std::copy(values_vec_[i].begin() + j * dim_c_y_part_, 
+                std::move(values_vec_[i].begin() + j * dim_c_y_part_, 
                           values_vec_[i].begin() + (j+1) * dim_c_y_part_,
                           values_prep_[j].begin() + i * dim_c_y_part_);
             }
@@ -68,7 +68,7 @@ struct fft
         {
             for (std::size_t j = 0; j < num_localities_; ++j) 
             { //std::move same performance
-                std::copy(trans_values_vec_[i].begin() + j * dim_c_x_part_,
+                std::move(trans_values_vec_[i].begin() + j * dim_c_x_part_,
                           trans_values_vec_[i].begin() + (j+1) * dim_c_x_part_,
                           trans_values_prep_[j].begin() + i * dim_c_x_part_);
             }
@@ -232,10 +232,11 @@ vector_2d fft::fft_2d_r2c()
         hpx::finalize();
     }
     auto start_first_trans = t.now();
+    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        {
     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto k)
     {
-        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
-        {
+
             // transpose from y-direction to x-direction
             transpose_y_to_x(k, i);
         });
@@ -270,14 +271,26 @@ vector_2d fft::fft_2d_r2c()
         communicate_all_to_all_trans_vec();
     }
     auto start_second_trans = t.now();
+            hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        {
     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local_, [&](auto k)
     {
-        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
-        {
+
             // transpose from x-direction to y-direction
             transpose_x_to_y(k, i);
         });
     });
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities, [&](auto i)
+    // {
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local, [&](auto j)
+    //     {
+    //         hpx::experimental::for_loop(hpx::execution::seq, 0, n_y_local, [&](auto k)
+    //         {
+    //             trans_values_vec[k][factor_out * j + 2 * i] = communication_vec[i][factor_in * j + 2 * k];
+    //             trans_values_vec[k][factor_out * j + 2 * i + 1] = communication_vec[i][factor_in * j + 2 * k + 1];
+    //         });
+    //     });    
+    // });
     auto stop_total = t.now();
     ////////////////////////////////////////////////////////////////
     // additional runtimes

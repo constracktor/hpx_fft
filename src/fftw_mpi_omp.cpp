@@ -103,9 +103,9 @@ int main(int argc, char* argv[])
     fftw_mpi_init();
 
     // get local data size and allocate
-    size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y+2, comm,
+    size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y, comm,
                                          &local_n0, &local_0_start);
-    vector input(size_local);
+    vector input(2*size_local);
 
     int nThreads = std::stoi(argv[5]);//1;//4;
     omp_set_num_threads(nThreads);
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
     // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
     // std::cout << "Before:" << std::endl;
-    // print_real(input, dim_c_x / n_ranks, dim_r_y, 0);
+    // print_real(input, local_n0, dim_r_y, 0);
     // ////
 
     ////////////////////////////////////////////////
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
         // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
         // std::cout << "FFT: FFTW 2D" << std::endl;
-        // print_complex(input, dim_c_x / n_ranks, dim_r_y);
+        // print_complex(input, local_n0, dim_r_y);
         // ////
         
         // backward
@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
         // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
         // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
         // std::cout << "IFFT: FFTW 2D" << std::endl;
-        // print_real(input, dim_c_x / n_ranks, dim_r_y, n_ranks);
+        // print_real(input, local_n0, dim_r_y, n_ranks);
         // ////
 
         // rescale for next iteration
