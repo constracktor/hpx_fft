@@ -47,16 +47,30 @@ target_link_libraries(fft_hpx_loop_shared
 set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+
 find_library(
     FFTW_MPI_LIB
     NAMES "fftw3_mpi"
     PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
 )
-
 add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
 target_link_libraries(fftw_mpi
                         PkgConfig::FFTW
                         ${FFTW_MPI_LIB})
+
+find_package(OpenMP REQUIRED)
+find_library(
+    FFTW_OMP_LIB
+    NAMES "fftw3_omp"
+    PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
+)
+add_executable(fftw_omp src/fftw_omp.cpp ${HEADER_FILES})
+target_link_libraries(fftw_omp
+                        PkgConfig::FFTW
+                        ${FFTW_OMP_LIB}
+                        OpenMP::OpenMP_CXX)
+
+
 
 ###########################################################
 # SEQUENTIAL

@@ -16,9 +16,6 @@ typedef double real;
 typedef std::vector<real, std::allocator<real>> vector_1d;
 typedef std::vector<vector_1d> vector_2d;
 
-// TODO
-// - redo timers
-
 struct fft
 {
     typedef fftw_plan fft_backend_plan;

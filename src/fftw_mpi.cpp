@@ -6,7 +6,7 @@
 #include <thread>
 #include <fstream>
 
-#include <fftw3-mpi.h>
+#include "fftw3-mpi.h"
 
 using vector = std::vector<double, std::allocator<double>>;
 
@@ -48,8 +48,8 @@ void print_complex(const std::vector<double>& input, int dim_x, int dim_y)
 
 int main(int argc, char* argv[])
 {
-    //       nodes      N_X N_Y loop  plan
-    // srun -n 2 mpi_2d  8  14   1  estimate
+    //     nodes processes N_X N_Y loop plan
+    // srun -N 2 -n 4 fftw_mpi  8  14   1  estimate
     ////////////////////////////////////////////////
     // Parameters and Data Structures
     // fft dimension parameters
