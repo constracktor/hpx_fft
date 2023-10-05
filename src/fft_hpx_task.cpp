@@ -17,11 +17,6 @@ typedef double real;
 typedef std::vector<real, std::allocator<real>> vector_1d;
 typedef std::vector<vector_1d> vector_2d;
 
-std::vector& operator()(std::size_t i, std::size_t j)
-{ 
-    os << "{";
-}
-
 struct fft_server : hpx::components::component_base<fft_server>
 {
     typedef fftw_plan fft_backend_plan;
