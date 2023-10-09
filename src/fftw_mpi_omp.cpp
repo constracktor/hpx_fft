@@ -9,14 +9,13 @@
 #include "fftw3-mpi.h"
 #include "omp.h" 
 
-using vector = std::vector<double, std::allocator<double>>;
+typedef double real;
+typedef std::vector<real, std::allocator<real>> vector;
+typedef std::chrono::duration<real> duration;
 
-// #define N_X 8
-// #define N_Y 14 
-
-void print_real(const std::vector<double>& input, int dim_x, int dim_y, int scaling = 0)
+void print_real(const std::vector<real>& input, int dim_x, int dim_y, int scaling = 0)
 {
-    double factor = 1.0;
+    real factor = 1.0;
     if (scaling > 0)
     {
         factor = factor / (scaling * dim_x * dim_y);
@@ -33,7 +32,7 @@ void print_real(const std::vector<double>& input, int dim_x, int dim_y, int scal
     std::cout << std::endl;
 }
 
-void print_complex(const std::vector<double>& input, int dim_x, int dim_y)
+void print_complex(const std::vector<real>& input, int dim_x, int dim_y)
 {
     for(int i=0; i<dim_x; ++i)
     {
@@ -46,16 +45,17 @@ void print_complex(const std::vector<double>& input, int dim_x, int dim_y)
     std::cout << std::endl;
 }
 
-
 int main(int argc, char* argv[])
 {
-    //     nodes processes N_X N_Y loop plan
-    // srun -N 2 -n 4 fftw_mpi  8  14   1  estimate
+    //      nodes ranks prog  threads N_X N_Y  plan     header
+    // srun -N 2 -n 4 fftw_mpi  4     8   14  estimate    0
     ////////////////////////////////////////////////
     // Parameters and Data Structures
+    int n_threads = std::stoi(argv[1]);
+    bool print_header = std::stoi(argv[5]);
     // fft dimension parameters
-    const std::uint32_t dim_c_x = std::stoi(argv[1]);//N_X; 
-    const std::uint32_t dim_r_y = std::stoi(argv[2]);//N_Y;
+    const std::uint32_t dim_c_x = std::stoi(argv[2]);//N_X; 
+    const std::uint32_t dim_r_y = std::stoi(argv[3]);//N_Y;
     const std::uint32_t dim_c_y = dim_r_y / 2 + 1;
     // fftw flag
     std::string plan_flag = argv[4];
@@ -72,20 +72,16 @@ int main(int argc, char* argv[])
     {
         FFTW_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-    std::uint32_t loop = std::stoi(argv[3]);//1;    // Number of loops to average
+    
     ////////////////////////////////////////////////
     // Time measurement
     auto t = std::chrono::steady_clock();
-    using duration = std::chrono::duration<double>;
     // runtime storage
-    std::map<std::string, double> runtimes;
-    std::map<std::string, double> plan_times;
+    std::map<std::string, real> runtimes;
     
     ////////////////////////////////////////////////
     // MPI setup
-    int threads_ok;
-    int provided;
-
+    int threads_ok, provided;
     int rank, n_ranks;
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -107,12 +103,11 @@ int main(int argc, char* argv[])
                                          &local_n0, &local_0_start);
     vector input(2*size_local);
 
-    int nThreads = std::stoi(argv[5]);//1;//4;
-    omp_set_num_threads(nThreads);
-    if (threads_ok) fftw_plan_with_nthreads(nThreads);
+    
+    omp_set_num_threads(n_threads);
+    if (threads_ok) fftw_plan_with_nthreads(n_threads);
     ////////////////////////////////////////////////
-    // FFTW plans
-    // forward
+    // FFTW plan
     MPI_Barrier(comm);
     auto start_plan_fftw_r2c = t.now();
     fftw_plan plan_r2c_2d = fftw_mpi_plan_dft_r2c_2d(dim_c_x, dim_r_y,
@@ -122,19 +117,7 @@ int main(int argc, char* argv[])
                             FFTW_PLAN_FLAG);
     MPI_Barrier(comm);
     auto stop_plan_fftw_r2c = t.now();
-    plan_times["plan_fftw_r2c"] = duration(stop_plan_fftw_r2c - start_plan_fftw_r2c).count();
-    
-    // backward
-    MPI_Barrier(comm);
-    auto start_plan_fftw_c2r = t.now();
-    fftw_plan plan_c2r_2d = fftw_mpi_plan_dft_c2r_2d(dim_c_x, dim_r_y,
-                            reinterpret_cast<fftw_complex*>(input.data()),
-                            input.data(),
-                            comm,
-                            FFTW_PLAN_FLAG);
-    MPI_Barrier(comm);
-    auto stop_plan_fftw_c2r = t.now();
-    plan_times["plan_fftw_c2r"] = duration(stop_plan_fftw_c2r - start_plan_fftw_c2r).count();
+    runtimes["plan_fftw_r2c"] = duration(stop_plan_fftw_r2c - start_plan_fftw_r2c).count();
 
     ////////////////////////////////////////////////
     // Data initialization
@@ -156,50 +139,25 @@ int main(int argc, char* argv[])
 
     ////////////////////////////////////////////////
     // Compute FFTW
-    for(int i=0; i<loop; ++i)
-    {
-        // forward
-        MPI_Barrier(comm);
-        auto start_fftw_r2c = t.now();
-        fftw_execute(plan_r2c_2d);
-        MPI_Barrier(comm);
-        auto stop_fftw_r2c = t.now();
-        runtimes["fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
+    // forward
+    MPI_Barrier(comm);
+    auto start_fftw_r2c = t.now();
+    fftw_execute(plan_r2c_2d);
+    MPI_Barrier(comm);
+    auto stop_fftw_r2c = t.now();
+    runtimes["total_fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
 
-        // ////
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-        // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-        // std::cout << "FFT: FFTW 2D" << std::endl;
-        // print_complex(input, local_n0, dim_r_y);
-        // ////
-        
-        // backward
-        MPI_Barrier(comm);
-        auto start_fftw_c2r = t.now();
-        fftw_execute(plan_c2r_2d);
-        MPI_Barrier(comm);
-        auto stop_fftw_c2r = t.now();
-        runtimes["fftw_c2r"] += duration(stop_fftw_c2r - start_fftw_c2r).count();
-
-        // ////
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-        // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-        // std::cout << "IFFT: FFTW 2D" << std::endl;
-        // print_real(input, local_n0, dim_r_y, n_ranks);
-        // ////
-
-        // rescale for next iteration
-        for (std::size_t i=0; i != size_local; ++i)
-        {
-            input[i] = input[i] / (dim_r_y * dim_c_x);
-        }
-    }
+    // ////
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+    // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+    // std::cout << "FFT: FFTW 2D" << std::endl;
+    // print_complex(input, local_n0, dim_r_y);
+    // ////
 
     ////////////////////////////////////////////////
     // Cleanup
     // FFTW cleanup
     fftw_destroy_plan(plan_r2c_2d);
-    fftw_destroy_plan(plan_c2r_2d);
     fftw_cleanup_threads();
     fftw_mpi_cleanup();
     // MPI cleanup
@@ -207,56 +165,32 @@ int main(int argc, char* argv[])
 
     ////////////////////////////////////////////////
     // Print and store runtimes
-    
     if( rank == 0)
     {
-        for (auto time : runtimes)
-        {
-            runtimes[time.first] = time.second / loop;
-        }
+        std::cout << "FFTW 2D with MPI + OpenMP:" 
+                  << "\n MPI ranks      = " << n_ranks
+                  << "\n OpenMP threads = " << n_threads
+                  << "\n plan_r2c       = " << runtimes["plan_fftw_r2c"]
+                  << "\n fftw_2d_r2c    = " << runtimes["total_fftw_r2c"]
+                  << std::endl;
 
-        std::cout << "FFTW with MPI planning time:" 
-                << "\n plan_r2c = " << plan_times["plan_fftw_r2c"]
-                << "\n plan_c2r = " << plan_times["plan_fftw_c2r"]
-                << std::endl;
-        std::cout << "FFTW with MPI running time:" 
-                << "\n run_r2c  = " << runtimes["fftw_r2c"]
-                << "\n run_c2r  = " << runtimes["fftw_c2r"] 
-                << std::endl;
-
-        std::ofstream plan_file;
         std::ofstream runtime_file;
+        runtime_file.open ("result/runtimes_mpi_omp.txt", std::ios_base::app);
 
-        plan_file.open ("result/plan_times_mpi.txt", std::ios_base::app);
-        runtime_file.open ("result/runtimes_mpi.txt", std::ios_base::app);
-
-        if(n_ranks == 1)
+        if(print_header)
         {
-            runtime_file << "n_ranks;n_x;n_y;loop;plan;"
-                    << "fftw_mpi_r2c;"
-                    << "fftw_mpi_c2r;\n";
-            plan_file << "n_ranks;n_x;n_y;loop;plan;"
-                    << "plan_fftw_mpi_r2c;"
-                    << "plan_fftw_mpi_c2r;\n";
+            runtime_file << "n_ranks;n_threads;n_x;n_y;plan;"
+                    << "planning;fftw_2d_r2c;fftw_mpi_r2c;\n";
         }
 
         runtime_file << n_ranks << ";" 
-                    << dim_c_x << ";"
-                    << dim_r_y << ";"
-                    << loop << ";"
-                    << plan_flag << ";"
-                    << runtimes["fftw_r2c"] << ";"
-                    << runtimes["fftw_c2r"] << ";\n";
+                     << n_threads << ";"
+                     << dim_c_x << ";"
+                     << dim_r_y << ";"
+                     << plan_flag << ";"
+                     << runtimes["plan_fftw_r2c"] << ";"
+                     << runtimes["total_fftw_r2c"] << ";\n";
 
-        plan_file << n_ranks << ";" 
-                    << dim_c_x << ";"
-                    << dim_r_y << ";"
-                    << loop << ";" 
-                    << plan_flag << ";"
-                    << plan_times["plan_fftw_r2c"] << ";" 
-                    << plan_times["plan_fftw_c2r"] << ";\n";
-
-        plan_file.close();
         runtime_file.close();
     }
     ////////////////////////////////////////////////

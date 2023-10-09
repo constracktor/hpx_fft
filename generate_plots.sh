@@ -5,5 +5,6 @@ python3 -m venv plot_env
 source plot_env/bin/activate
 # install requirements
 pip install numpy matplotlib
-# launch game
+# launch 
+python3 plot/plot_planning.py
 python3 plot/plot.py

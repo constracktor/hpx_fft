@@ -6,12 +6,6 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-
 add_executable(fft_hpx_task src/fft_hpx_task.cpp ${HEADER_FILES})
 target_link_libraries(fft_hpx_task
                         HPX::hpx
@@ -53,10 +47,6 @@ find_library(
     NAMES "fftw3_mpi"
     PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
 )
-add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
-target_link_libraries(fftw_mpi
-                        PkgConfig::FFTW
-                        ${FFTW_MPI_LIB})
 
 find_package(OpenMP REQUIRED)
 find_library(
@@ -64,11 +54,7 @@ find_library(
     NAMES "fftw3_omp"
     PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
 )
-add_executable(fftw_omp src/fftw_omp.cpp ${HEADER_FILES})
-target_link_libraries(fftw_omp
-                        PkgConfig::FFTW
-                        ${FFTW_OMP_LIB}
-                        OpenMP::OpenMP_CXX)
+
 
 add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp ${HEADER_FILES})
 target_link_libraries(fftw_mpi_omp
@@ -91,6 +77,21 @@ target_link_libraries(fftw_mpi_omp
 ###########################################################
 # OBSOLETE
 
+# add_executable(fftw_mpi src/fftw_mpi.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_mpi
+#                         PkgConfig::FFTW
+#                         ${FFTW_MPI_LIB})
+# add_executable(fftw_omp src/fftw_omp.cpp ${HEADER_FILES})
+# target_link_libraries(fftw_omp
+#                         PkgConfig::FFTW
+#                         ${FFTW_OMP_LIB}
+#                         OpenMP::OpenMP_CXX)
+                        
+# add_executable(fft_hpx src/fft_hpx.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 # add_executable(fft_shared src/fft_shared.cpp ${HEADER_FILES})
 # target_link_libraries(fft_shared
 #                         HPX::hpx 

@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <fstream>
 #include <fftw3.h>
 
 typedef double real;
@@ -28,7 +30,9 @@ struct fft
 
         vector_2d fft_2d_r2c_seq();
 
-        virtual ~fft()
+        real get_measurement(std::string name);
+
+        ~fft()
         {
             fftw_destroy_plan(plan_1d_r2c_);
             fftw_destroy_plan(plan_1d_c2c_);
@@ -36,45 +40,14 @@ struct fft
         }
 
     private:
-        void fft_1d_r2c_inplace(const std::size_t i)
-        {
-            fftw_execute_dft_r2c(plan_1d_r2c_, 
-                                 values_vec_[i].data(), 
-                                 reinterpret_cast<fftw_complex*>(values_vec_[i].data()));
-        }
+        void fft_1d_r2c_inplace(const std::size_t i);
 
-        void fft_1d_c2c_inplace(const std::size_t i)
-        {
-            fftw_execute_dft(plan_1d_c2c_, 
-                             reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()), 
-                             reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()));
-        }
+        void fft_1d_c2c_inplace(const std::size_t i);
 
-        void transpose_shared_y_to_x(const std::size_t index_trans)
-        {
-            for( std::size_t index = 0; index < dim_c_y_; ++index)
-            {
-                trans_values_vec_[index][2 * index_trans] = values_vec_[index_trans][2 * index];
-                trans_values_vec_[index][2 * index_trans + 1] = values_vec_[index_trans][2 * index + 1];
-            }     
-        }
+        void transpose_shared_y_to_x(const std::size_t index_trans);
 
-        // void transpose_shared_x_to_y(const std::size_t index_trans)
-        // {
-        //     for( std::size_t index = 0; index < dim_c_x_; ++index)
-        //     {
-        //         values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
-        //         values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
-        //     }     
-        // }      
-        void transpose_shared_x_to_y(const std::size_t index)
-        {
-            for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
-            {
-                values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
-                values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
-            }     
-        } 
+        // void transpose_shared_x_to_y(const std::size_t index_trans);    
+        void transpose_shared_x_to_y(const std::size_t index);
    
     private:
         // parameters
@@ -86,90 +59,122 @@ struct fft
         // value vectors
         vector_2d values_vec_;
         vector_2d trans_values_vec_;
+        // time measurement
+        hpx::chrono::high_resolution_timer t_ = hpx::chrono::high_resolution_timer();
+        std::map<std::string, real> measurements_;
 };
+
+real fft::get_measurement(std::string name)
+{
+    return measurements_[name];
+}
+
+void fft::fft_1d_r2c_inplace(const std::size_t i)
+{
+    fftw_execute_dft_r2c(plan_1d_r2c_, 
+                            values_vec_[i].data(), 
+                            reinterpret_cast<fftw_complex*>(values_vec_[i].data()));
+}
+
+void fft::fft_1d_c2c_inplace(const std::size_t i)
+{
+    fftw_execute_dft(plan_1d_c2c_, 
+                        reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()), 
+                        reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()));
+}
+
+void fft::transpose_shared_y_to_x(const std::size_t index_trans)
+{
+    for( std::size_t index = 0; index < dim_c_y_; ++index)
+    {
+        trans_values_vec_[index][2 * index_trans] = values_vec_[index_trans][2 * index];
+        trans_values_vec_[index][2 * index_trans + 1] = values_vec_[index_trans][2 * index + 1];
+    }     
+}
+
+// void fft::transpose_shared_x_to_y(const std::size_t index_trans)
+// {
+//     for( std::size_t index = 0; index < dim_c_x_; ++index)
+//     {
+//         values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
+//         values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
+//     }     
+// }      
+void fft::transpose_shared_x_to_y(const std::size_t index)
+{
+    for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+    {
+        values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
+        values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
+    }     
+} 
 
 vector_2d fft::fft_2d_r2c_par()
 {
-    // additional time measurement
-    auto t = hpx::chrono::high_resolution_timer();
     /////////////////////////////////////////////////////////////////
     // first dimension
-    auto start_total = t.now();
+    auto start_total = t_.now();
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // 1d FFT r2c in y-direction
         fft_1d_r2c_inplace(i);
     });
-    auto start_first_trans = t.now();
+    auto start_first_trans = t_.now();
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
     });
     // second dimension
-    auto start_second_fft = t.now();
+    auto start_second_fft = t_.now();
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // 1D FFT c2c in x-direction
         fft_1d_c2c_inplace(i);
     });
-    auto start_second_trans = t.now();
+    auto start_second_trans = t_.now();
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
     {
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
     });
-    auto stop_total = t.now();
+    auto stop_total = t_.now();
     ////////////////////////////////////////////////////////////////
     // additional runtimes
-    auto total = stop_total - start_total;
-    auto first_fftw = start_first_trans - start_total;
-    auto first_trans = start_second_fft - start_first_trans;
-    auto second_fftw = start_second_trans - start_second_fft;
-    auto second_trans = stop_total - start_second_trans;
-    // print result    
-    if (1)
-    {
-        const std::uint32_t this_locality = hpx::get_locality_id();
-        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
-        hpx::util::format_to(hpx::cout, msg, 
-                            this_locality, 
-                            total,
-                            first_fftw,
-                            first_trans,
-                            second_fftw,
-                            second_trans) << std::flush;
-    }
+    measurements_["total"] = stop_total - start_total;
+    measurements_["first_fftw"] = start_first_trans - start_total;
+    measurements_["first_trans"] = start_second_fft - start_first_trans;
+    measurements_["second_fftw"] = start_second_trans - start_second_fft;
+    measurements_["second_trans"] = stop_total - start_second_trans;
+
     ///////////////////////////////////////////////////////////////7
     return std::move(values_vec_);
 }
 
 vector_2d fft::fft_2d_r2c_seq()
 {
-    // additional time measurement
-    auto t = hpx::chrono::high_resolution_timer();
     /////////////////////////////////////////////////////////////////
     // first dimension
-    auto start_total = t.now();
+    auto start_total = t_.now();
     for (std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // 1d FFT r2c in y-direction
         fft_1d_r2c_inplace(i);
     }
-    auto start_first_trans = t.now();
+    auto start_first_trans = t_.now();
     for (std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // transpose from y-direction to x-direction
         transpose_shared_y_to_x(i);
     }
     // second dimension
-    auto start_second_fft = t.now();
+    auto start_second_fft = t_.now();
     for (std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // 1d FFT c2c in x-direction
         fft_1d_r2c_inplace(i);
     }
-    auto start_second_trans = t.now();
+    auto start_second_trans = t_.now();
     for (std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // transpose from x-direction to y-direction
@@ -177,25 +182,13 @@ vector_2d fft::fft_2d_r2c_seq()
     }
     ////////////////////////////////////////////////////////////////
     // additional runtimes
-    auto stop_total = t.now();
-    auto total = stop_total - start_total;
-    auto first_fftw = start_first_trans - start_total;
-    auto first_trans = start_second_fft - start_first_trans;
-    auto second_fftw = start_second_trans - start_second_fft;
-    auto second_trans = stop_total - start_second_trans;
-    // print result    
-    if (1)
-    {
-        const std::uint32_t this_locality = hpx::get_locality_id();
-        std::string msg = "\nLocality {1}:\nTotal runtime: {2}\nFFTW r2c     : {3}\nFirst trans  : {4}\nFFTW c2c     : {5}\nSecond trans : {6}\n";
-        hpx::util::format_to(hpx::cout, msg, 
-                            this_locality, 
-                            total,
-                            first_fftw,
-                            first_trans,
-                            second_fftw,
-                            second_trans) << std::flush;
-    }
+    auto stop_total = t_.now();
+    measurements_["total"] = stop_total - start_total;
+    measurements_["first_fftw"] = start_first_trans - start_total;
+    measurements_["first_trans"] = start_second_fft - start_first_trans;
+    measurements_["second_fftw"] = start_second_trans - start_second_fft;
+    measurements_["second_trans"] = stop_total - start_second_trans;
+
     ///////////////////////////////////////////////////////////////7
     return std::move(values_vec_);
 }
@@ -269,6 +262,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const std::string run_flag = vm["run"].as<std::string>();
     const std::string plan_flag = vm["plan"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
+    bool print_header = vm["header"].as<bool>();
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();
     // fft dimension parameters
@@ -316,24 +310,60 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
     auto stop_total = t.now();
 
-    ////////////////////////////////////////////////////////////////
-    // print runtimes
-    auto total = stop_total - start_total;
-    auto init = stop_init - start_total;
-    auto fft2d = stop_total - stop_init;
-    std::string msg = "\nLocality 0 - shared - {4}\nTotal runtime:  {1}\n"
-                      "Initialization: {2}\n"
-                      "FFT runtime:    {3}\n\n";
-    hpx::util::format_to(hpx::cout, msg,  
-                        total,
-                        init,
-                        fft2d,
-                        run_flag) << std::flush;
     // optional: print results 
     if (print_result)
     {
         print_vector_2d(values_vec);
     }
+    
+    ////////////////////////////////////////////////////////////////
+    // print and store runtimes
+    auto total = stop_total - start_total;
+    auto init = stop_init - start_total;
+    std::string msg = "\nLocality 0 - shared - {1}\n"
+                      "Total runtime : {2}\n"
+                      "Initialization: {3}\n"
+                      "FFT 2D runtime: {4}\n"
+                      "FFTW r2c      : {5}\n"
+                      "First trans   : {6}\n"
+                      "FFTW c2c      : {7}\n"
+                      "Second trans  : {8}\n";
+    hpx::util::format_to(hpx::cout, msg,
+                        run_flag,  
+                        total,
+                        init,
+                        fft_computer.get_measurement("total"),
+                        fft_computer.get_measurement("first_fftw"),
+                        fft_computer.get_measurement("first_trans"),
+                        fft_computer.get_measurement("second_fftw"),
+                        fft_computer.get_measurement("second_trans"))
+                        << std::flush;
+    std::ofstream runtime_file;
+    runtime_file.open ("result/runtimes_hpx_loop_shared.txt", std::ios_base::app);
+    if(print_header)
+    {
+        runtime_file << "n_threads;n_x;n_y;plan;run_flag;total;initialization;"
+                << "fft_2d_total;"
+                << "first_fftw;"
+                << "first_trans;"
+                << "second_fftw;"
+                << "second_trans;\n";
+    }
+    runtime_file << hpx::get_os_thread_count() << ";" 
+                << dim_c_x << ";"
+                << dim_r_y << ";"
+                << plan_flag << ";"
+                << run_flag << ";"
+                << total << ";"
+                << init << ";"
+                << fft_computer.get_measurement("total") << ";"
+                << fft_computer.get_measurement("first_fftw") << ";"
+                << fft_computer.get_measurement("first_trans") << ";"
+                << fft_computer.get_measurement("second_fftw") << ";"
+                << fft_computer.get_measurement("second_trans") << ";\n";
+    runtime_file.close();
+
+    ////////////////////////////////////////////////////////////////
     return hpx::finalize();
 }
 
@@ -347,7 +377,8 @@ int main(int argc, char* argv[])
     ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
     ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
     ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
-    ("run",value<std::string>()->default_value("par"), "Choose 2d FFT algorithm: par or seq");
+    ("run",value<std::string>()->default_value("par"), "Choose 2d FFT algorithm: par or seq")
+    ("header",value<bool>()->default_value(0), "Write runtime file header");
 
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
