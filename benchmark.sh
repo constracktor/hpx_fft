@@ -38,6 +38,120 @@ cd ..
 # Run benchmark script
 ################################################################################
 #./fft_hpx --nx=8192 --ny=8192 --hpx:threads=1 --run=task_scatter
+
+###################################################################################################
+# strong scaling
+BASE_SIZE=8192
+POW_START=1
+POW_STOP=8
+# # shared
+# ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+#     done
+# done
+# # scatter
+# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+#     done
+# done
+# # all to all
+# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+#     done
+# done
+# shared
+./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
+    done
+done
+# scatter
+./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+    done
+done
+# all to all
+./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+    done
+done
+# # openmp
+# ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fftw_mpi_omp $i  $BASE_SIZE $BASE_SIZE estimate 0 
+#     done
+# done
+# # MPI
+# mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         mpirun -n $i ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0 
+#     done
+# done
+###################################################################################################
+
+
+###################################################################################################
 # weak scaling
 BASE_SIZE=1024
 POW_START=1
@@ -81,20 +195,58 @@ POW_STOP=4
 #         ./build/fft_hpx_loop --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=all_to_all
 #     done
 # done
-# openmp
-./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-for (( j=1; j<$LOOP; j=j+1 ))
-do
-    ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
-done
-for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-do
-    for (( j=0; j<$LOOP; j=j+1 ))
-    do
-        ./build/fftw_mpi_omp $(($i*$i))  $(($i*$BASE_SIZE)) $(($i*$BASE_SIZE)) estimate 0 --use-hwthread-cpus 
-    done
-done
-
+# # shared
+# ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task_shared --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE))
+#     done
+# done
+# # scatter
+# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=scatter
+#     done
+# done
+# # all to all
+# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+# for (( j=1; j<$task; j=j+1 ))
+# do
+#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=all_to_all
+#     done
+# done
+# # openmp
+# ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fftw_mpi_omp $(($i*$i))  $(($i*$BASE_SIZE)) $(($i*$BASE_SIZE)) estimate 0 --use-hwthread-cpus 
+#     done
+# done
 # # MPI
 # mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
 # for (( j=1; j<$LOOP; j=j+1 ))
@@ -108,52 +260,4 @@ done
 #         mpirun -n $(($i*$i)) ./build/fftw_mpi_omp 1 $(($i*$BASE_SIZE)) $(($i*$BASE_SIZE)) estimate 0 --use-hwthread-cpus
 #     done
 # done
-
-
-# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
-# for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# do
-#     ./build/fft_hpx_loop --hpx:threads=$i --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=scatter
-# done
-
-# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
-# for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# do
-#     ./build/fft_hpx_loop --hpx:threads=$i --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=all_to_all
-# done
-
-# ./build/fft_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-# for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# do
-#     ./build/fft_mpi_omp $i $(($i*$BASE_SIZE)) $(($i*$BASE_SIZE)) estimate 0
-# done
-
-# ./build/fft_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-# for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# do
-#     ./build/fft_mpi_omp $i $(($i*$BASE_SIZE)) $(($i*$BASE_SIZE)) estimate 0
-# done
-
-#srun -N 1 ./hello hpx:threads=1
-# rm -rf result
-# mkdir result
-
-# # for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# # do
-    
-# #     ./fftw_2d --n=$i --f="estimate" --l=$((10*$LOOP))
-# # done
-# # for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
-# # do
-# #     ./fftw_2d --n=$i --f="estimate" --l=$LOOP
-# # done
-
-# for (( i=2**POW_START; i<=2**10; i=i*2 ))
-# do
-    
-#     ./fftw_2d --n=$i --f="patient" --l=$((10*$LOOP))
-# done
-# for (( i=2**11; i<=2**POW_STOP; i=i*2 ))
-# do
-#     ./fftw_2d --n=$i --f="patient" --l=$LOOP
-# done
+###################################################################################################

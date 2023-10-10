@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
         if(print_header)
         {
             runtime_file << "n_ranks;n_threads;n_x;n_y;plan;"
-                    << "planning;fftw_2d_r2c;fftw_mpi_r2c;\n";
+                    << "planning;fftw_2d_r2c;\n";
         }
 
         runtime_file << n_ranks << ";" 

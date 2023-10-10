@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <fftw3.h>
 
 typedef double real;
@@ -567,6 +568,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const std::string run_flag = vm["run"].as<std::string>();
     const std::string plan_flag = vm["plan"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
+    bool print_header = vm["header"].as<bool>();
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();  
     // fft dimension parameters
@@ -636,6 +638,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
                              total,
                              init,
                              fft2d) << std::flush;
+        std::ofstream runtime_file;
+        runtime_file.open ("result/runtimes_hpx_task_dist.txt", std::ios_base::app);
+        if(print_header)
+        {
+            runtime_file << "n_threads;n_x;n_y;plan;run_flag;total;initialization;"
+                    << "fft_2d_total;\n";
+        }
+        runtime_file << hpx::get_os_thread_count() << ";" 
+                    << dim_c_x << ";"
+                    << dim_r_y << ";"
+                    << plan_flag << ";"
+                    << run_flag << ";"
+                    << total << ";"
+                    << init << ";"
+                    << fft2d << ";\n";
+        runtime_file.close();
     }
 
     return hpx::finalize();
@@ -651,7 +669,8 @@ int main(int argc, char* argv[])
     ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
     ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
     ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
-    ("run",value<std::string>()->default_value("scatter"), "Choose 2d FFT algorithm communication: scatter or all_to_all");
+    ("run",value<std::string>()->default_value("scatter"), "Choose 2d FFT algorithm communication: scatter or all_to_all")
+    ("header",value<bool>()->default_value(0), "Write runtime file header");
 
     // Initialize and run HPX, this example requires to run hpx_main on all
     // localities
