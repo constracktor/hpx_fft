@@ -92,22 +92,22 @@ void fft::transpose_shared_y_to_x(const std::size_t index_trans)
     }     
 }
 
-// void fft::transpose_shared_x_to_y(const std::size_t index_trans)
-// {
-//     for( std::size_t index = 0; index < dim_c_x_; ++index)
-//     {
-//         values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
-//         values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
-//     }     
-// }      
-void fft::transpose_shared_x_to_y(const std::size_t index)
+void fft::transpose_shared_x_to_y(const std::size_t index_trans)
 {
-    for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+    for( std::size_t index = 0; index < dim_c_x_; ++index)
     {
         values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
         values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
     }     
-} 
+}      
+// void fft::transpose_shared_x_to_y(const std::size_t index)
+// {
+//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+//     {
+//         values_vec_[index][2 * index_trans] = trans_values_vec_[index_trans][2 * index];
+//         values_vec_[index][2 * index_trans + 1] = trans_values_vec_[index_trans][2 * index + 1];
+//     }     
+// } 
 
 vector_2d fft::fft_2d_r2c_par()
 {
@@ -133,7 +133,8 @@ vector_2d fft::fft_2d_r2c_par()
         fft_1d_c2c_inplace(i);
     });
     auto start_second_trans = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    //hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
