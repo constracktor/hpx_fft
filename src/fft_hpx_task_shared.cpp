@@ -141,7 +141,7 @@ vector_2d fft_server::fft_2d_r2c()
     for(std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // 1d FFT r2c in y-direction
-        r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(),get_id(), i);
+        r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
         // transpose from y-direction to x-direction
         trans_y_to_x_futures_[i] = r2c_futures_[i].then(
             [=](hpx::future<void> r)

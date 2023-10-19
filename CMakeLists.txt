@@ -4,31 +4,42 @@ project(hpx_fft CXX)
 ###########################################################
 # HPX
 find_package(HPX REQUIRED)
-find_package(FFTW3 REQUIRED)
+#find_package(FFTW3 REQUIRED)
+set(FFTW_PATH "~/fft_installations/fftw/install/lib")
+message(STATUS "${FFTW_PATH}")
+find_library(
+    FFTW_LIB
+    NAMES "fftw3"
+    PATHS ${FFTW_PATH}
+)
 
-add_executable(fft_hpx_task src/fft_hpx_task.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fft_hpx_task src/fft_hpx_task.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_task
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         #FFTW3::fftw3
+#                         ${FFTW_LIB})
 
-add_executable(fft_hpx_loop src/fft_hpx_loop.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_loop
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-            
-add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task_shared
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fft_hpx_loop src/fft_hpx_loop.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_loop
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         #FFTW3::fftw3
+#                         ${FFTW_LIB})
+        
+# add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_task_shared
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         #FFTW3::fftw3
+#                         ${FFTW_LIB})
 
-add_executable(fft_hpx_loop_shared src/fft_hpx_loop_shared.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_loop_shared
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fft_hpx_loop_shared src/fft_hpx_loop_shared.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_loop_shared
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         #FFTW3::fftw3
+#                         ${FFTW_LIB})
 
 # add_executable(hello src/hello.cpp ${HEADER_FILES})
 # target_link_libraries(hello
@@ -38,31 +49,32 @@ target_link_libraries(fft_hpx_loop_shared
 
 ###########################################################
 # FFTW
-set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
-find_package(PkgConfig REQUIRED)
-pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+#find_package(PkgConfig REQUIRED)
+#pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 
 find_library(
     FFTW_MPI_LIB
     NAMES "fftw3_mpi"
-    PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
+    PATHS ${FFTW_PATH}
 )
+message(STATUS "${FFTW_MPI_LIB}")
 
 find_package(OpenMP REQUIRED)
 find_library(
     FFTW_OMP_LIB
     NAMES "fftw3_omp"
-    PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
+    PATHS ${FFTW_PATH}
 )
 
 
 add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp ${HEADER_FILES})
 target_link_libraries(fftw_mpi_omp
-                        PkgConfig::FFTW
                         ${FFTW_MPI_LIB}
                         ${FFTW_OMP_LIB}
                         OpenMP::OpenMP_CXX)
-
+                        #PkgConfig::FFTW
+                        #${FFTW_LIB}
 
 ###########################################################
 # SEQUENTIAL
