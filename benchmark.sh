@@ -7,12 +7,12 @@ set +x
 ################################################################################
 # Variables
 ################################################################################
-export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1 APEX_TASKTREE_OUTPUT=1
+#export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1 APEX_TASKTREE_OUTPUT=1
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
 #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_sgscl1_v1.9.1"
-#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
-export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_llvm_17.0.1"
+export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
+#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_llvm_17.0.1"
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
 export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
@@ -45,19 +45,19 @@ cd ..
 BASE_SIZE=8192
 POW_START=1
 POW_STOP=8
-# # shared
-# ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
-#     done
-# done
+# shared
+./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+    done
+done
 # # scatter
 # ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
 # for (( j=1; j<$LOOP; j=j+1 ))
@@ -84,45 +84,45 @@ POW_STOP=8
 #         ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
 #     done
 # done
-# shared
-./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
-for (( j=1; j<$LOOP; j=j+1 ))
-do
-    ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
-done
-for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-do
-    for (( j=0; j<$LOOP; j=j+1 ))
-    do
-        ./build/fft_hpx_task_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
-    done
-done
-# scatter
-./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
-for (( j=1; j<$LOOP; j=j+1 ))
-do
-    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-done
-for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-do
-    for (( j=0; j<$LOOP; j=j+1 ))
-    do
-        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-    done
-done
-# all to all
-./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
-for (( j=1; j<$LOOP; j=j+1 ))
-do
-    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-done
-for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-do
-    for (( j=0; j<$LOOP; j=j+1 ))
-    do
-        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-    done
-done
+# # shared
+# ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
+#     done
+# done
+# # scatter
+# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+#     done
+# done
+# # all to all
+# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+#     done
+# done
 # # openmp
 # ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
 # for (( j=1; j<$LOOP; j=j+1 ))
@@ -157,19 +157,19 @@ done
 BASE_SIZE=1024
 POW_START=1
 POW_STOP=4
-# # shared
-# ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_loop_shared --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=par
-#     done
-# done
+# shared
+./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_loop_shared --hpx:threads=$(($i*$i)) --nx=$(($i*$BASE_SIZE)) --ny=$(($i*$BASE_SIZE)) --run=par
+    done
+done
 # # scatter
 # ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
 # for (( j=1; j<$LOOP; j=j+1 ))

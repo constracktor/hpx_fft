@@ -19,6 +19,13 @@ n_loop = 5
 ################################################################################
 ################################################################################
 # STRONG SCALING
+# strong scaling data for hpx loop shared optimized
+ss_loop_shared_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_loop_shared_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_loop_shared_opt_matrix.shape[0]/n_loop)
+ss_loop_shared_opt_averaged = np.zeros((n_entries, ss_loop_shared_opt_matrix.shape[1]))
+for i in range (n_entries):
+    ss_loop_shared_opt_averaged[i,:] = np.mean(ss_loop_shared_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
 # strong scaling data for hpx loop shared
 ss_loop_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_loop_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_loop_shared_matrix.shape[0]/n_loop)
@@ -118,6 +125,8 @@ plt.savefig('plot/figures/strong_scaling_efficiency.pdf', bbox_inches='tight')
 ################################################################################
 # strong SCALING RUNTIME
 plt.figure(figsize=(10,3))
+# HPX loop shared optimized data
+plt.plot(points, ss_loop_shared_opt_averaged[:,7], 'o-', c=greyscale[3], linewidth=1, label='HPX loop shared opt')
 # HPX loop shared data
 plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[0], linewidth=1, label='HPX loop shared')
 # HPX loop scatter data
