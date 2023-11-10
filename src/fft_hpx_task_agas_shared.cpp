@@ -226,32 +226,6 @@ void fft_server::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG
     trans_c2c_futures_.resize(dim_c_y_);
 }
 
-void print_vector_2d<real>(const vector_2d<real>& input)
-{
-    const std::string msg = "\n";
-    for (auto vec_1d : input)
-    {
-
-        hpx::util::format_to(hpx::cout, msg) << std::flush;
-        std::size_t counter = 0;
-        for (auto element : vec_1d)
-        {
-            if(counter%2 == 0)
-            {
-                std::string msg = "({1} ";
-                hpx::util::format_to(hpx::cout, msg, element) << std::flush;
-            }
-            else
-            {
-                std::string msg = "{1}) ";
-                hpx::util::format_to(hpx::cout, msg, element) << std::flush;
-            }
-            ++counter;
-        }
-    }
-    hpx::util::format_to(hpx::cout, msg) << std::flush;
-}
-
 void print_vector_2d(const vector_2d<real>& input)
 {
     const std::string msg = "\n";

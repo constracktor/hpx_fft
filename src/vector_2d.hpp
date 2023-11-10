@@ -5,11 +5,13 @@
 #include <algorithm> 
 
 #include <iostream>
+#include <hpx/serialization.hpp>
 
 template<typename T>
 struct vector_2d
 {
-    T* values_;
+    typedef hpx::serialization::serialize_buffer<T> buffer_type;
+    buffer_type values_;
     std::size_t size_;
     // row major format
     std::size_t dim_row_; // First dimension
@@ -74,6 +76,20 @@ public:
         std::swap(first.size_, second.size_);
         std::swap(first.values_, second.values_);
     }
+
+private:
+    // Serialization support: even if all of the code below runs on one
+    // locality only, we need to provide an (empty) implementation for the
+    // serialization as all arguments passed to actions have to support this.
+    friend class hpx::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, const unsigned int)
+    {
+        // clang-format off
+        ar & values_ & size_ & dim_row_ &dim_col_;
+        // clang-format on
+    }
 }; 
 
 template<typename T>
@@ -82,30 +98,38 @@ inline vector_2d<T>::vector_2d()
     dim_row_ = 0;
     dim_col_ = 0;
     size_ = 0;
-    values_ = nullptr;
+    //values_ = nullptr;
 }
 
 template<typename T>
-inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col)
+inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col): 
+    dim_row_(dim_row),
+    dim_col_(dim_col),
+    size_(dim_row * dim_col),
+    values_(std::allocator<T>().allocate(dim_row * dim_col), dim_row * dim_col, buffer_type::take)
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    // dim_row_ = dim_row;
+    // dim_col_ = dim_col;
+    // size_ = dim_row_ * dim_col_;
 
-    values_ = new T[size_];
+    // values_(std::allocator<T>().allocate(size_), size_, buffer_type::take);//new T[size_];
 
-    for(std::size_t i = 0; i < size_; ++i)
-        values_[ i ] = T();
+    // for(std::size_t i = 0; i < size_; ++i)
+    //     values_[ i ] = T();
 }
 
 template<typename T>
-inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col, const T& v)
+inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col, const T& v):
+    dim_row_(dim_row),
+    dim_col_(dim_col),
+    size_(dim_row_ * dim_col_),
+    values_(std::allocator<T>().allocate(size_), size_, buffer_type::take)
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    // dim_row_ = dim_row;
+    // dim_col_ = dim_col;
+    // size_ = dim_row_ * dim_col_;
 
-    values_ = new T[size_];
+    // values_(std::allocator<T>().allocate(size_), size_, buffer_type::take);//new T[size_];
 
     // for(std::size_t i = 0; i < size_; ++i)
     //     values_[ i ] = v;
@@ -117,7 +141,7 @@ inline vector_2d<T>::vector_2d(const vector_2d<T>& src) :
     dim_row_(src.dim_row_),
     dim_col_(src.dim_col_),
     size_(src.size_),
-    values_(new T[size_])
+    values_(std::allocator<T>().allocate(size_), size_, buffer_type::take)
 {
     // for(std::size_t i = 0; i < size_; ++i)
     //     values_[ i ] = src.values_[ i ];
@@ -152,49 +176,49 @@ inline vector_2d<T>& vector_2d<T>::operator=(vector_2d<T>&& mv) noexcept
 template<typename T>
 inline typename vector_2d<T>::iterator vector_2d<T>::begin() noexcept
 {
-    return values_;
+    return &values_[0];
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator vector_2d<T>::begin() const noexcept
 {
-    return values_;
+    return &values_[0];
 }
 
 template<typename T>
 inline typename vector_2d<T>::iterator  vector_2d<T>::end() noexcept
 {
-    return values_ + size_;
+    return begin() + size_;
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator  vector_2d<T>::end() const noexcept
 {
-    return values_ + size_;
+    return begin() + size_;
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator vector_2d<T>::cbegin() const noexcept
 {
-    return values_;
+    return begin();
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator  vector_2d<T>::cend() const noexcept
 {
-    return values_ + size_;
+    return begin() + size_;
 }
 
 template<typename T>
 inline typename vector_2d<T>::iterator vector_2d<T>::row(std::size_t i) noexcept
 {
-    return values_ + i * dim_col_;
+    return begin() + i * dim_col_;
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) const noexcept
 {
-    return values_ + i * dim_col_;
+    return cbegin() + i * dim_col_;
 }
 
 // template<typename T>

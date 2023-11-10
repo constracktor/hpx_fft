@@ -298,7 +298,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
     ////////////////////////////////////////////////////////////////
     // initialize values
     // data vector
+     std::cout << "nefore object creation\n";
     vector_2d<real> values_vec(dim_c_x, 2*dim_c_y);
+    std::cout << "after object creation\n";
     for(std::size_t i = 0; i < dim_c_x; ++i)
     {
         std::iota(values_vec.row(i), values_vec.row(i+1) - 2, 0.0);
