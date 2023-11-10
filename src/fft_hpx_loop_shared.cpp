@@ -14,10 +14,8 @@
 #include <fftw3.h>
 
 typedef double real;
-typedef std::vector<real, std::allocator<real>> vector_1d;
-//typedef std::vector<vector_1d> vector_2d;
-//typedef vector_2d;
 #include "vector_2d.hpp"
+
 void print_vector_2d(const vector_2d<real>& input);
 
 struct fft
