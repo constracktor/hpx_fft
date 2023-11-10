@@ -114,7 +114,7 @@ void fft::split_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::move(values_vec_[i].begin() + j * dim_c_y_part_, 
+        std::copy(values_vec_[i].begin() + j * dim_c_y_part_, 
                     values_vec_[i].begin() + (j+1) * dim_c_y_part_,
                     values_prep_[j].begin() + i * dim_c_y_part_);
     }
@@ -124,7 +124,7 @@ void fft::split_trans_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::move(trans_values_vec_[i].begin() + j * dim_c_x_part_,
+        std::copy(trans_values_vec_[i].begin() + j * dim_c_x_part_,
                     trans_values_vec_[i].begin() + (j+1) * dim_c_x_part_,
                     trans_values_prep_[j].begin() + i * dim_c_x_part_);
     }

@@ -20,6 +20,8 @@ typedef std::vector<real, std::allocator<real>> vector_1d;
 #include "vector_2d.hpp"
 void print_vector_2d(const vector_2d<real>& input);
 
+#include "vector_3d.hpp"
+
 struct fft
 {
     typedef fftw_plan fft_backend_plan;
@@ -205,12 +207,14 @@ vector_2d<real> fft::fft_2d_r2c_seq()
 
     ///////////////////////////////////////////////////////////////7
     return std::move(values_vec_);
+    //return values_vec_;
 }
 
 void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
 {
     // move data into own data structure
     values_vec_ = std::move(values_vec);
+    //values_vec_ = values_vec;
     // parameters
     dim_c_x_ = values_vec_.dim_row();
     dim_c_y_ = values_vec_.dim_col() / 2;
@@ -381,6 +385,14 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
 int main(int argc, char* argv[])
 {
+    auto a = vector_3d<real>(1,1,1);
+    a(0,0,0) = 4;
+    
+
+
+
+
+
     using namespace hpx::program_options;
 
     options_description desc_commandline;

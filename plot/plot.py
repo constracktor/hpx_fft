@@ -212,6 +212,13 @@ plt.savefig('plot/figures/strong_scaling_speedup.pdf', bbox_inches='tight')
 ################################################################################
 # WEAK SCALING
 # weak scaling data for hpx loop shared
+ws_loop_shared_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/weak_scaling/weak_runtimes_hpx_loop_shared_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ws_loop_shared_opt_matrix.shape[0]/n_loop)
+ws_loop_shared_opt_averaged = np.zeros((n_entries, ws_loop_shared_opt_matrix.shape[1]))
+for i in range (n_entries):
+    ws_loop_shared_opt_averaged[i,:] = np.mean(ws_loop_shared_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
+# weak scaling data for hpx loop shared
 ws_loop_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/weak_scaling/weak_runtimes_hpx_loop_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ws_loop_shared_matrix.shape[0]/n_loop)
 ws_loop_shared_averaged = np.zeros((n_entries, ws_loop_shared_matrix.shape[1]))
@@ -310,6 +317,8 @@ plt.savefig('plot/figures/weak scaling_efficiency.pdf', bbox_inches='tight')
 ################################################################################
 # WEAK SCALING RUNTIME
 plt.figure(figsize=(10,3))
+# HPX loop shared optimized data
+plt.plot(points, ws_loop_shared_opt_averaged[:,7], 'o-', c=greyscale[3], linewidth=1, label='HPX loop shared opt')
 # HPX loop shared data
 plt.plot(points, ws_loop_shared_averaged[:,7], 'o-', c=colors[0], linewidth=1, label='HPX loop shared')
 # HPX loop scatter data
