@@ -9,7 +9,7 @@
 template<typename T>
 struct vector_2d
 {
-    T* values_;
+    std::unique_ptr<T>  values_;
     std::size_t size_;
     // row major format
     std::size_t dim_row_; // First dimension
@@ -17,8 +17,8 @@ struct vector_2d
 
 public:
 
-    using iterator = T*;
-    using const_iterator = const T*;
+    using iterator = std::unique_ptr<T>;//T*;
+    using const_iterator = const std::unique_ptr<T>;//T*;
 
     // default constructor
     vector_2d();
@@ -84,13 +84,7 @@ private:
     void serialize(Archive& ar, const unsigned int)
     {
         // clang-format off
-        ar &dim_row_;
-        ar &dim_col_;
-        ar &size_;
-        for(std::size_t i=0; i<size_; ++i)
-        {
-            ar& values_[i];
-        }
+        ar & values_ & size_ & dim_row_ &dim_col_;
         // clang-format on
     }
 }; 
@@ -101,34 +95,40 @@ inline vector_2d<T>::vector_2d()
     dim_row_ = 0;
     dim_col_ = 0;
     size_ = 0;
-    values_ = nullptr;
 }
 
 template<typename T>
-inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col)
+inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col):
+    dim_row_(dim_row),
+    dim_col_(dim_row),
+    size_(dim_row * dim_col),
+    values_(std::make_unique<T[]>(dim_row * dim_col))
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    // dim_row_ = dim_row;
+    // dim_col_ = dim_col;
+    // size_ = dim_row_ * dim_col_;
 
-    values_ = new T[size_];
+    // //values_ = std::make_unique<T[]>(size_);
+    // values_(std::make_unique<T[]>(size_));
+    // values_ = new T[size_];
 
     for(std::size_t i = 0; i < size_; ++i)
-        values_[ i ] = T();
+        values_.get()[ i ] = T();
 }
 
 template<typename T>
 inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col, const T& v)
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    // dim_row_ = dim_row;
+    // dim_col_ = dim_col;
+    // size_ = dim_row_ * dim_col_;
 
-    values_ = new T[size_];
-
-    // for(std::size_t i = 0; i < size_; ++i)
-    //     values_[ i ] = v;
-    std::fill(begin(),end(),v);
+    // //values_ = new T[size_];
+    // //values_ = std::make_unique<T[]>(size_);
+    // values_(std::make_unique<T[]>(size_));
+    // // for(std::size_t i = 0; i < size_; ++i)
+    // //     values_[ i ] = v;
+    // std::fill(begin(),end(),v);
 }
 
 template<typename T>
@@ -136,7 +136,7 @@ inline vector_2d<T>::vector_2d(const vector_2d<T>& src) :
     dim_row_(src.dim_row_),
     dim_col_(src.dim_col_),
     size_(src.size_),
-    values_(new T[size_])
+    values_(std::make_unique<T[]>(src.size_))
 {
     // for(std::size_t i = 0; i < size_; ++i)
     //     values_[ i ] = src.values_[ i ];
@@ -168,53 +168,53 @@ inline vector_2d<T>& vector_2d<T>::operator=(vector_2d<T>&& mv) noexcept
     return *this;
 }
 
-template<typename T>
-inline typename vector_2d<T>::iterator vector_2d<T>::begin() noexcept
-{
-    return values_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::iterator vector_2d<T>::begin() noexcept
+// {
+//     return values_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::const_iterator vector_2d<T>::begin() const noexcept
-{
-    return values_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::const_iterator vector_2d<T>::begin() const noexcept
+// {
+//     return values_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::iterator  vector_2d<T>::end() noexcept
-{
-    return values_ + size_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::iterator  vector_2d<T>::end() noexcept
+// {
+//     return values_ + size_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::const_iterator  vector_2d<T>::end() const noexcept
-{
-    return values_ + size_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::const_iterator  vector_2d<T>::end() const noexcept
+// {
+//     return values_ + size_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::const_iterator vector_2d<T>::cbegin() const noexcept
-{
-    return values_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::const_iterator vector_2d<T>::cbegin() const noexcept
+// {
+//     return values_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::const_iterator  vector_2d<T>::cend() const noexcept
-{
-    return values_ + size_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::const_iterator  vector_2d<T>::cend() const noexcept
+// {
+//     return values_ + size_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::iterator vector_2d<T>::row(std::size_t i) noexcept
-{
-    return values_ + i * dim_col_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::iterator vector_2d<T>::row(std::size_t i) noexcept
+// {
+//     return values_ + i * dim_col_;
+// }
 
-template<typename T>
-inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) const noexcept
-{
-    return values_ + i * dim_col_;
-}
+// template<typename T>
+// inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) const noexcept
+// {
+//     return values_ + i * dim_col_;
+// }
 
 // template<typename T>
 // inline typename vector_2d<T>::iterator vector_2d<T>::row_end(std::size_t i) noexcept
@@ -233,7 +233,7 @@ inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) co
 template<typename T>
 inline T& vector_2d<T>::operator( ) (std::size_t i, std::size_t j)
 {
-    return values_[ i * dim_col_ + j ];
+    return values_.get()[ i * dim_col_ + j ];
 }
 
 template<typename T>
@@ -242,13 +242,13 @@ inline T& vector_2d<T>::at (std::size_t i, std::size_t j)
     if(i * dim_col_ + j  >= size_)
         throw std::runtime_error("out of range exception");
     else
-        return values_[ i * dim_col_ + j ];
+        return values_.get()[ i * dim_col_ + j ];
 }
 
 template<typename T>
 inline const T& vector_2d<T>::operator( ) (std::size_t i, std::size_t j) const
 {
-    return values_[ i * dim_col_ + j ];
+    return values_.get()[ i * dim_col_ + j ];
 }
 
 template<typename T>
@@ -257,7 +257,7 @@ inline const T& vector_2d<T>::at (std::size_t i, std::size_t j) const
     if(i * dim_col_ + j >= size_)
         throw std::runtime_error("out of range exception");
     else
-        return values_[ i * dim_col_ + j ];
+        return values_.get()[ i * dim_col_ + j ];
 }
 
 template<typename T>
