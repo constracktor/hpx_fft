@@ -201,8 +201,8 @@ void fft_server::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG
     // move data into own data structure
     values_vec_ = std::move(values_vec);
     // parameters
-    dim_c_x_ = values_vec_.dim_row();
-    dim_c_y_ = values_vec_.dim_col() / 2;
+    dim_c_x_ = values_vec_.n_row();
+    dim_c_y_ = values_vec_.n_col() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
     // resize transposed data structure
     trans_values_vec_ = std::move(vector_2d<real>(dim_c_y_, 2 * dim_c_x_));

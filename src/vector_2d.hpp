@@ -12,8 +12,8 @@ struct vector_2d
     T* values_;
     std::size_t size_;
     // row major format
-    std::size_t dim_row_; // First dimension
-    std::size_t dim_col_; // Second dimension 
+    std::size_t n_row_; // First dimension
+    std::size_t n_col_; // Second dimension 
 
 public:
 
@@ -22,9 +22,9 @@ public:
 
     // default constructor
     vector_2d();
-    vector_2d(std::size_t dim_row, std::size_t dim_col);
+    vector_2d(std::size_t n_row, std::size_t n_col);
     // explicit contructors
-    vector_2d(std::size_t dim_row, std::size_t dim_col, const T& v );
+    vector_2d(std::size_t n_row, std::size_t n_col, const T& v );
     // copy constructor
     vector_2d(const vector_2d<T>&);
     // move constructor
@@ -60,8 +60,8 @@ public:
 
     // size
     std::size_t size() const noexcept;
-    std::size_t dim_row() const noexcept;
-    std::size_t dim_col() const noexcept;
+    std::size_t n_row() const noexcept;
+    std::size_t n_col() const noexcept;
 
     // Non-Member Functions
     template<typename H> friend bool operator==(const vector_2d<H>& lhs, const vector_2d<H>& rhs);
@@ -69,8 +69,8 @@ public:
     // see https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
     friend void swap(vector_2d& first, vector_2d& second)
     {
-        std::swap(first.dim_row_, second.dim_row_);
-        std::swap(first.dim_col_, second.dim_col_);
+        std::swap(first.n_row_, second.n_row_);
+        std::swap(first.n_col_, second.n_col_);
         std::swap(first.size_, second.size_);
         std::swap(first.values_, second.values_);
     }
@@ -84,8 +84,8 @@ private:
     void serialize(Archive& ar, const unsigned int)
     {
         // clang-format off
-        ar &dim_row_;
-        ar &dim_col_;
+        ar &n_row_;
+        ar &n_col_;
         ar &size_;
         for(std::size_t i=0; i<size_; ++i)
         {
@@ -98,18 +98,18 @@ private:
 template<typename T>
 inline vector_2d<T>::vector_2d()
 {
-    dim_row_ = 0;
-    dim_col_ = 0;
+    n_row_ = 0;
+    n_col_ = 0;
     size_ = 0;
     values_ = nullptr;
 }
 
 template<typename T>
-inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col)
+inline vector_2d<T>::vector_2d(std::size_t n_row, std::size_t n_col)
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    n_row_ = n_row;
+    n_col_ = n_col;
+    size_ = n_row_ * n_col_;
 
     values_ = new T[size_];
 
@@ -118,11 +118,11 @@ inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col)
 }
 
 template<typename T>
-inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col, const T& v)
+inline vector_2d<T>::vector_2d(std::size_t n_row, std::size_t n_col, const T& v)
 {
-    dim_row_ = dim_row;
-    dim_col_ = dim_col;
-    size_ = dim_row_ * dim_col_;
+    n_row_ = n_row;
+    n_col_ = n_col;
+    size_ = n_row_ * n_col_;
 
     values_ = new T[size_];
 
@@ -133,8 +133,8 @@ inline vector_2d<T>::vector_2d(std::size_t dim_row, std::size_t dim_col, const T
 
 template<typename T>
 inline vector_2d<T>::vector_2d(const vector_2d<T>& src) : 
-    dim_row_(src.dim_row_),
-    dim_col_(src.dim_col_),
+    n_row_(src.n_row_),
+    n_col_(src.n_col_),
     size_(src.size_),
     values_(new T[size_])
 {
@@ -207,25 +207,25 @@ inline typename vector_2d<T>::const_iterator  vector_2d<T>::cend() const noexcep
 template<typename T>
 inline typename vector_2d<T>::iterator vector_2d<T>::row(std::size_t i) noexcept
 {
-    return values_ + i * dim_col_;
+    return values_ + i * n_col_;
 }
 
 template<typename T>
 inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) const noexcept
 {
-    return values_ + i * dim_col_;
+    return values_ + i * n_col_;
 }
 
 // template<typename T>
 // inline typename vector_2d<T>::iterator vector_2d<T>::row_end(std::size_t i) noexcept
 // {
-//     return values_ + i * dim_col_ + dim_r;
+//     return values_ + i * n_col_ + dim_r;
 // }
 
 // template<typename T>
 // inline typename vector_2d<T>::const_iterator vector_2d<T>::row_end(std::size_t i) const noexcept
 // {
-//     return values_ + i * dim_col_;
+//     return values_ + i * n_col_;
 // }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -233,31 +233,31 @@ inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) co
 template<typename T>
 inline T& vector_2d<T>::operator( ) (std::size_t i, std::size_t j)
 {
-    return values_[ i * dim_col_ + j ];
+    return values_[ i * n_col_ + j ];
 }
 
 template<typename T>
 inline T& vector_2d<T>::at (std::size_t i, std::size_t j)
 {
-    if(i * dim_col_ + j  >= size_)
+    if(i * n_col_ + j  >= size_)
         throw std::runtime_error("out of range exception");
     else
-        return values_[ i * dim_col_ + j ];
+        return values_[ i * n_col_ + j ];
 }
 
 template<typename T>
 inline const T& vector_2d<T>::operator( ) (std::size_t i, std::size_t j) const
 {
-    return values_[ i * dim_col_ + j ];
+    return values_[ i * n_col_ + j ];
 }
 
 template<typename T>
 inline const T& vector_2d<T>::at (std::size_t i, std::size_t j) const
 {
-    if(i * dim_col_ + j >= size_)
+    if(i * n_col_ + j >= size_)
         throw std::runtime_error("out of range exception");
     else
-        return values_[ i * dim_col_ + j ];
+        return values_[ i * n_col_ + j ];
 }
 
 template<typename T>
@@ -279,21 +279,21 @@ inline std::size_t  vector_2d<T>::size() const noexcept
 }
 
 template<typename T>
-inline std::size_t  vector_2d<T>::dim_row() const noexcept
+inline std::size_t  vector_2d<T>::n_row() const noexcept
 {
-    return dim_row_;
+    return n_row_;
 }
 
 template<typename T>
-inline std::size_t  vector_2d<T>::dim_col() const noexcept
+inline std::size_t  vector_2d<T>::n_col() const noexcept
 {
-    return dim_col_;
+    return n_col_;
 }
 
 template<typename H>
 inline bool operator==(const vector_2d<H>& lhs, const vector_2d<H>& rhs)
 {
-    if(lhs.dim_row_ != rhs.dim_row_ || lhs.dim_col_ != rhs.dim_col_)
+    if(lhs.n_row_ != rhs.n_row_ || lhs.n_col_ != rhs.n_col_)
         return false;
 
     for(std::size_t i = 0; i < lhs.size_; ++i)

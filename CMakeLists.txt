@@ -12,23 +12,23 @@ find_package(FFTW3 REQUIRED)
 #                         HPX::iostreams_component
 #                         FFTW3::fftw3)
 
-# add_executable(fft_hpx_loop src/fft_hpx_loop.cpp ${HEADER_FILES})
-# target_link_libraries(fft_hpx_loop
+add_executable(fft_hpx_loop src/fft_hpx_loop.cpp ${HEADER_FILES})
+target_link_libraries(fft_hpx_loop
+                        HPX::hpx
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
+
+# add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_task_agas_shared
 #                         HPX::hpx
 #                         HPX::iostreams_component
 #                         FFTW3::fftw3)
 
-add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task_agas_shared
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-
-add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task_shared
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
+# add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp ${HEADER_FILES})
+# target_link_libraries(fft_hpx_task_shared
+#                         HPX::hpx
+#                         HPX::iostreams_component
+#                         FFTW3::fftw3)
 
 add_executable(fft_hpx_loop_shared src/fft_hpx_loop_shared.cpp ${HEADER_FILES})
 target_link_libraries(fft_hpx_loop_shared

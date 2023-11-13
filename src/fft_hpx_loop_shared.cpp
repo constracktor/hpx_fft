@@ -48,8 +48,8 @@ struct fft
         void transpose_shared_y_to_x(const std::size_t index);
         //void transpose_shared_y_to_x(const std::size_t index_trans);
 
-        //void transpose_shared_x_to_y(const std::size_t index_trans);    
         void transpose_shared_x_to_y(const std::size_t index);
+        //void transpose_shared_x_to_y(const std::size_t index_trans);    
    
     private:
         // parameters
@@ -211,8 +211,8 @@ void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
     // move data into own data structure
     values_vec_ = std::move(values_vec);
     // parameters
-    dim_c_x_ = values_vec_.dim_row();
-    dim_c_y_ = values_vec_.dim_col() / 2;
+    dim_c_x_ = values_vec_.n_row();
+    dim_c_y_ = values_vec_.n_col() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
     // resize transposed data structure
     trans_values_vec_ = std::move(vector_2d<real>(dim_c_y_, 2 * dim_c_x_));
@@ -235,8 +235,8 @@ void print_vector_2d(const vector_2d<real>& input)
 {
     const std::string msg = "\n";
     
-    const std::size_t dim_x = input.dim_row();
-    const std::size_t dim_y = input.dim_col();
+    const std::size_t dim_x = input.n_row();
+    const std::size_t dim_y = input.n_col();
 
     std::size_t counter = 0;
     for( std::size_t i = 0; i < dim_x; ++i)

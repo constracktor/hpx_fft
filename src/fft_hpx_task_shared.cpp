@@ -40,20 +40,21 @@ struct fft
 
     private:
         void fft_1d_r2c_inplace(const std::size_t i);
+        static void fft_1d_r2c_inplace_wrapper(fft *this, const std::size_t i);
 
         void fft_1d_c2c_inplace(const std::size_t i);
+        static void fft_1d_c2c_inplace_wrapper(fft *this, const std::size_t i);
 
-        void transpose_shared_y_to_x(const std::size_t index_trans);
 
-        void transpose_shared_x_to_y(const std::size_t index_trans); 
+        void transpose_shared_y_to_x(const std::size_t index);
+        static void transpose_shared_y_to_x_wrapper(fft *this, const std::size_t index);
+        //void transpose_shared_y_to_x(const std::size_t index_trans);
+        //static void transpose_shared_y_to_x_wrapper(fft *this, const std::size_t index_trans);
 
-        static void fft_1d_r2c_inplace_wrapper(fft *a, const std::size_t i);
-
-        static void fft_1d_c2c_inplace_wrapper(fft *a, const std::size_t i);
-
-        static void transpose_shared_y_to_x_wrapper(fft *a, const std::size_t index_trans);
-
-        static void transpose_shared_x_to_y_wrapper(fft *a, const std::size_t index_trans); 
+        void transpose_shared_x_to_y(const std::size_t index);
+        static void transpose_shared_x_to_y_wrapper(fft *this, const std::size_t index); 
+        //void transpose_shared_x_to_y(const std::size_t index_trans); 
+        //static void transpose_shared_x_to_y_wrapper(fft *this, const std::size_t index_trans); 
    
     private:
         // parameters
@@ -238,8 +239,8 @@ void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
     // move data into own data structure
     values_vec_ = std::move(values_vec);
     // parameters
-    dim_c_x_ = values_vec_.dim_row();
-    dim_c_y_ = values_vec_.dim_col() / 2;
+    dim_c_x_ = values_vec_.n_row();
+    dim_c_y_ = values_vec_.n_col() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
     // resize transposed data structure
     trans_values_vec_ = std::move(vector_2d<real>(dim_c_y_, 2 * dim_c_x_));
