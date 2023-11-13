@@ -159,14 +159,14 @@ struct fft : hpx::components::client_base<fft, fft_server>
 };
 
 // FFTW
-void fft::fft_1d_r2c_inplace(const std::size_t i)
+void fft_server::fft_1d_r2c_inplace(const std::size_t i)
 {
     fftw_execute_dft_r2c(plan_1d_r2c_, 
                             values_vec_.row(i), 
                             reinterpret_cast<fftw_complex*>(values_vec_.row(i)));
 }
 
-void fft::fft_1d_c2c_inplace(const std::size_t i)
+void fft_server::fft_1d_c2c_inplace(const std::size_t i)
 {
     fftw_execute_dft(plan_1d_c2c_, 
                         reinterpret_cast<fftw_complex*>(trans_values_vec_.row(i)), 
@@ -175,7 +175,7 @@ void fft::fft_1d_c2c_inplace(const std::size_t i)
 
 
 // split data for communication
-void fft::split_vec(const std::size_t i)
+void fft_server::split_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
@@ -185,7 +185,7 @@ void fft::split_vec(const std::size_t i)
     }
 }
 
-void fft::split_trans_vec(const std::size_t i)
+void fft_server::split_trans_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
@@ -196,7 +196,7 @@ void fft::split_trans_vec(const std::size_t i)
 }
 
 // scatter communication
-void fft::communicate_scatter_vec(const std::size_t i)
+void fft_server::communicate_scatter_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
@@ -213,7 +213,7 @@ void fft::communicate_scatter_vec(const std::size_t i)
     }
 }
 
-void fft::communicate_scatter_trans_vec(const std::size_t i)
+void fft_server::communicate_scatter_trans_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
@@ -246,7 +246,7 @@ void fft_server::communicate_all_to_all_trans_vec()
 }
 
 // transpose after communication
-void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
+void fft_server::transpose_y_to_x(const std::size_t k, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
@@ -267,7 +267,7 @@ void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
     }
 }
 
-void fft::transpose_x_to_y(const std::size_t k, const std::size_t i)
+void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
@@ -454,7 +454,7 @@ void fft_server::initialize(vector_2d<real> values_vec, const std::string COMM_F
         // parameters
     n_x_local_ = values_vec_.n_row();
     dim_c_x_ = n_x_local_ * num_localities_;
-    dim_c_y_ = values_vec_[0].n_col() / 2;
+    dim_c_y_ = values_vec_.n_col() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
     n_y_local_ = dim_c_y_ / num_localities_;
     dim_c_y_part_ = 2 * dim_c_y_ / num_localities_;
