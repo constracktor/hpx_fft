@@ -352,8 +352,6 @@ void fft::initialize(vector_2d<real> values_vec, const std::string COMM_FLAG, co
     {
         values_prep_[i] = std::move(vector_2d<real>(n_x_local_, dim_c_y_part_));
         trans_values_prep_[i] = std::move(vector_2d<real>(n_y_local_, dim_c_x_part_));
-        // values_prep_[i].resize(n_x_local_ * dim_c_y_part_);
-        // trans_values_prep_[i].resize(n_y_local_ * dim_c_x_part_);
     }
     //create fftw plans
     PLAN_FLAG_ = PLAN_FLAG;

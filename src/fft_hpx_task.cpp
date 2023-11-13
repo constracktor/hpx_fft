@@ -15,23 +15,25 @@
 #include <fftw3.h>
 
 typedef double real;
-typedef std::vector<real, std::allocator<real>> vector_1d;
-typedef std::vector<vector_1d> vector_2d;
+#include "vector_2d.hpp"
+
+void print_vector_2d(const vector_2d<real>& input);
 
 struct fft_server : hpx::components::component_base<fft_server>
 {
     typedef fftw_plan fft_backend_plan;
     typedef std::vector<hpx::future<void>> vector_future;
+    typedef std::vector<vector_2d<real>> vector_comm;
 
     public:
         fft_server() = default;
 
-        void initialize(vector_2d values_vec, 
+        void initialize(vector_2d<real> values_vec, 
                         const std::string COMM_FLAG,
                         const unsigned PLAN_FLAG);
         HPX_DEFINE_COMPONENT_ACTION(fft_server, initialize, initialize_action)
         
-        vector_2d fft_2d_r2c();
+        vector_2d<real> fft_2d_r2c();
         HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_2d_r2c, fft_2d_r2c_action)
 
         virtual ~fft_server()
@@ -95,11 +97,11 @@ struct fft_server : hpx::components::component_base<fft_server>
         // variables
         std::size_t generation_counter_ = 0;
         // value vectors
-        vector_2d values_vec_;
-        vector_2d trans_values_vec_;
-        vector_2d values_prep_;
-        vector_2d trans_values_prep_;
-        vector_2d communication_vec_;  
+        vector_2d<real> values_vec_;
+        vector_2d<real> trans_values_vec_;
+        vector_comm values_prep_;
+        vector_comm trans_values_prep_;
+        vector_comm communication_vec_;  
         // future vectors
         vector_future r2c_futures_;
         vector_future split_vec_futures_; 
@@ -140,12 +142,12 @@ struct fft : hpx::components::client_base<fft, fft_server>
     {
     }
 
-    hpx::future<vector_2d> fft_2d_r2c()
+    hpx::future<vector_2d<real>> fft_2d_r2c()
     {
         return hpx::async(fft_2d_r2c_action(), get_id());
     }
 
-    hpx::future<void> initialize(vector_2d values_vec, 
+    hpx::future<void> initialize(vector_2d<real> values_vec, 
                                  const std::string COMM_FLAG, 
                                  const unsigned PLAN_FLAG)
     {
@@ -157,47 +159,49 @@ struct fft : hpx::components::client_base<fft, fft_server>
 };
 
 // FFTW
-void fft_server::fft_1d_r2c_inplace(const std::size_t i)
+void fft::fft_1d_r2c_inplace(const std::size_t i)
 {
-    fftw_execute_dft_r2c(plan_1d_r2c_,
-                            values_vec_[i].data(), 
-                            reinterpret_cast<fftw_complex*>(values_vec_[i].data()));
+    fftw_execute_dft_r2c(plan_1d_r2c_, 
+                            values_vec_.row(i), 
+                            reinterpret_cast<fftw_complex*>(values_vec_.row(i)));
 }
 
-void fft_server::fft_1d_c2c_inplace(const std::size_t i)
+void fft::fft_1d_c2c_inplace(const std::size_t i)
 {
     fftw_execute_dft(plan_1d_c2c_, 
-                        reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()),
-                        reinterpret_cast<fftw_complex*>(trans_values_vec_[i].data()));
+                        reinterpret_cast<fftw_complex*>(trans_values_vec_.row(i)), 
+                        reinterpret_cast<fftw_complex*>(trans_values_vec_.row(i)));
 }
+
+
 // split data for communication
-void fft_server::split_vec(const std::size_t i)
+void fft::split_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::copy(values_vec_[i].begin() + j * dim_c_y_part_, 
-                    values_vec_[i].begin() + (j+1) * dim_c_y_part_,
+        std::copy(values_vec_.row(i) + j * dim_c_y_part_, 
+                    values_vec_.row(i) + (j+1) * dim_c_y_part_,
                     values_prep_[j].begin() + i * dim_c_y_part_);
     }
 }
 
-void fft_server::split_trans_vec(const std::size_t i)
+void fft::split_trans_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::copy(trans_values_vec_[i].begin() + j * dim_c_x_part_,
-                    trans_values_vec_[i].begin() + (j+1) * dim_c_x_part_,
+        std::copy(trans_values_vec_.row(i) + j * dim_c_x_part_,
+                    trans_values_vec_.row(i) + (j+1) * dim_c_x_part_,
                     trans_values_prep_[j].begin() + i * dim_c_x_part_);
     }
 }
 
 // scatter communication
-void fft_server::communicate_scatter_vec(const std::size_t i)
+void fft::communicate_scatter_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_1d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -209,12 +213,12 @@ void fft_server::communicate_scatter_vec(const std::size_t i)
     }
 }
 
-void fft_server::communicate_scatter_trans_vec(const std::size_t i)
+void fft::communicate_scatter_trans_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_1d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -242,7 +246,7 @@ void fft_server::communicate_all_to_all_trans_vec()
 }
 
 // transpose after communication
-void fft_server::transpose_y_to_x(const std::size_t k, const std::size_t i)
+void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
@@ -258,12 +262,12 @@ void fft_server::transpose_y_to_x(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        trans_values_vec_[k][index_out]     = communication_vec_[i][index_in];
-        trans_values_vec_[k][index_out + 1] = communication_vec_[i][index_in + 1];
+        trans_values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
+        trans_values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
     }
 }
 
-void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
+void fft::transpose_x_to_y(const std::size_t k, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
@@ -279,12 +283,12 @@ void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        values_vec_[k][index_out]     = communication_vec_[i][index_in];
-        values_vec_[k][index_out + 1] = communication_vec_[i][index_in + 1];
+        values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
+        values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
     }
 }
 
-vector_2d fft_server::fft_2d_r2c()
+vector_2d<real> fft_server::fft_2d_r2c()
 {
     // first dimension
     for(std::size_t i = 0; i < n_x_local_; ++i)
@@ -440,7 +444,7 @@ vector_2d fft_server::fft_2d_r2c()
     return std::move(values_vec_);
 }
 
-void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG, const unsigned PLAN_FLAG)
+void fft_server::initialize(vector_2d<real> values_vec, const std::string COMM_FLAG, const unsigned PLAN_FLAG)
 {
     // move data into own structure
     values_vec_ = std::move(values_vec);
@@ -448,37 +452,33 @@ void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG, c
     this_locality_ = hpx::get_locality_id();
     num_localities_ = hpx::get_num_localities(hpx::launch::sync);
         // parameters
-    n_x_local_ = values_vec_.size();
+    n_x_local_ = values_vec_.n_row();
     dim_c_x_ = n_x_local_ * num_localities_;
-    dim_c_y_ = values_vec_[0].size() / 2;
+    dim_c_y_ = values_vec_[0].n_col() / 2;
     dim_r_y_ = 2 * dim_c_y_ - 2;
     n_y_local_ = dim_c_y_ / num_localities_;
     dim_c_y_part_ = 2 * dim_c_y_ / num_localities_;
     dim_c_x_part_ = 2 * dim_c_x_ / num_localities_;
     // resize other data structures
-    trans_values_vec_.resize(n_y_local_);
+    trans_values_vec_ = std::move(vector_2d<real>(n_y_local_, 2 * dim_c_x_));
     values_prep_.resize(num_localities_);
     trans_values_prep_.resize(num_localities_);
-    for(std::size_t i = 0; i < n_y_local_; ++i)
-    {
-        trans_values_vec_[i].resize(2 * dim_c_x_);
-    }
     for(std::size_t i = 0; i < num_localities_; ++i)
     {
-        values_prep_[i].resize(n_x_local_ * dim_c_y_part_);
-        trans_values_prep_[i].resize(n_y_local_ * dim_c_x_part_);
+        values_prep_[i] = std::move(vector_2d<real>(n_x_local_, dim_c_y_part_));
+        trans_values_prep_[i] = std::move(vector_2d<real>(n_y_local_, dim_c_x_part_));
     }
     //create fftw plans
     PLAN_FLAG_ = PLAN_FLAG;
     // forward step one: r2c in y-direction
     plan_1d_r2c_ = fftw_plan_dft_r2c_1d(dim_r_y_,
-                                       values_vec_[0].data(),
-                                       reinterpret_cast<fftw_complex*>(values_vec_[0].data()),
+                                       values_vec_.row(0),
+                                       reinterpret_cast<fftw_complex*>(values_vec_.row(0)),
                                        PLAN_FLAG_);
     // forward step two: c2c in x-direction
     plan_1d_c2c_ = fftw_plan_dft_1d(dim_c_x_, 
-                                   reinterpret_cast<fftw_complex*>(trans_values_vec_[0].data()), 
-                                   reinterpret_cast<fftw_complex*>(trans_values_vec_[0].data()), 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec_.row(0)), 
+                                   reinterpret_cast<fftw_complex*>(trans_values_vec_.row(0)), 
                                    FFTW_FORWARD,
                                    PLAN_FLAG_);
     // resize futures
@@ -532,16 +532,19 @@ void fft_server::initialize(vector_2d values_vec, const std::string COMM_FLAG, c
     }
 }
 
-void print_vector_2d(const vector_2d& input)
+void print_vector_2d(const vector_2d<real>& input)
 {
     const std::string msg = "\n";
-    for (auto vec_1d : input)
-    {
+    
+    const std::size_t dim_x = input.n_row();
+    const std::size_t dim_y = input.n_col();
 
-        hpx::util::format_to(hpx::cout, msg) << std::flush;
-        std::size_t counter = 0;
-        for (auto element : vec_1d)
+    std::size_t counter = 0;
+    for( std::size_t i = 0; i < dim_x; ++i)
+    {
+        for( std::size_t j = 0; j < dim_y; ++j)
         {
+            real element =  input(i,j);
             if(counter%2 == 0)
             {
                 std::string msg = "({1} ";
@@ -553,7 +556,8 @@ void print_vector_2d(const vector_2d& input)
                 hpx::util::format_to(hpx::cout, msg, element) << std::flush;
             }
             ++counter;
-        }
+        }    
+        hpx::util::format_to(hpx::cout, msg) << std::flush;
     }
     hpx::util::format_to(hpx::cout, msg) << std::flush;
 }
@@ -577,8 +581,6 @@ int hpx_main(hpx::program_options::variables_map& vm)
     const std::size_t dim_c_y = dim_r_y / 2 + 1;
     // division parameters
     const std::size_t n_x_local = dim_c_x / num_localities;
-    // data vector
-    vector_2d values_vec(n_x_local);
     // FFTW plans
     unsigned FFT_BACKEND_PLAN_FLAG = FFTW_ESTIMATE;
     if( plan_flag == "measure" )
@@ -596,10 +598,11 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     ////////////////////////////////////////////////////////////////
     // initialize values
+    // data vector
+    vector_2d<real> values_vec(n_x_local, 2*dim_c_y);
     for(std::size_t i = 0; i < n_x_local; ++i)
     {
-        values_vec[i].resize(2*dim_c_y);
-        std::iota(values_vec[i].begin(), values_vec[i].end() - 2, 0.0);
+        std::iota(values_vec.row(i), values_vec.row(i+1) - 2, 0.0);
     }
     ////////////////////////////////////////////////////////////////
     // computation  
@@ -611,7 +614,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                                                                   FFT_BACKEND_PLAN_FLAG);
     future_initialize.get();
     auto stop_init = t.now();
-    hpx::future<vector_2d> future_result = fft_computer.fft_2d_r2c();
+    hpx::future<vector_2d<real>> future_result = fft_computer.fft_2d_r2c();
     values_vec = future_result.get();
     auto stop_total = t.now();
 
