@@ -17,7 +17,6 @@
 
 typedef double real;
 #include "vector_2d.hpp"
-typedef std::vector<real, std::allocator<real>> vector_1d;
 
 void print_vector_2d(const vector_2d<real>& input);
 
@@ -25,7 +24,7 @@ struct fft
 {
     typedef fftw_plan fft_backend_plan;
     typedef std::vector<hpx::future<void>> vector_future;
-    typedef std::vector<std::vector<real>> vector_comm;
+    typedef std::vector<vector_2d<real>> vector_comm;
 
     public:
         fft() = default;
@@ -119,7 +118,7 @@ void fft::split_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::move(values_vec_.row(i) + j * dim_c_y_part_, 
+        std::copy(values_vec_.row(i) + j * dim_c_y_part_, 
                     values_vec_.row(i) + (j+1) * dim_c_y_part_,
                     values_prep_[j].begin() + i * dim_c_y_part_);
     }
@@ -129,7 +128,7 @@ void fft::split_trans_vec(const std::size_t i)
 {
     for (std::size_t j = 0; j < num_localities_; ++j) 
     { //std::move same performance
-        std::move(trans_values_vec_.row(i) + j * dim_c_x_part_,
+        std::copy(trans_values_vec_.row(i) + j * dim_c_x_part_,
                     trans_values_vec_.row(i) + (j+1) * dim_c_x_part_,
                     trans_values_prep_[j].begin() + i * dim_c_x_part_);
     }
@@ -141,7 +140,7 @@ void fft::communicate_scatter_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_1d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -158,7 +157,7 @@ void fft::communicate_scatter_trans_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_1d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -351,10 +350,10 @@ void fft::initialize(vector_2d<real> values_vec, const std::string COMM_FLAG, co
     trans_values_prep_.resize(num_localities_);
     for(std::size_t i = 0; i < num_localities_; ++i)
     {
-        // values_prep_[i] = std::move(vector_2d<real>(n_x_local_, dim_c_y_part_));
-        // trans_values_prep_[i] = std::move(vector_2d<real>(n_y_local_, dim_c_x_part_));
-        values_prep_[i].resize(n_x_local_ * dim_c_y_part_);
-        trans_values_prep_[i].resize(n_y_local_ * dim_c_x_part_);
+        values_prep_[i] = std::move(vector_2d<real>(n_x_local_, dim_c_y_part_));
+        trans_values_prep_[i] = std::move(vector_2d<real>(n_y_local_, dim_c_x_part_));
+        // values_prep_[i].resize(n_x_local_ * dim_c_y_part_);
+        // trans_values_prep_[i].resize(n_y_local_ * dim_c_x_part_);
     }
     //create fftw plans
     PLAN_FLAG_ = PLAN_FLAG;
