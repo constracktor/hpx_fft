@@ -140,7 +140,7 @@ void fft::communicate_scatter_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -157,7 +157,7 @@ void fft::communicate_scatter_trans_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
