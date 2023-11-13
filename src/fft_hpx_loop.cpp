@@ -201,8 +201,8 @@ void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        trans_values_vec_(k, index_out)     = communication_vec_[i][index_in];
-        trans_values_vec_(k, index_out + 1) = communication_vec_[i][index_in + 1];
+        trans_values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
+        trans_values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
     }
 }
 
@@ -222,8 +222,8 @@ void fft::transpose_x_to_y(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        values_vec_(k, index_out)     = communication_vec_[i][index_in];
-        values_vec_(k, index_out + 1) = communication_vec_[i][index_in + 1];
+        values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
+        values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
     }
 }
 
