@@ -5,6 +5,7 @@
 #include <algorithm> 
 
 #include <iostream>
+#include <hpx/hpx.hpp>
 
 template<typename T>
 struct vector_2d

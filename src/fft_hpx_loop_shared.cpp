@@ -48,8 +48,8 @@ struct fft
         void transpose_shared_y_to_x(const std::size_t index);
         //void transpose_shared_y_to_x(const std::size_t index_trans);
 
-        void transpose_shared_x_to_y(const std::size_t index);
-        //void transpose_shared_x_to_y(const std::size_t index_trans);    
+        //void transpose_shared_x_to_y(const std::size_t index);
+        void transpose_shared_x_to_y(const std::size_t index_trans);    
    
     private:
         // parameters
@@ -85,6 +85,8 @@ void fft::fft_1d_c2c_inplace(const std::size_t i)
                         reinterpret_cast<fftw_complex*>(trans_values_vec_.row(i)));
 }
 
+////
+// transpose with write running index
 void fft::transpose_shared_y_to_x(const std::size_t index)
 {
     for( std::size_t index_trans = 0; index_trans < dim_c_x_; ++index_trans)
@@ -93,6 +95,18 @@ void fft::transpose_shared_y_to_x(const std::size_t index)
         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
     }     
 }  
+
+// void fft::transpose_shared_x_to_y(const std::size_t index)
+// {
+//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+//     {
+//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
+//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
+//     }     
+// } 
+
+////
+// transpose with read running index
 // void fft::transpose_shared_y_to_x(const std::size_t index_trans)
 // {
 //     for( std::size_t index = 0; index < dim_c_y_; ++index)
@@ -102,23 +116,15 @@ void fft::transpose_shared_y_to_x(const std::size_t index)
 //     }     
 // }
 
-// void fft::transpose_shared_x_to_y(const std::size_t index_trans)
-// {
-//     for( std::size_t index = 0; index < dim_c_x_; ++index)
-//     {
-//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
-//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
-//     }     
-// }      
-void fft::transpose_shared_x_to_y(const std::size_t index)
+void fft::transpose_shared_x_to_y(const std::size_t index_trans)
 {
-    for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+    for( std::size_t index = 0; index < dim_c_x_; ++index)
     {
         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
     }     
-} 
-
+}  
+    
 vector_2d<real> fft::fft_2d_r2c_par()
 {
     /////////////////////////////////////////////////////////////////
@@ -130,7 +136,7 @@ vector_2d<real> fft::fft_2d_r2c_par()
         fft_1d_r2c_inplace(i);
     });
     auto start_first_trans = t_.now();
-    //hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    //hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i) for other transpose
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // transpose from y-direction to x-direction
@@ -144,7 +150,7 @@ vector_2d<real> fft::fft_2d_r2c_par()
         fft_1d_c2c_inplace(i);
     });
     auto start_second_trans = t_.now();
-    //hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    // hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i) for other transpose
     hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
     {
         // transpose from x-direction to y-direction
@@ -161,7 +167,6 @@ vector_2d<real> fft::fft_2d_r2c_par()
 
     ///////////////////////////////////////////////////////////////7
     return std::move(values_vec_);
-    //return values_vec_;
 }
 
 vector_2d<real> fft::fft_2d_r2c_seq()

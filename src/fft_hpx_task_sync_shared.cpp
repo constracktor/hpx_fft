@@ -45,9 +45,14 @@ struct fft
         void fft_1d_c2c_inplace(const std::size_t i);
         static void fft_1d_c2c_inplace_wrapper(fft *th, const std::size_t i);
 
-        void transpose_shared_y_to_x(const std::size_t index_trans);
-        static void transpose_shared_y_to_x_wrapper(fft *th, const std::size_t index_trans);
 
+        void transpose_shared_y_to_x(const std::size_t index);
+        static void transpose_shared_y_to_x_wrapper(fft *th, const std::size_t index);
+        //void transpose_shared_y_to_x(const std::size_t index_trans);
+        //static void transpose_shared_y_to_x_wrapper(fft *th, const std::size_t index_trans);
+
+        // void transpose_shared_x_to_y(const std::size_t index);
+        // static void transpose_shared_x_to_y_wrapper(fft *th, const std::size_t index); 
         void transpose_shared_x_to_y(const std::size_t index_trans); 
         static void transpose_shared_x_to_y_wrapper(fft *th, const std::size_t index_trans); 
    
@@ -87,9 +92,9 @@ void fft::fft_1d_c2c_inplace_wrapper(fft *th, const std::size_t i)
     th->fft_1d_c2c_inplace(i);
 }
 
-void fft::transpose_shared_y_to_x_wrapper(fft *th, const std::size_t index_trans)
+void fft::transpose_shared_y_to_x_wrapper(fft *th, const std::size_t index)
 {
-    th->transpose_shared_y_to_x(index_trans);  
+    th->transpose_shared_y_to_x(index);  
 }
 
 void fft::transpose_shared_x_to_y_wrapper(fft *th, const std::size_t index_trans)
@@ -113,15 +118,35 @@ void fft::fft_1d_c2c_inplace(const std::size_t i)
 }
 
 ////
-// transpose with read running index only due to asynchron
-void fft::transpose_shared_y_to_x(const std::size_t index_trans)
+// transpose with write running index
+void fft::transpose_shared_y_to_x(const std::size_t index)
 {
-    for( std::size_t index = 0; index < dim_c_y_; ++index)
+    for( std::size_t index_trans = 0; index_trans < dim_c_x_; ++index_trans)
     {
         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
     }     
-}
+}  
+
+// void fft::transpose_shared_x_to_y(const std::size_t index)
+// {
+//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+//     {
+//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
+//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
+//     }     
+// } 
+
+////
+// transpose with read running index
+// void fft::transpose_shared_y_to_x(const std::size_t index_trans)
+// {
+//     for( std::size_t index = 0; index < dim_c_y_; ++index)
+//     {
+//         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
+//         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
+//     }     
+// }
 
 void fft::transpose_shared_x_to_y(const std::size_t index_trans)
 {
@@ -140,41 +165,39 @@ vector_2d<real> fft::fft_2d_r2c()
     {
         // 1d FFT r2c in y-direction
         r2c_futures_[i] = hpx::async(&fft_1d_r2c_inplace_wrapper, this, i);
-        // transpose from y-direction to x-direction
-        trans_y_to_x_futures_[i] = r2c_futures_[i].then(
-            [=](hpx::future<void> r)
-            {
-                r.get();
-                return hpx::async(&fft::transpose_shared_y_to_x_wrapper, this, i);
-            }); 
     }
-    // synchronization step
-    hpx::shared_future<vector_future> all_trans_y_to_x_futures = hpx::when_all(trans_y_to_x_futures_);
+    hpx::wait_all(r2c_futures_);
+    auto start_first_trans = t_.now();
+    //for(std::size_t i = 0; i < dim_c_x_; ++i) for other transpose
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
+    {
+        // transpose from y-direction to x-direction
+        trans_y_to_x_futures_[i] = hpx::async(&fft::transpose_shared_y_to_x_wrapper, this, i);
+    }
+    hpx::wait_all(trans_y_to_x_futures_);
     // second dimension
+    auto start_second_fft = t_.now();
     for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // 1D FFT in x-direction
-        c2c_futures_[i] = all_trans_y_to_x_futures.then(
-            [=](hpx::shared_future<vector_future> r)
-            {
-                r.get();
-                return hpx::async(&fft_1d_c2c_inplace_wrapper, this, i);
-            });     
-        // transpose from x-direction to y-direction
-        trans_x_to_y_futures_[i] = c2c_futures_[i].then(
-            [=](hpx::future<void> r)
-            {
-                r.get();
-                return hpx::async(&fft::transpose_shared_x_to_y_wrapper, this, i);
-            }); 
+        c2c_futures_[i] = hpx::async(&fft::fft_1d_c2c_inplace_wrapper, this, i);  
     }
-    // synchronization step
-    hpx::shared_future<vector_future> all_trans_x_to_y_futures = hpx::when_all(trans_x_to_y_futures_);
-    all_trans_x_to_y_futures.get();
+    hpx::wait_all(c2c_futures_);
+    auto start_second_trans = t_.now();
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
+    {
+        trans_x_to_y_futures_[i] = hpx::async(&fft::transpose_shared_x_to_y_wrapper, this, i);
+    }
+    hpx::wait_all(trans_x_to_y_futures_);
+    auto stop_total = t_.now();
     ////////////////////////////////////////////////////////////////
     // additional runtimes
-    auto stop_total = t_.now();
     measurements_["total"] = stop_total - start_total;
+    measurements_["first_fftw"] = start_first_trans - start_total;
+    measurements_["first_trans"] = start_second_fft - start_first_trans;
+    measurements_["second_fftw"] = start_second_trans - start_second_fft;
+    measurements_["second_trans"] = stop_total - start_second_trans;
+
     return std::move(values_vec_);
 }
 
@@ -203,8 +226,9 @@ void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
                                    PLAN_FLAG);
     // resize futures
     r2c_futures_.resize(dim_c_x_);
-    trans_y_to_x_futures_.resize(dim_c_x_);
     c2c_futures_.resize(dim_c_y_);
+    //trans_y_to_x_futures_.resize(dim_c_x_); for other transpose
+    trans_y_to_x_futures_.resize(dim_c_y_);
     trans_x_to_y_futures_.resize(dim_c_y_);
 }
 
@@ -298,24 +322,36 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
 
     ////////////////////////////////////////////////////////////////
-    // print runtimes
+    // print and store runtimes
     auto total = stop_total - start_total;
     auto init = stop_init - start_total;
-    auto fft2d = stop_total - stop_init;
-    std::string msg = "\nLocality 0 - shared\n"
+    std::string msg = "\nLocality 0 - task synchronous-\n"
                       "Total runtime : {1}\n"
                       "Initialization: {2}\n"
-                      "FFT 2D runtime: {3}\n";
-    hpx::util::format_to(hpx::cout, msg,  
-                         total,
-                         init,
-                         fft_computer.get_measurement("total")) << std::flush;
+                      "FFT 2D runtime: {3}\n"
+                      "FFTW r2c      : {4}\n"
+                      "First trans   : {5}\n"
+                      "FFTW c2c      : {6}\n"
+                      "Second trans  : {7}\n";
+    hpx::util::format_to(hpx::cout, msg,
+                        total,
+                        init,
+                        fft_computer.get_measurement("total"),
+                        fft_computer.get_measurement("first_fftw"),
+                        fft_computer.get_measurement("first_trans"),
+                        fft_computer.get_measurement("second_fftw"),
+                        fft_computer.get_measurement("second_trans"))
+                        << std::flush;
     std::ofstream runtime_file;
-    runtime_file.open ("result/runtimes_hpx_task_shared.txt", std::ios_base::app);
+    runtime_file.open ("result/runtimes_hpx_loop_shared.txt", std::ios_base::app);
     if(print_header)
     {
         runtime_file << "n_threads;n_x;n_y;plan;total;initialization;"
-                << "fft_2d_total;\n";
+                << "fft_2d_total;"
+                << "first_fftw;"
+                << "first_trans;"
+                << "second_fftw;"
+                << "second_trans;\n";
     }
     runtime_file << hpx::get_os_thread_count() << ";" 
                 << dim_c_x << ";"
@@ -323,7 +359,11 @@ int hpx_main(hpx::program_options::variables_map& vm)
                 << plan_flag << ";"
                 << total << ";"
                 << init << ";"
-                << fft2d << ";\n";
+                << fft_computer.get_measurement("total") << ";"
+                << fft_computer.get_measurement("first_fftw") << ";"
+                << fft_computer.get_measurement("first_trans") << ";"
+                << fft_computer.get_measurement("second_fftw") << ";"
+                << fft_computer.get_measurement("second_trans") << ";\n";
     runtime_file.close();
     
     return hpx::finalize();

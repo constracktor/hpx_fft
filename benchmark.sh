@@ -42,113 +42,139 @@ cd ..
 
 ###################################################################################################
 # strong scaling
-BASE_SIZE=8192
+BASE_SIZE=16384
 POW_START=1
 POW_STOP=8
-# # shared
-# ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
-#     done
-# done
-# # scatter
-# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-#     done
-# done
-# # all to all
-# ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-#     done
-# done
-# # shared
-# ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_task_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
-#     done
-# done
-# # scatter
-# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-#     done
-# done
-# # all to all
-# ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
-#     done
-# done
-# # openmp
-# ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         ./build/fftw_mpi_omp $i  $BASE_SIZE $BASE_SIZE estimate 0 
-#     done
-# done
-# # MPI
-# mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-# for (( j=1; j<$LOOP; j=j+1 ))
-# do
-#     mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
-# done
-# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-# do
-#     for (( j=0; j<$LOOP; j=j+1 ))
-#     do
-#         mpirun -n $i ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0 
-#     done
-# done
+# shared
+./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par
+    done
+done
+# scatter
+./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+    done
+done
+# all to all
+./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_loop --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+    done
+done
+# shared sync
+./build/fft_hpx_task_sync_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task_sync_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task_sync_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
+    done
+done
+# shared
+./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
+    done
+done
+# shared agas
+./build/fft_hpx_task_agas_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task_agas_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task_agas_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
+    done
+done
+# scatter
+./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+    done
+done
+# all to all
+./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fft_hpx_task --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all
+    done
+done
+# openmp
+./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        ./build/fftw_mpi_omp $i  $BASE_SIZE $BASE_SIZE estimate 0 
+    done
+done
+# MPI
+mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+for (( j=1; j<$LOOP; j=j+1 ))
+do
+    mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+done
+for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+do
+    for (( j=0; j<$LOOP; j=j+1 ))
+    do
+        mpirun -n $i ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0 
+    done
+done
 ###################################################################################################
 
 
