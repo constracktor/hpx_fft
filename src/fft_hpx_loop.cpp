@@ -264,66 +264,67 @@ vector_2d<real> fft::fft_2d_r2c()
         std::cout << "Communication scheme not specified during initialization\n";
         hpx::finalize();
     }
-    auto start_first_trans = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
-    {
-        hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto k)
-        {
-                // transpose from y-direction to x-direction
-                transpose_y_to_x(k, i);
-        });
-    });
-    // second dimension
-    auto start_second_fft = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto i)
-    {
-        // 1D FFT c2c in x-direction
-        fft_1d_c2c_inplace(i);
-    });
-    auto start_second_split = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto i)
-    {
-        // rearrange for communication step
-        split_trans_vec(i);
-    });
-    // communication to get original data layout
-    auto start_second_comm = t_.now();
-    ++generation_counter_;
-    if (COMM_FLAG_ == "scatter")
-    {
-        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
-        {
-            // scatter operation from all localities
-            communicate_scatter_trans_vec(i);
-        });
-    }
-    else if (COMM_FLAG_ == "all_to_all")
-    {
-        // all to all operation
-        communicate_all_to_all_trans_vec();
-    }
-    auto start_second_trans = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
-    {
-        hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local_, [&](auto k)
-        {
-            // transpose from x-direction to y-direction
-            transpose_x_to_y(k, i);
-        });
-    });
-    auto stop_total = t_.now();
+   
+    // auto start_first_trans = t_.now();
+    // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+    // {
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto k)
+    //     {
+    //             // transpose from y-direction to x-direction
+    //             transpose_y_to_x(k, i);
+    //     });
+    // });
+    // // second dimension
+    // auto start_second_fft = t_.now();
+    // hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto i)
+    // {
+    //     // 1D FFT c2c in x-direction
+    //     fft_1d_c2c_inplace(i);
+    // });
+    // auto start_second_split = t_.now();
+    // hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto i)
+    // {
+    //     // rearrange for communication step
+    //     split_trans_vec(i);
+    // });
+    // // communication to get original data layout
+    // auto start_second_comm = t_.now();
+    // ++generation_counter_;
+    // if (COMM_FLAG_ == "scatter")
+    // {
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+    //     {
+    //         // scatter operation from all localities
+    //         communicate_scatter_trans_vec(i);
+    //     });
+    // }
+    // else if (COMM_FLAG_ == "all_to_all")
+    // {
+    //     // all to all operation
+    //     communicate_all_to_all_trans_vec();
+    // }
+    // auto start_second_trans = t_.now();
+    // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+    // {
+    //     hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local_, [&](auto k)
+    //     {
+    //         // transpose from x-direction to y-direction
+    //         transpose_x_to_y(k, i);
+    //     });
+    // });
+    // auto stop_total = t_.now();
 
-    ////////////////////////////////////////////////////////////////
-    // additional runtimes
-    measurements_["total"] = stop_total - start_total;
-    measurements_["first_fftw"] = start_first_split - start_total;
-    measurements_["first_split"] = start_first_comm - start_first_split;
-    measurements_["first_comm"] = start_first_trans - start_first_comm;
-    measurements_["first_trans"] = start_second_fft - start_first_trans;
-    measurements_["second_fftw"] = start_second_split - start_second_fft;
-    measurements_["second_split"] = start_second_comm - start_second_split;
-    measurements_["second_comm"] = start_second_trans - start_second_comm;
-    measurements_["second_trans"] = stop_total - start_second_trans;
+    // ////////////////////////////////////////////////////////////////
+    // // additional runtimes
+    // measurements_["total"] = stop_total - start_total;
+    // measurements_["first_fftw"] = start_first_split - start_total;
+    // measurements_["first_split"] = start_first_comm - start_first_split;
+    // measurements_["first_comm"] = start_first_trans - start_first_comm;
+    // measurements_["first_trans"] = start_second_fft - start_first_trans;
+    // measurements_["second_fftw"] = start_second_split - start_second_fft;
+    // measurements_["second_split"] = start_second_comm - start_second_split;
+    // measurements_["second_comm"] = start_second_trans - start_second_comm;
+    // measurements_["second_trans"] = stop_total - start_second_trans;
 
     ////////////////////////////////////////////////////////////////
     return std::move(values_vec_);
