@@ -6,12 +6,6 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task_agas
-                        HPX::hpx
-                        HPX::iostreams_component
-                        FFTW3::fftw3)
-
 add_executable(fft_hpx_loop src/fft_hpx_loop.cpp ${HEADER_FILES})
 target_link_libraries(fft_hpx_loop
                         HPX::hpx
@@ -50,21 +44,25 @@ target_link_libraries(fft_hpx_loop_shared
 
 ###########################################################
 # FFTW
-set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw/install/lib/pkgconfig")
+
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 
 find_library(
     FFTW_MPI_LIB
     NAMES "fftw3_mpi"
-    PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
+    #PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
+    PATHS "/home/alex/fft_installations/fftw/install/lib"
 )
 
 find_package(OpenMP REQUIRED)
 find_library(
     FFTW_OMP_LIB
     NAMES "fftw3_omp"
-    PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
+    #PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
+    PATHS "/home/alex/fft_installations/fftw/install/lib"
 )
 
 

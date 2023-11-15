@@ -9,13 +9,13 @@ set +x
 ################################################################################
 #export APEX_SCREEN_OUTPUT=1 APEX_EXPORT_CSV=1 APEX_TASKGRAPH_OUTPUT=1 APEX_TASKTREE_OUTPUT=1
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
-#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_dist_v1.8.1"
 #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_sgscl1_v1.9.1"
-export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
-#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_llvm_17.0.1"
+#export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
+export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1"
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
-export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
+#export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
+export FFTW_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
 # for mpi version
 export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++ 
 
@@ -123,19 +123,19 @@ POW_STOP=8
 #         ./build/fft_hpx_task_agas_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE
 #     done
 # done
-# scatter
-./build/fft_hpx_task_agas --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
-for (( j=1; j<$LOOP; j=j+1 ))
-do
-    ./build/fft_hpx_task_agas --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-done
-for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-do
-    for (( j=0; j<$LOOP; j=j+1 ))
-    do
-        ./build/fft_hpx_task_agas --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
-    done
-done
+# # scatter
+# ./build/fft_hpx_task_agas --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true
+# for (( j=1; j<$LOOP; j=j+1 ))
+# do
+#     ./build/fft_hpx_task_agas --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+# done
+# for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+# do
+#     for (( j=0; j<$LOOP; j=j+1 ))
+#     do
+#         ./build/fft_hpx_task_agas --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter
+#     done
+# done
 # # all to all
 # ./build/fft_hpx_task --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=all_to_all --header=true
 # for (( j=1; j<$LOOP; j=j+1 ))
@@ -180,9 +180,9 @@ done
 
 ###################################################################################################
 # weak scaling
-BASE_SIZE=1024
-POW_START=1
-POW_STOP=4
+# BASE_SIZE=1024
+# POW_START=1
+# POW_STOP=4
 # # shared
 # ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true
 # for (( j=1; j<$LOOP; j=j+1 ))
