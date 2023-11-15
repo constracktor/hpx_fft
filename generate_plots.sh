@@ -6,5 +6,5 @@ source plot_env/bin/activate
 # install requirements
 pip install numpy matplotlib
 # launch 
-python3 plot/plot_planning.py
-python3 plot/plot.py
+#python3 plot/plot_planning.py
+python3 plot/plot_16384.py

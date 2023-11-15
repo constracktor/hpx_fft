@@ -14,24 +14,24 @@ greyscale = ['#000000', '#333333', '#666666', '#999999', '#cccccc']
 ################################################################################
 # READ PLAN FILES
 # get header and loop number for averaging
-plan_header = np.genfromtxt(os.path.abspath('./plot/data/plan_times_estimate.txt'), dtype='unicode', delimiter=';' , max_rows=1)
+plan_header = np.genfromtxt(os.path.abspath('./plot/data/plan/plan_times_estimate.txt'), dtype='unicode', delimiter=';' , max_rows=1)
 
 # read estimate file
-plan_estimate_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan_times_estimate.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
+plan_estimate_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan/plan_times_estimate.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
 # read patient_file
-plan_patient_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan_times_patient.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
+plan_patient_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan/plan_times_patient.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
 
 ################################################################################
 # READ RUNTIME FILES
 # get header and loop number for averaging
-runtime_header = np.genfromtxt(os.path.abspath('./plot/data/runtimes_estimate.txt'), dtype='unicode', delimiter=';' , max_rows=1)
+runtime_header = np.genfromtxt(os.path.abspath('./plot/data/plan/runtimes_estimate.txt'), dtype='unicode', delimiter=';' , max_rows=1)
 #n_loop = int(runtime_header[2])
 #print(n_loop)
 
 # read estimate file
-runtime_estimate_matrix = np.genfromtxt(os.path.abspath('./plot/data/runtimes_estimate.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
+runtime_estimate_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan/runtimes_estimate.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
 # read patient file
-runtime_patient_matrix = np.genfromtxt(os.path.abspath('./plot/data/runtimes_patient.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
+runtime_patient_matrix = np.genfromtxt(os.path.abspath('./plot/data/plan/runtimes_patient.txt'), dtype='float', delimiter=';' , skip_header=1) / 1e3
 
 points = np.logspace(1,
                runtime_estimate_matrix.shape[0],

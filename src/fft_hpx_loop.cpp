@@ -307,6 +307,7 @@ vector_2d<real> fft::fft_2d_r2c()
         communicate_all_to_all_trans_vec();
     }
     auto start_second_trans = t_.now();
+    //bottleneck -> change order as synchronous anyway -> run over n_y_local
     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
     {
         hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local_, [&](auto k)

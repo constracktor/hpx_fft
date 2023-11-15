@@ -6,8 +6,8 @@ project(hpx_fft CXX)
 find_package(HPX REQUIRED)
 find_package(FFTW3 REQUIRED)
 
-add_executable(fft_hpx_task src/fft_hpx_task.cpp ${HEADER_FILES})
-target_link_libraries(fft_hpx_task
+add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp ${HEADER_FILES})
+target_link_libraries(fft_hpx_task_agas
                         HPX::hpx
                         HPX::iostreams_component
                         FFTW3::fftw3)
