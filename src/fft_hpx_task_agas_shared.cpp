@@ -318,7 +318,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                          init,
                          fft2d) << std::flush;
     std::ofstream runtime_file;
-    runtime_file.open ("result/runtimes_hpx_task_shared.txt", std::ios_base::app);
+    runtime_file.open ("result/runtimes_hpx_task_agas_shared.txt", std::ios_base::app);
     if(print_header)
     {
         runtime_file << "n_threads;n_x;n_y;plan;total;initialization;"

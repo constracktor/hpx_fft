@@ -20,11 +20,6 @@ n_loop = 5
 ################################################################################
 # STRONG SCALING
 # strong scaling data for hpx loop shared optimized
-ss_loop_shared_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_loop_shared_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_shared_opt_matrix.shape[0]/n_loop)
-ss_loop_shared_opt_averaged = np.zeros((n_entries, ss_loop_shared_opt_matrix.shape[1]))
-for i in range (n_entries):
-    ss_loop_shared_opt_averaged[i,:] = np.mean(ss_loop_shared_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop shared
 ss_loop_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_loop_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
@@ -40,12 +35,12 @@ ss_loop_scatter_averaged = np.zeros((n_entries, ss_loop_scatter_matrix.shape[1])
 for i in range (n_entries):
     ss_loop_scatter_averaged[i,:] = np.mean(ss_loop_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
-# strong scaling data for hpx loop all_to_all
-ss_loop_all_to_all_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_loop_all_to_all.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_all_to_all_matrix.shape[0]/n_loop)
-ss_loop_all_to_all_averaged = np.zeros((n_entries, ss_loop_all_to_all_matrix.shape[1]))
+# strong scaling data for hpx task_agas_shared
+ss_task_agas_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_task_agas_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_task_agas_shared_matrix.shape[0]/n_loop)
+ss_task_agas_shared_averaged = np.zeros((n_entries, ss_task_agas_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_all_to_all_averaged[i,:] = np.mean(ss_loop_all_to_all_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_task_agas_shared_averaged[i,:] = np.mean(ss_task_agas_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop shared
 ss_task_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_task_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
@@ -61,12 +56,12 @@ ss_task_scatter_averaged = np.zeros((n_entries, ss_task_scatter_matrix.shape[1])
 for i in range (n_entries):
     ss_task_scatter_averaged[i,:] = np.mean(ss_task_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
-# strong scaling data for hpx loop all_to_all
-ss_task_all_to_all_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_task_all_to_all.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_all_to_all_matrix.shape[0]/n_loop)
-ss_task_all_to_all_averaged = np.zeros((n_entries, ss_task_all_to_all_matrix.shape[1]))
+# strong scaling data for hpx loop task_sync_shared
+ss_task_sync_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_hpx_task_sync_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_task_sync_shared_matrix.shape[0]/n_loop)
+ss_task_sync_shared_averaged = np.zeros((n_entries, ss_task_sync_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_task_all_to_all_averaged[i,:] = np.mean(ss_task_all_to_all_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_task_sync_shared_averaged[i,:] = np.mean(ss_task_sync_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_omp
 ss_fftw_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/strong_runtimes_fftw_omp.txt'), dtype='float', delimiter=';' , skip_header=1)
@@ -93,18 +88,18 @@ plt.plot(points, parallel_efficiency, 'o-', c=colors[0], linewidth=1, label='HPX
 # HPX loop scatter data
 parallel_efficiency = 100 * ss_loop_scatter_averaged[0,7] / (ss_loop_scatter_averaged[:,7] * ss_loop_scatter_averaged[:,0])
 plt.plot(points, parallel_efficiency, 'o-', c=colors[1], linewidth=1, label='HPX loop scatter')
-# HPX loop all_to_all data
-parallel_efficiency = 100 * ss_loop_all_to_all_averaged[0,7] / (ss_loop_all_to_all_averaged[:,7] * ss_loop_all_to_all_averaged[:,0])
-plt.plot(points, parallel_efficiency, 'o-', c=colors[2], linewidth=1, label='HPX loop all_to_all')
+# HPX task_agas_shared data
+parallel_efficiency = 100 * ss_task_agas_shared_averaged[0,7] / (ss_task_agas_shared_averaged[:,7] * ss_task_agas_shared_averaged[:,0])
+plt.plot(points, parallel_efficiency, 'o-', c=colors[2], linewidth=1, label='HPX task_agas_shared')
 # HPX task shared data
 parallel_efficiency = 100 * ss_task_shared_averaged[0,6] / (ss_task_shared_averaged[:,6] * ss_task_shared_averaged[:,0])
 plt.plot(points, parallel_efficiency, 'o-', c=colors[3], linewidth=1, label='HPX task shared')
 # HPX task scatter data
 parallel_efficiency = 100 * ss_task_scatter_averaged[0,7] / (ss_task_scatter_averaged[:,7] * ss_task_scatter_averaged[:,0])
 plt.plot(points, parallel_efficiency, 'o-', c=colors[4], linewidth=1, label='HPX task scatter')
-# HPX task all_to_all data
-parallel_efficiency = 100 * ss_task_all_to_all_averaged[0,7] / (ss_task_all_to_all_averaged[:,7] * ss_task_all_to_all_averaged[:,0])
-plt.plot(points, parallel_efficiency, 'o-', c=colors[5], linewidth=1, label='HPX task all_to_all')
+# HPX task sync_shared data
+parallel_efficiency = 100 * ss_task_sync_shared_averaged[0,7] / (ss_task_sync_shared_averaged[:,7] * ss_task_sync_shared_averaged[:,0])
+plt.plot(points, parallel_efficiency, 'o-', c=colors[5], linewidth=1, label='HPX task sync_shared')
 # OpenMP data
 parallel_efficiency = 100 * ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,6] * ss_fftw_omp_averaged[:,1])
 plt.plot(points, parallel_efficiency, 'o-', c=colors[6], linewidth=1, label='OpenMP')
@@ -125,20 +120,18 @@ plt.savefig('plot/figures/strong_scaling_efficiency.pdf', bbox_inches='tight')
 ################################################################################
 # strong SCALING RUNTIME
 plt.figure(figsize=(10,3))
-# HPX loop shared optimized data
-plt.plot(points, ss_loop_shared_opt_averaged[:,7], 'o-', c=greyscale[3], linewidth=1, label='HPX loop shared opt')
 # HPX loop shared data
 plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[0], linewidth=1, label='HPX loop shared')
 # HPX loop scatter data
 plt.plot(points, ss_loop_scatter_averaged[:,7], 'o-', c=colors[1], linewidth=1, label='HPX loop scatter')
-# HPX loop all_to_all data
-plt.plot(points, ss_loop_all_to_all_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop all_to_all')
+# HPX task_agas_shared data
+plt.plot(points, ss_task_agas_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX task_agas_shared')
 # HPX task shared data
 plt.plot(points, ss_task_shared_averaged[:,6], 'o-', c=colors[3], linewidth=1, label='HPX task shared')
 # HPX task scatter data
 plt.plot(points, ss_task_scatter_averaged[:,7], 'o-', c=colors[4], linewidth=1, label='HPX task scatter')
-# HPX task all_to_all data
-plt.plot(points, ss_task_all_to_all_averaged[:,7], 'o-', c=colors[5], linewidth=1, label='HPX task all_to_all')
+# HPX task sync_shared data
+plt.plot(points, ss_task_sync_shared_averaged[:,7], 'o-', c=colors[5], linewidth=1, label='HPX task sync_shared')
 # OpenMP data
 plt.plot(points[:], ss_fftw_omp_averaged[:,6], 'o-', c=colors[6], linewidth=1, label='OpenMP')
 # MPI data
@@ -165,18 +158,18 @@ plt.plot(points, parallel_speedup, 'o-', c=colors[0], linewidth=1, label='HPX lo
 # HPX loop scatter data
 parallel_speedup = ss_loop_scatter_averaged[0,7] / (ss_loop_scatter_averaged[:,7])
 plt.plot(points, parallel_speedup, 'o-', c=colors[1], linewidth=1, label='HPX loop scatter')
-# HPX loop all_to_all data
-parallel_speedup = ss_loop_all_to_all_averaged[0,7] / (ss_loop_all_to_all_averaged[:,7])
-plt.plot(points, parallel_speedup, 'o-', c=colors[2], linewidth=1, label='HPX loop all_to_all')
+# HPX task_agas_shared data
+parallel_speedup = ss_task_agas_shared_averaged[0,7] / (ss_task_agas_shared_averaged[:,7])
+plt.plot(points, parallel_speedup, 'o-', c=colors[2], linewidth=1, label='HPX task_agas_shared')
 # HPX task shared data
 parallel_speedup = ss_task_shared_averaged[0,6] / (ss_task_shared_averaged[:,6])
 plt.plot(points, parallel_speedup, 'o-', c=colors[3], linewidth=1, label='HPX task shared')
 # HPX task scatter data
 parallel_speedup = ss_task_scatter_averaged[0,7] / (ss_task_scatter_averaged[:,7])
 plt.plot(points, parallel_speedup, 'o-', c=colors[4], linewidth=1, label='HPX task scatter')
-# HPX task all_to_all data
-parallel_speedup = ss_task_all_to_all_averaged[0,7] / (ss_task_all_to_all_averaged[:,7])
-plt.plot(points, parallel_speedup, 'o-', c=colors[5], linewidth=1, label='HPX task all_to_all')
+# HPX task sync_shared data
+parallel_speedup = ss_task_sync_shared_averaged[0,7] / (ss_task_sync_shared_averaged[:,7])
+plt.plot(points, parallel_speedup, 'o-', c=colors[5], linewidth=1, label='HPX task sync_shared')
 # OpenMP data
 parallel_speedup = ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,6])
 plt.plot(points, parallel_speedup, 'o-', c=colors[6], linewidth=1, label='OpenMP')
@@ -206,7 +199,7 @@ plt.savefig('plot/figures/strong_scaling_speedup.pdf', bbox_inches='tight')
 
 
 
-
+# OLD Data
 
 ################################################################################
 ################################################################################
