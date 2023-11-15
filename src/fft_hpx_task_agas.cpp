@@ -23,7 +23,7 @@ struct fft_server : hpx::components::component_base<fft_server>
 {
     typedef fftw_plan fft_backend_plan;
     typedef std::vector<hpx::future<void>> vector_future;
-    typedef std::vector<vector_2d<real>> vector_comm;
+    typedef std::vector<std::vector<real>> vector_comm;
 
     public:
         fft_server() = default;
@@ -201,7 +201,7 @@ void fft_server::communicate_scatter_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -218,7 +218,7 @@ void fft_server::communicate_scatter_trans_vec(const std::size_t i)
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<vector_2d<real>>(communicators_[i], 
+        communication_vec_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
                 hpx::collectives::generation_arg(generation_counter_)).get();
     }
     else
@@ -262,8 +262,8 @@ void fft_server::transpose_y_to_x(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        trans_values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
-        trans_values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
+        trans_values_vec_(k,index_out)     = communication_vec_[i][index_in];
+        trans_values_vec_(k,index_out + 1) = communication_vec_[i][index_in + 1];
     }
 }
 
@@ -283,8 +283,8 @@ void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
-        values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
-        values_vec_(k, index_out + 1) = communication_vec_[i].at(j, offset_in + 1);
+        values_vec_(k,index_out)     = communication_vec_[i][index_in];
+        values_vec_(k,index_out + 1) = communication_vec_[i][index_in + 1];
     }
 }
 
@@ -465,8 +465,8 @@ void fft_server::initialize(vector_2d<real> values_vec, const std::string COMM_F
     trans_values_prep_.resize(num_localities_);
     for(std::size_t i = 0; i < num_localities_; ++i)
     {
-        values_prep_[i] = std::move(vector_2d<real>(n_x_local_, dim_c_y_part_));
-        trans_values_prep_[i] = std::move(vector_2d<real>(n_y_local_, dim_c_x_part_));
+        values_prep_[i].resize(n_x_local_ * dim_c_y_part_);
+        trans_values_prep_[i].resize(n_y_local_ * dim_c_x_part_);
     }
     //create fftw plans
     PLAN_FLAG_ = PLAN_FLAG;
