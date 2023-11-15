@@ -207,24 +207,13 @@ plt.savefig('plot/figures/strong_scaling_16384_speedup.pdf', bbox_inches='tight'
 ################################################################################                                                
 # Bar plot
 plt.figure(figsize=(10,5))
-
-
-
-
-
-
-
     
 # plot details
 bar_width = 0.25
 epsilon = .015
 line_width= 0.5
-opacity = 0.7
+opacity = 1.0
 ticks_x= np.linspace(1,9,9)
-
-# ss_loop_bar_positions = ticks_x
-# ss_loop_dist_bar_positions = ss_loop_bar_positions + bar_width
-# ss_loop_dist_bar_positions = ss_loop_bar_positions - bar_width
 
 plt.rc('hatch', color='k', linewidth=0.5)
 # HPX loop bars
@@ -307,8 +296,6 @@ ss_task_sync_bars = [ss_task_sync_bar_first_fft, ss_task_sync_bar_second_fft, ss
 ss_task_sync_legend = plt.legend(ss_task_sync_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX task sync shared', bbox_to_anchor=(1.04, 0.7), loc="upper left")
 plt.gca().add_artist(ss_task_sync_legend)
 
-
-
 # HPX loop distributed bars
 ss_loop_dist_first_fft = ss_loop_scatter_averaged[:,8]
 ss_loop_dist_first_trans = ss_loop_scatter_averaged[:,11]
@@ -321,8 +308,6 @@ ss_loop_dist_second_split = ss_loop_scatter_averaged[:,13]
 ss_loop_dist_second_comm = ss_loop_scatter_averaged[:,14]
 
 ss_loop_dist_bar_positions = ss_loop_bar_positions - bar_width
-
-
 
 ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
                             color=colors[3],
@@ -383,7 +368,6 @@ plt.gca().add_artist(ss_loop_dist_legend)
 
 # plot parameters
 plt.title('Strong Scaling distribution for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-#plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
 plt.xlabel('N cores')
 #plt.xscale("log")
 labels_x = points.astype(int).astype(str)

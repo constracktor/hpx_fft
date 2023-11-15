@@ -148,7 +148,6 @@ vector_2d<real> fft::fft_2d_r2c()
                 return hpx::async(&fft::transpose_shared_y_to_x_wrapper, this, i);
             }); 
     }
-    // synchronization step
     hpx::shared_future<vector_future> all_trans_y_to_x_futures = hpx::when_all(trans_y_to_x_futures_);
     // second dimension
     for(std::size_t i = 0; i < dim_c_y_; ++i)
@@ -168,8 +167,8 @@ vector_2d<real> fft::fft_2d_r2c()
                 return hpx::async(&fft::transpose_shared_x_to_y_wrapper, this, i);
             }); 
     }
-    // synchronization step
     hpx::shared_future<vector_future> all_trans_x_to_y_futures = hpx::when_all(trans_x_to_y_futures_);
+    // global synchronization step
     all_trans_x_to_y_futures.get();
     ////////////////////////////////////////////////////////////////
     // additional runtimes

@@ -63,7 +63,7 @@ struct fft
 
         // transpose after communication
         void transpose_y_to_x(const std::size_t k, const std::size_t i);
-        void transpose_x_to_y(const std::size_t k, const std::size_t i);
+        void transpose_x_to_y(const std::size_t j, const std::size_t i);
 
     private:
         // locality information
@@ -201,8 +201,7 @@ void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
 
     for(std::size_t j = 0; j < dim_input; ++j)
     {
-        // compute indices once use twice
-        index_in = factor_in * j + offset_in;
+        // compute index once use twice
         index_out = factor_out * j + offset_out;
         // transpose
         trans_values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
@@ -210,20 +209,19 @@ void fft::transpose_y_to_x(const std::size_t k, const std::size_t i)
     }
 }
 
-void fft::transpose_x_to_y(const std::size_t k, const std::size_t i)
+void fft::transpose_x_to_y(const std::size_t j, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
-    const std::size_t offset_in = 2 * k;
     const std::size_t offset_out = 2 * i;
-    const std::size_t factor_in = dim_c_x_part_;
+    const std::size_t factor_in = dim_c_y_part_;
     const std::size_t factor_out = 2 * num_localities_;
     const std::size_t dim_input = communication_vec_[i].size() / factor_in;
 
-    for(std::size_t j = 0; j < dim_input; ++j)
+    for(std::size_t k = 0; k < dim_input; ++k)
     {
-        // compute indices once use twice
-        index_in = factor_in * j + offset_in;
+        // compute index once use twice
+        std::size_t offset_in = 2 * k;
         index_out = factor_out * j + offset_out;
         // transpose
         values_vec_(k, index_out)     = communication_vec_[i].at(j, offset_in);
@@ -310,10 +308,10 @@ vector_2d<real> fft::fft_2d_r2c()
     //bottleneck -> change order as synchronous anyway -> run over n_y_local
     hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
     {
-        hpx::experimental::for_loop(hpx::execution::par, 0, n_x_local_, [&](auto k)
+        hpx::experimental::for_loop(hpx::execution::par, 0, n_y_local_, [&](auto j)
         {
             // transpose from x-direction to y-direction
-            transpose_x_to_y(k, i);
+            transpose_x_to_y(j, i);
         });
     });
     auto stop_total = t_.now();

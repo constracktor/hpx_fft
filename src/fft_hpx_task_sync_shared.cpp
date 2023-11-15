@@ -166,6 +166,7 @@ vector_2d<real> fft::fft_2d_r2c()
         // 1d FFT r2c in y-direction
         r2c_futures_[i] = hpx::async(&fft_1d_r2c_inplace_wrapper, this, i);
     }
+    // global synchronization step
     hpx::wait_all(r2c_futures_);
     auto start_first_trans = t_.now();
     //for(std::size_t i = 0; i < dim_c_x_; ++i) for other transpose
@@ -174,6 +175,7 @@ vector_2d<real> fft::fft_2d_r2c()
         // transpose from y-direction to x-direction
         trans_y_to_x_futures_[i] = hpx::async(&fft::transpose_shared_y_to_x_wrapper, this, i);
     }
+    // global synchronization step
     hpx::wait_all(trans_y_to_x_futures_);
     // second dimension
     auto start_second_fft = t_.now();
@@ -182,12 +184,14 @@ vector_2d<real> fft::fft_2d_r2c()
         // 1D FFT in x-direction
         c2c_futures_[i] = hpx::async(&fft::fft_1d_c2c_inplace_wrapper, this, i);  
     }
+    // global synchronization step
     hpx::wait_all(c2c_futures_);
     auto start_second_trans = t_.now();
     for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         trans_x_to_y_futures_[i] = hpx::async(&fft::transpose_shared_x_to_y_wrapper, this, i);
     }
+    // global synchronization step
     hpx::wait_all(trans_x_to_y_futures_);
     auto stop_total = t_.now();
     ////////////////////////////////////////////////////////////////
