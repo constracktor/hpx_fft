@@ -54,7 +54,7 @@ ss_task_shared_averaged = np.zeros((n_entries, ss_task_shared_matrix.shape[1]))
 for i in range (n_entries):
     ss_task_shared_averaged[i,:] = np.mean(ss_task_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
-# strong scaling data for hpx loop scatter
+# strong scaling data for hpx task scatter
 ss_task_scatter_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_scatter.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_task_scatter_matrix.shape[0]/n_loop)
 ss_task_scatter_averaged = np.zeros((n_entries, ss_task_scatter_matrix.shape[1]))
@@ -111,11 +111,6 @@ plt.plot(points, parallel_efficiency, 's--', c=colors[3], linewidth=1, label='HP
 # HPX task agas dist data
 parallel_efficiency = 100 * ss_task_scatter_averaged[0,7] / (ss_task_scatter_averaged[:,7] * ss_task_scatter_averaged[:,0])
 plt.plot(points, parallel_efficiency, 's--', c=colors[5], linewidth=1, label='HPX task agas dist')
-
-
-
-
-
 
 # plot parameters
 plt.title('Strong Scaling efficiency for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
