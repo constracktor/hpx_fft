@@ -38,14 +38,6 @@ for i in range (n_entries):
     ss_fftw_mpi_total_averaged[i,:] = np.mean(ss_fftw_mpi_total_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 
 ###
-# strong scaling data for fftw_mpi_only
-ss_fftw_mpi_only_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_only.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_mpi_only_matrix.shape[0]/n_loop)
-ss_fftw_mpi_only_averaged = np.zeros((n_entries, ss_fftw_mpi_only_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_mpi_only_averaged[i,:] = np.mean(ss_fftw_mpi_only_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-
-###
 # strong scaling data for hpx loop 24
 ss_loop_24_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_loop_24.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_loop_24_matrix.shape[0]/n_loop)
@@ -70,8 +62,6 @@ plt.figure(figsize=(10,3))
 plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with MPI+OpenMP')
 # MPI total data
 plt.plot(points, ss_fftw_mpi_total_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI all ranks/node')
-# MPI total data
-plt.plot(points, ss_fftw_mpi_only_averaged[:,6], 'v-.', c=colors[7], linewidth=1, label='FFTW3 with MPI one rank/node')
 # HPX loop dist data
 plt.plot(points, ss_loop_24_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX loop dist')
 # HPX task agas dist data
