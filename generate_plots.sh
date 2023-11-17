@@ -9,4 +9,5 @@ pip install numpy matplotlib
 #python3 plot/plot_planning.py
 python3 plot/plot_16384.py
 python3 plot/plot_1024.py
-python3 plot/plot_buran.py
+python3 plot/plot_buran_ss.py
+python3 plot/plot_buran_ws.py
