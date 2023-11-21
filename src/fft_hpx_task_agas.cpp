@@ -267,19 +267,39 @@ void fft_server::transpose_y_to_x(const std::size_t k, const std::size_t i)
     }
 }
 
-void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
+// void fft_server::transpose_x_to_y(const std::size_t k, const std::size_t i)
+// {
+//     std::size_t index_in;
+//     std::size_t index_out;
+//     const std::size_t offset_in = 2 * k;
+//     const std::size_t offset_out = 2 * i;
+//     const std::size_t factor_in = dim_c_x_part_;
+//     const std::size_t factor_out = 2 * num_localities_;
+//     const std::size_t dim_input = communication_vec_[i].size() / factor_in;
+
+//     for(std::size_t j = 0; j < dim_input; ++j)
+//     {
+//         // compute indices once use twice
+//         index_in = factor_in * j + offset_in;
+//         index_out = factor_out * j + offset_out;
+//         // transpose
+//         values_vec_(k,index_out)     = communication_vec_[i][index_in];
+//         values_vec_(k,index_out + 1) = communication_vec_[i][index_in + 1];
+//     }
+// }
+void fft_server::transpose_x_to_y(const std::size_t j, const std::size_t i)
 {
     std::size_t index_in;
     std::size_t index_out;
-    const std::size_t offset_in = 2 * k;
     const std::size_t offset_out = 2 * i;
-    const std::size_t factor_in = dim_c_x_part_;
+    const std::size_t factor_in = dim_c_y_part_;
     const std::size_t factor_out = 2 * num_localities_;
     const std::size_t dim_input = communication_vec_[i].size() / factor_in;
 
-    for(std::size_t j = 0; j < dim_input; ++j)
+    for(std::size_t k = 0; k < dim_input; ++k)
     {
         // compute indices once use twice
+        std::size_t offset_in = 2 * k;
         index_in = factor_in * j + offset_in;
         index_out = factor_out * j + offset_out;
         // transpose
@@ -400,15 +420,15 @@ vector_2d<real> fft_server::fft_2d_r2c()
                 });
         }
         // tranpose from x-direction to y-direction
-        for(std::size_t k = 0; k < n_x_local_; ++k)
+        for(std::size_t j = 0; j < n_y_local_; ++j)
         {
             for(std::size_t i = 0; i < num_localities_; ++i)
             {          
-                trans_x_to_y_futures_[k][i] = communication_futures_[i].then(
+                trans_x_to_y_futures_[j][i] = communication_futures_[i].then(
                         [=](hpx::shared_future<void> r)
                         {
                             r.get();
-                            return hpx::async(transpose_x_to_y_action(), get_id(), k, i);
+                            return hpx::async(transpose_x_to_y_action(), get_id(), j, i);
                         });
             }
         }

@@ -30,6 +30,12 @@ target_link_libraries(fft_hpx_task_sync_shared
                         HPX::iostreams_component
                         FFTW3::fftw3)
 
+add_executable(fft_hpx_task_naive_shared src/fft_hpx_task_naive_shared.cpp ${HEADER_FILES})
+target_link_libraries(fft_hpx_task_naive_shared
+                        HPX::hpx
+                        HPX::iostreams_component
+                        FFTW3::fftw3)
+
 add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp ${HEADER_FILES})
 target_link_libraries(fft_hpx_task_shared
                         HPX::hpx
@@ -50,8 +56,10 @@ target_link_libraries(fft_hpx_loop_shared
 
 ###########################################################
 # FFTW
-#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
-set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw/install/lib/pkgconfig")
+# ipvs
+set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+# buran
+#set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw/install/lib/pkgconfig")
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)

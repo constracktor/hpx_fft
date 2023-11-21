@@ -45,7 +45,7 @@ struct fft_server : hpx::components::component_base<fft_server>
         void fft_1d_c2c_inplace(const std::size_t i);
         HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_1d_c2c_inplace, fft_1d_c2c_inplace_action)
 
-        void transpose_shared_y_to_x(const std::size_t index_trans);
+        void transpose_shared_y_to_x(const std::size_t index);
         HPX_DEFINE_COMPONENT_ACTION(fft_server, transpose_shared_y_to_x, transpose_shared_y_to_x_action)
 
         void transpose_shared_x_to_y(const std::size_t index_trans);  
@@ -121,15 +121,35 @@ void fft_server::fft_1d_c2c_inplace(const std::size_t i)
 
 
 ////
-// transpose with read running index only due to asynchron
-void fft_server::transpose_shared_y_to_x(const std::size_t index_trans)
+// transpose with write running index
+void fft_server::transpose_shared_y_to_x(const std::size_t index)
 {
-    for( std::size_t index = 0; index < dim_c_y_; ++index)
+    for( std::size_t index_trans = 0; index_trans < dim_c_x_; ++index_trans)
     {
         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
     }     
-}
+}  
+
+// void fft_server::transpose_shared_x_to_y(const std::size_t index)
+// {
+//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
+//     {
+//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
+//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
+//     }     
+// } 
+
+////
+// transpose with read running index
+// void fft_server::transpose_shared_y_to_x(const std::size_t index_trans)
+// {
+//     for( std::size_t index = 0; index < dim_c_y_; ++index)
+//     {
+//         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
+//         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
+//     }     
+// }
 
 void fft_server::transpose_shared_x_to_y(const std::size_t index_trans)
 {
@@ -138,41 +158,43 @@ void fft_server::transpose_shared_x_to_y(const std::size_t index_trans)
         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
     }     
-}      
+}    
 
 
 vector_2d<real> fft_server::fft_2d_r2c()
 {
+
     // first dimension
     for(std::size_t i = 0; i < dim_c_x_; ++i)
     {
         // 1d FFT r2c in y-direction
         r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
+    }
+    // global synchronization
+    hpx::shared_future<vector_future> all_r2c_futures = hpx::when_all(r2c_futures_);
+    for(std::size_t i = 0; i < dim_c_y_; ++i)
+    {
         // transpose from y-direction to x-direction
-        trans_y_to_x_futures_[i] = r2c_futures_[i].then(
-            [=](hpx::future<void> r)
+        trans_y_to_x_futures_[i] = all_r2c_futures.then(
+            [=](hpx::shared_future<vector_future> r)
             {
                 r.get();
                 return hpx::async(transpose_shared_y_to_x_action(), get_id(), i);
             }); 
-    }
-    hpx::shared_future<vector_future> all_trans_y_to_x_futures = hpx::when_all(trans_y_to_x_futures_);
-    // second dimension
-    for(std::size_t i = 0; i < dim_c_y_; ++i)
-    {
+        // second dimension
         // 1D FFT in x-direction
-        c2c_futures_[i] = all_trans_y_to_x_futures.then(
-            [=](hpx::shared_future<vector_future> r)
+        c2c_futures_[i] = trans_y_to_x_futures_[i].then(
+            [=](hpx::future<void> r)
             {
                 r.get();
-                return hpx::async(fft_1d_c2c_inplace_action(), get_id(), i);
+                hpx::async(fft_1d_c2c_inplace_action(), get_id(), i);
             });     
         // transpose from x-direction to y-direction
         trans_x_to_y_futures_[i] = c2c_futures_[i].then(
             [=](hpx::future<void> r)
             {
                 r.get();
-                return hpx::async(transpose_shared_x_to_y_action(), get_id(), i);
+               return hpx::async(transpose_shared_x_to_y_action(), get_id(), i);
             }); 
     }
     hpx::shared_future<vector_future> all_trans_x_to_y_futures = hpx::when_all(trans_x_to_y_futures_);
