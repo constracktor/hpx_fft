@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams.update({'font.size': 14})
+matplotlib.rcParams.update({'font.size': 12})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
 # CVD accessible colors
 # black - dark red - indigo (blueish) - yellow - teal (greenish) - light gray
@@ -28,49 +28,56 @@ n_loop = 5
 ###
 # strong scaling data for hpx loop shared
 ss_loop_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_shared_matrix.shape[0]/n_loop)
+n_entries = int(ss_loop_shared_matrix.shape[0]/n_loop) - 1
 ss_loop_shared_averaged = np.zeros((n_entries, ss_loop_shared_matrix.shape[1]))
 for i in range (n_entries):
     ss_loop_shared_averaged[i,:] = np.mean(ss_loop_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop scatter
 ss_loop_scatter_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_scatter.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_scatter_matrix.shape[0]/n_loop)
+n_entries = int(ss_loop_scatter_matrix.shape[0]/n_loop) - 1
 ss_loop_scatter_averaged = np.zeros((n_entries, ss_loop_scatter_matrix.shape[1]))
 for i in range (n_entries):
     ss_loop_scatter_averaged[i,:] = np.mean(ss_loop_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx task_agas_shared
 ss_task_agas_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_agas_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_agas_shared_matrix.shape[0]/n_loop)
+n_entries = int(ss_task_agas_shared_matrix.shape[0]/n_loop) - 1
 ss_task_agas_shared_averaged = np.zeros((n_entries, ss_task_agas_shared_matrix.shape[1]))
 for i in range (n_entries):
     ss_task_agas_shared_averaged[i,:] = np.mean(ss_task_agas_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
+# strong scaling data for hpx task_naive_shared
+ss_task_naive_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_naive_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_task_naive_shared_matrix.shape[0]/n_loop) - 1
+ss_task_naive_shared_averaged = np.zeros((n_entries, ss_task_naive_shared_matrix.shape[1]))
+for i in range (n_entries):
+    ss_task_naive_shared_averaged[i,:] = np.mean(ss_task_naive_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
 # strong scaling data for hpx loop shared
 ss_task_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_shared_matrix.shape[0]/n_loop)
+n_entries = int(ss_task_shared_matrix.shape[0]/n_loop) - 1
 ss_task_shared_averaged = np.zeros((n_entries, ss_task_shared_matrix.shape[1]))
 for i in range (n_entries):
     ss_task_shared_averaged[i,:] = np.mean(ss_task_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx task scatter
 ss_task_scatter_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_scatter.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_scatter_matrix.shape[0]/n_loop)
+n_entries = int(ss_task_scatter_matrix.shape[0]/n_loop) - 1
 ss_task_scatter_averaged = np.zeros((n_entries, ss_task_scatter_matrix.shape[1]))
 for i in range (n_entries):
     ss_task_scatter_averaged[i,:] = np.mean(ss_task_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop task_sync_shared
 ss_task_sync_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_task_sync_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_sync_shared_matrix.shape[0]/n_loop)
+n_entries = int(ss_task_sync_shared_matrix.shape[0]/n_loop) - 1
 ss_task_sync_shared_averaged = np.zeros((n_entries, ss_task_sync_shared_matrix.shape[1]))
 for i in range (n_entries):
     ss_task_sync_shared_averaged[i,:] = np.mean(ss_task_sync_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_omp
 ss_fftw_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_omp_matrix.shape[0]/n_loop)
+n_entries = int(ss_fftw_omp_matrix.shape[0]/n_loop) - 1
 ss_fftw_omp_averaged = np.zeros((n_entries, ss_fftw_omp_matrix.shape[1]))
 for i in range (n_entries):
     ss_fftw_omp_averaged[i,:] = np.mean(ss_fftw_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
@@ -92,7 +99,7 @@ parallel_efficiency = 100 * ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,
 plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
 # MPI data
 parallel_efficiency = 100 * ss_fftw_mpi_averaged[0,6] / (ss_fftw_mpi_averaged[:,6] * ss_fftw_mpi_averaged[:,0])
-plt.plot(points[:-1], parallel_efficiency, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
 # HPX loop shared data
 parallel_efficiency = 100 * ss_loop_shared_averaged[0,7] / (ss_loop_shared_averaged[:,7] * ss_loop_shared_averaged[:,0])
 plt.plot(points, parallel_efficiency, 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
@@ -114,7 +121,7 @@ plt.plot(points, parallel_efficiency, 's--', c=colors[5], linewidth=1, label='HP
 
 # plot parameters
 plt.title('Strong Scaling efficiency for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -129,7 +136,7 @@ plt.figure(figsize=(10,3))
 # OpenMP data
 plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
 # MPI data
-plt.plot(points[:-1], ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
 # HPX loop shared data
 plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
 # HPX task sync shared data
@@ -138,6 +145,8 @@ plt.plot(points, ss_task_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth
 plt.plot(points, ss_task_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX task shared')
 # HPX task agas shared data
 plt.plot(points, ss_task_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='HPX task agas shared')
+# HPX task naive shared data
+plt.plot(points, ss_task_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX task naive shared')
 # HPX loop dist data
 plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX loop dist')
 # HPX task agas dist data
@@ -145,7 +154,7 @@ plt.plot(points, ss_task_scatter_averaged[:,7], 's--', c=colors[5], linewidth=1,
 
 # plot parameters
 plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -158,7 +167,7 @@ plt.savefig('plot/figures/strong_scaling_16384_runtime.pdf', bbox_inches='tight'
 ################################################################################
 # CORES PARALLEL SPEEDUP
 # parallel efficiency
-plt.figure(figsize=(10,5))
+plt.figure(figsize=(10,3))
 # line
 plt.plot(points,points, 'k:', linewidth=1)
 # OpenMP data
@@ -166,7 +175,7 @@ parallel_speedup = ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,6])
 plt.plot(points, parallel_speedup, 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
 # MPI data
 parallel_speedup = ss_fftw_mpi_averaged[0,6] / (ss_fftw_mpi_averaged[:,6])
-plt.plot(points[:-1], parallel_speedup, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, parallel_speedup, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
 # HPX loop shared data
 parallel_speedup = ss_loop_shared_averaged[0,7] / (ss_loop_shared_averaged[:,7])
 plt.plot(points, parallel_speedup, 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
@@ -188,7 +197,7 @@ plt.plot(points, parallel_speedup, 's--', c=colors[5], linewidth=1, label='HPX t
 
 # plot parameters
 plt.title('Parallel speedup for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -201,14 +210,14 @@ plt.savefig('plot/figures/strong_scaling_16384_speedup.pdf', bbox_inches='tight'
 ################################################################################
 ################################################################################                                                
 # Bar plot
-plt.figure(figsize=(10,5))
+plt.figure(figsize=(10,3.5))
     
 # plot details
 bar_width = 0.25
 epsilon = .015
 line_width= 0.5
 opacity = 1.0
-ticks_x= np.linspace(1,9,9)
+ticks_x= np.linspace(1,8,8)
 
 plt.rc('hatch', color='k', linewidth=0.5)
 # HPX loop bars
@@ -244,7 +253,7 @@ ss_loop_bar_second_trans = plt.bar(ss_loop_bar_positions, ss_loop_second_trans, 
                             hatch='')
 
 ss_loop_bars = [ss_loop_bar_first_fft, ss_loop_bar_second_fft, ss_loop_bar_first_trans, ss_loop_bar_second_trans]
-ss_loop_legend = plt.legend(ss_loop_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX loop shared', bbox_to_anchor=(1.04, 1.1), loc="upper left")
+ss_loop_legend = plt.legend(ss_loop_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX loop shared', bbox_to_anchor=(0.75, 1.0), loc="upper right")
 plt.gca().add_artist(ss_loop_legend)
 
 # HPX task async bars
@@ -253,7 +262,7 @@ ss_task_sync_first_trans = ss_task_sync_shared_averaged[:,8]
 ss_task_sync_second_fft = ss_task_sync_shared_averaged[:,9]
 ss_task_sync_second_trans = ss_task_sync_shared_averaged[:,10]
 
-ss_task_sync_bar_positions = ss_loop_bar_positions + bar_width
+ss_task_sync_bar_positions = ss_loop_bar_positions - bar_width
 
 ss_task_sync_bar_first_fft = plt.bar(ss_task_sync_bar_positions, ss_task_sync_first_fft, bar_width-epsilon,
                             color=colors[3],
@@ -288,7 +297,7 @@ ss_task_sync_bar_second_trans = plt.bar(ss_task_sync_bar_positions, ss_task_sync
                             label='Second transpose')
 
 ss_task_sync_bars = [ss_task_sync_bar_first_fft, ss_task_sync_bar_second_fft, ss_task_sync_bar_first_trans, ss_task_sync_bar_second_trans]
-ss_task_sync_legend = plt.legend(ss_task_sync_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX task sync shared', bbox_to_anchor=(1.04, 0.7), loc="upper left")
+ss_task_sync_legend = plt.legend(ss_task_sync_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX task sync shared', bbox_to_anchor=(0.5, 1.0), loc="upper right")
 plt.gca().add_artist(ss_task_sync_legend)
 
 # HPX loop distributed bars
@@ -302,7 +311,7 @@ ss_loop_dist_first_comm = ss_loop_scatter_averaged[:,10]
 ss_loop_dist_second_split = ss_loop_scatter_averaged[:,13]
 ss_loop_dist_second_comm = ss_loop_scatter_averaged[:,14]
 
-ss_loop_dist_bar_positions = ss_loop_bar_positions - bar_width
+ss_loop_dist_bar_positions = ss_loop_bar_positions + bar_width
 
 ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
                             color=colors[3],
@@ -358,7 +367,7 @@ ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_fi
                             label='Communication (very small)')
 
 ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
-ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.04, 0.3), loc="upper left")
+ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper right")
 plt.gca().add_artist(ss_loop_dist_legend)
 
 # plot parameters

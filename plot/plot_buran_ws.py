@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams.update({'font.size': 14})
+matplotlib.rcParams.update({'font.size': 1})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
 # CVD accewsible colors
 # black - dark red - indigo (blueish) - yellow - teal (greenish) - light gray
@@ -69,7 +69,7 @@ plt.plot(points, ws_task_agas_24_averaged[:,7], 's--', c=colors[5], linewidth=1,
 
 # plot parameters
 plt.title('Weak Scaling runtime for buran cluster with 24 threads and with $2^{14}$ base dimension')
-plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.xlabel('N nodes')
 plt.xscale("log")
 labels_x = ['1','4','16']
@@ -82,7 +82,7 @@ plt.savefig('plot/figures/weak_scaling_buran_runtime.pdf', bbox_inches='tight')
 ################################################################################
 ################################################################################                                                
 # Bar plot
-plt.figure(figsize=(5,5))
+plt.figure(figsize=(10,3.5))
     
 # plot details
 bar_width = 0.25
@@ -159,7 +159,7 @@ ws_loop_dist_bar_both_comm = plt.bar(ws_loop_dist_bar_positions, ws_loop_dist_fi
                             label='Communication')
 
 ws_loop_dist_bars = [ws_loop_dist_bar_first_fft, ws_loop_dist_bar_second_fft, ws_loop_dist_bar_first_trans, ws_loop_dist_bar_second_trans, ws_loop_dist_bar_both_split, ws_loop_dist_bar_both_comm]
-ws_loop_dist_legend = plt.legend(ws_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist 24 threads', bbox_to_anchor=(1.04, 1), loc="upper left")
+ws_loop_dist_legend = plt.legend(ws_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist 24 threads', bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.gca().add_artist(ws_loop_dist_legend)
 
 # plot parameters

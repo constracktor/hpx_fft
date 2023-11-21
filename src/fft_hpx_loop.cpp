@@ -91,6 +91,8 @@ struct fft
         // time measurement
         hpx::chrono::high_resolution_timer t_ = hpx::chrono::high_resolution_timer();
         std::map<std::string, real> measurements_;
+
+        std::vector<hpx::future<std::vector<real>>> communication_vec_ft_;
 };
 
 real fft::get_measurement(std::string name)
@@ -135,37 +137,71 @@ void fft::split_trans_vec(const std::size_t i)
 }
 
 // scatter communication
+// void fft::communicate_scatter_vec(const std::size_t i)
+// {
+//     if(this_locality_ != i)
+//     {
+//         // receive from other locality
+//         communication_vec_[i] = std::move(hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
+//                 hpx::collectives::generation_arg(generation_counter_)).get());
+//     }
+//     else
+//     {
+//         // send from this locality
+//         communication_vec_[i] = std::move(hpx::collectives::scatter_to(communicators_[i], 
+//                 std::move(values_prep_), 
+//                 hpx::collectives::generation_arg(generation_counter_)).get());
+//     }
+// }
+// void fft::communicate_scatter_trans_vec(const std::size_t i)
+// {
+//     if(this_locality_ != i)
+//     {
+//         // receive from other locality
+//         communication_vec_[i] = std::move(hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
+//                 hpx::collectives::generation_arg(generation_counter_)).get());
+//     }
+//     else
+//     {
+//         // send from this locality
+//         communication_vec_[i] = std::move(hpx::collectives::scatter_to(communicators_[i], 
+//                 std::move(trans_values_prep_), 
+//                 hpx::collectives::generation_arg(generation_counter_)).get());
+//     }
+// }
+
 void fft::communicate_scatter_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
-                hpx::collectives::generation_arg(generation_counter_)).get();
+        communication_vec_ft_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
+                hpx::collectives::generation_arg(generation_counter_));
     }
     else
     {
         // send from this locality
-        communication_vec_[i] = hpx::collectives::scatter_to(communicators_[i], 
+        communication_vec_ft_[i] = hpx::collectives::scatter_to(communicators_[i], 
                 std::move(values_prep_), 
-                hpx::collectives::generation_arg(generation_counter_)).get();
+                hpx::collectives::generation_arg(generation_counter_));
     }
-}
+    
+} 
 
 void fft::communicate_scatter_trans_vec(const std::size_t i)
 {
     if(this_locality_ != i)
     {
         // receive from other locality
-        communication_vec_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
-                hpx::collectives::generation_arg(generation_counter_)).get();
+        communication_vec_ft_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
+                hpx::collectives::generation_arg(generation_counter_));
     }
     else
     {
         // send from this locality
-        communication_vec_[i] = hpx::collectives::scatter_to(communicators_[i], 
+        communication_vec_ft_[i] = hpx::collectives::scatter_to(communicators_[i], 
                 std::move(trans_values_prep_), 
-                hpx::collectives::generation_arg(generation_counter_)).get();
+                hpx::collectives::generation_arg(generation_counter_));
     }
 }
 
@@ -252,11 +288,23 @@ vector_2d<real> fft::fft_2d_r2c()
     ++generation_counter_;
     if (COMM_FLAG_ == "scatter")
     {
-        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        // {
+        //     // scatter operation from all localities
+        //     communicate_scatter_vec(i);
+        // });
+
+        for(std::size_t i = 0; i < num_localities_; ++i)
         {
             // scatter operation from all localities
             communicate_scatter_vec(i);
-        });
+        }
+        //hpx::wait_all(communication_vec_ft_);
+        for(std::size_t i = 0; i < num_localities_; ++i)
+        {     
+            communication_vec_[i] = communication_vec_ft_[i].get();
+        }
+
     }
     else if (COMM_FLAG_ == "all_to_all")
     {
@@ -295,11 +343,21 @@ vector_2d<real> fft::fft_2d_r2c()
     ++generation_counter_;
     if (COMM_FLAG_ == "scatter")
     {
-        hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        // hpx::experimental::for_loop(hpx::execution::par, 0, num_localities_, [&](auto i)
+        // {
+        //     // scatter operation from all localities
+        //     communicate_scatter_trans_vec(i);
+        // });
+        for(std::size_t i = 0; i < num_localities_; ++i)
         {
             // scatter operation from all localities
             communicate_scatter_trans_vec(i);
-        });
+        }
+        //hpx::wait_all(communication_vec_ft_);
+        for(std::size_t i = 0; i < num_localities_; ++i)
+        {     
+            communication_vec_[i] = communication_vec_ft_[i].get();
+        }
     }
     else if (COMM_FLAG_ == "all_to_all")
     {
@@ -375,6 +433,8 @@ void fft::initialize(vector_2d<real> values_vec, const std::string COMM_FLAG, co
     if (COMM_FLAG_ == "scatter")
     {
         communication_vec_.resize(num_localities_);
+        //
+        communication_vec_ft_.resize(num_localities_);
         // setup communicators
         basenames_.resize(num_localities_);
         communicators_.resize(num_localities_);
@@ -389,6 +449,8 @@ void fft::initialize(vector_2d<real> values_vec, const std::string COMM_FLAG, co
     else if (COMM_FLAG_ == "all_to_all")
     {
         communication_vec_.resize(1);
+        //
+        communication_vec_ft_.resize(1);
         // setup communicators
         basenames_.resize(1);
         communicators_.resize(1);
@@ -499,7 +561,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         auto total = stop_total - start_total;
         auto init = stop_init - start_total;
-        std::string msg = "\nLocality 0 -  {1}:\n"
+        std::string msg = "\nLocality {13} -  {1}:\n"
                           "Total runtime : {2}\n"
                           "Initialization: {3}\n"
                           "FFT 2D runtime: {4}\n"
@@ -523,7 +585,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
                             fft_computer.get_measurement("second_fftw"),
                             fft_computer.get_measurement("second_split"),
                             fft_computer.get_measurement("second_comm"),
-                            fft_computer.get_measurement("second_trans")) << std::flush;
+                            fft_computer.get_measurement("second_trans"),
+                            this_locality) << std::flush;
         std::ofstream runtime_file;
         runtime_file.open ("result/runtimes_hpx_loop_dist.txt", std::ios_base::app);
         if(print_header)

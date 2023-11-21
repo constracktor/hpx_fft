@@ -57,9 +57,9 @@ target_link_libraries(fft_hpx_loop_shared
 ###########################################################
 # FFTW
 # ipvs
-set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
+#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
 # buran
-#set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw/install/lib/pkgconfig")
+set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw/install/lib/pkgconfig")
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
