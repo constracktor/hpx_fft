@@ -11,16 +11,16 @@ set +x
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_sgscl1_v1.9.1"
 # epyc2
-# export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
-# export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
+export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
+export FFTW_DIR="${ROOT}/fft_installations/fftw_seq/install/lib/"  
 # buran
-export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1"
-export FFTW_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
-#
+# export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1"
+# export FFTW_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
+# 
 export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
 
-#export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
-export HPX_DIR=/home/alex/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_collectives/install/lib64
+export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
+#export HPX_DIR=/home/alex/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_collectives/install/lib64
 
 # for mpi version
 export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++ 

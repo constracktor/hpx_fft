@@ -70,7 +70,7 @@ for i in range (n_entries):
     ss_task_agas_24_opt_averaged[i,:] = np.mean(ss_task_agas_24_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)     
 
 # print how many percent optimized version is faster
-print(ss_loop_24_opt_averaged[:,7] / ss_loop_24_averaged[:,7] * 100)
+print((ss_loop_24_opt_averaged[:,10] + ss_loop_24_opt_averaged[:,14]) / (ss_loop_24_averaged[:,10] + ss_loop_24_averaged[:,14])  * 100)
 print(ss_task_agas_24_opt_averaged[:,7] / ss_task_agas_24_averaged[:,7] * 100)
 ################################################################################
 # strong SCALING RUNTIME

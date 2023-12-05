@@ -204,9 +204,14 @@
 #include <thread>
 #include <fstream>
 
-#include "fftw3.h"
-#include "omp.h" 
+#include <hpx/hpx.hpp>
+#include <hpx/hpx_init.hpp>
+#include <hpx/modules/collectives.hpp>
+#include <hpx/iostream.hpp>
+#include <hpx/timing/high_resolution_timer.hpp>
 
+
+#include "fftw3.h"
 using vector = std::vector<double, std::allocator<double>>;
 
 // #define N_X 8
@@ -285,7 +290,7 @@ int main(int argc, char* argv[])
     //fftw_import_system_wisdom();
     //fftw_import_wisdom_from_filename("/var/tmp/my_application_fftw.wisdom");
     int nThreads = std::stoi(argv[5]);//1;//4;
-    omp_set_num_threads(nThreads);
+    //omp_set_num_threads(nThreads);
     fftw_plan_with_nthreads(nThreads);
     int n_ranks = nThreads;
     ////////////////////////////////////////////////
@@ -339,12 +344,12 @@ int main(int argc, char* argv[])
         auto stop_fftw_r2c = t.now();
         runtimes["fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
 
-        // ////
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-        // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+        ////
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+        //std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
         // std::cout << "FFT: FFTW 2D" << std::endl;
-        // print_complex(input, dim_c_x / n_ranks, dim_r_y);
-        // ////
+        // print_complex(input, dim_c_x, dim_r_y);
+        ////
         
         // backward
         auto start_fftw_c2r = t.now();
@@ -352,12 +357,12 @@ int main(int argc, char* argv[])
         auto stop_fftw_c2r = t.now();
         runtimes["fftw_c2r"] += duration(stop_fftw_c2r - start_fftw_c2r).count();
 
-        // ////
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-        // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+        ////
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+        //std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
         // std::cout << "IFFT: FFTW 2D" << std::endl;
-        // print_real(input, dim_c_x / n_ranks, dim_r_y, n_ranks);
-        // ////
+        // print_real(input, dim_c_x, dim_r_y, 1);
+        ////
 
         // rescale for next iteration
         // for (std::size_t i=0; i != size_local; ++i)
