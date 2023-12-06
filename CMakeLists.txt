@@ -56,63 +56,53 @@ target_link_libraries(fft_hpx_loop_shared
 
 ###########################################################
 # FFTW
-# ipvs
-#set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib/pkgconfig")
-set(ENV{PKG_CONFIG_PATH} "/import/sgs.scratch/strackar/fft_installations/fftw_hpx_mpi/install/lib/pkgconfig")
-# buran
-#set(ENV{PKG_CONFIG_PATH} "/home/alex/fft_installations/fftw_hpx_backend/install/lib/pkgconfig")
-
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 
 find_library(
-    FFTW_MPI_LIB
+    FFTW_OMP_MPI_LIB
     NAMES "fftw3_mpi"
-    #PATHS "/import/sgs.scratch/strackar/fft_installations/fftw/install/lib"
-    PATHS "/import/sgs.scratch/strackar/fft_installations/fftw_hpx_mpi/install/lib"
-    #PATHS "/home/alex/fft_installations/fftw_hpx_backend/install/lib"
+    PATHS $ENV{FFTW_OMP_DIR}
+)
+find_package(OpenMP REQUIRED)
+find_library(
+    FFTW_OMP_LIB
+    NAMES "fftw3_omp"
+    #PATHS $ENV{FFTW_OMP_DIR}
+    PATHS $ENV{FFTW_HPX_DIR}
 )
 
-# find_package(OpenMP REQUIRED)
-# find_library(
-#     FFTW_OMP_LIB
-#     NAMES "fftw3_omp"
-#     #PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
-#     PATHS "/home/alex/fft_installations/fftw_hpx_backend/install/lib"
-# )
-
-# add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp ${HEADER_FILES})
-# target_link_libraries(fftw_mpi_omp
-#                         PkgConfig::FFTW
-#                         ${FFTW_MPI_LIB}
-#                         ${FFTW_OMP_LIB}
-#                         OpenMP::OpenMP_CXX)
-
-
+find_library(
+    FFTW_HPX_MPI_LIB
+    NAMES "fftw3_mpi"
+    PATHS $ENV{FFTW_HPX_DIR}
+)
 find_library(
     FFTW_HPX_LIB
     NAMES "fftw3_hpx"
-    #PATHS "/import/sgs.scratch/strackar/test_fft/fftw/install/lib"
-    PATHS "/import/sgs.scratch/strackar/fft_installations/fftw_hpx_mpi/install/lib"
-    #PATHS "/home/alex/fft_installations/fftw_hpx_backend/install/lib"
+    PATHS $ENV{FFTW_HPX_DIR}
 )
 
+add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp ${HEADER_FILES})
+target_link_libraries(fftw_mpi_omp
+                        PkgConfig::FFTW
+                        ${FFTW_OMP_MPI_LIB}
+                        ${FFTW_OMP_LIB}
+                        OpenMP::OpenMP_CXX)
 
 add_executable(fftw_hpx src/fftw_hpx.cpp ${HEADER_FILES})
 target_link_libraries(fftw_hpx
                         PkgConfig::FFTW
                         ${FFTW_HPX_LIB}
-                        HPX::hpx
-                        HPX::iostreams_component)
+                        HPX::hpx)
 
 add_executable(fftw_mpi_hpx src/fftw_mpi_hpx.cpp ${HEADER_FILES})
 target_link_libraries(fftw_mpi_hpx
                         PkgConfig::FFTW
-                        ${FFTW_MPI_LIB}
+                        ${FFTW_HPX_MPI_LIB}
                         ${FFTW_HPX_LIB}
                         HPX::hpx
-                        HPX::wrap_main 
-                        HPX::iostreams_component)
+                        HPX::wrap_main)
 
 ###########################################################
 # SEQUENTIAL

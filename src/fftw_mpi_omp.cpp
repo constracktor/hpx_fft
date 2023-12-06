@@ -72,7 +72,6 @@ int main(int argc, char* argv[])
     {
         FFTW_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-    
     ////////////////////////////////////////////////
     // Time measurement
     auto t = std::chrono::steady_clock();
@@ -139,7 +138,6 @@ int main(int argc, char* argv[])
 
     ////////////////////////////////////////////////
     // Compute FFTW
-    // forward
     MPI_Barrier(comm);
     auto start_fftw_r2c = t.now();
     fftw_execute(plan_r2c_2d);
@@ -190,7 +188,6 @@ int main(int argc, char* argv[])
                      << plan_flag << ";"
                      << runtimes["plan_fftw_r2c"] << ";"
                      << runtimes["total_fftw_r2c"] << ";\n";
-
         runtime_file.close();
     }
     ////////////////////////////////////////////////
