@@ -108,12 +108,25 @@ then
     # done
     ###############################
     # FFTW
-    # # openmp
-    # ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-    # for (( j=1; j<$LOOP; j=j+1 ))
-    # do
-    #     ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
-    # done
+    # Threads
+    ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 1
+    for (( j=1; j<$LOOP; j=j+1 ))
+    do
+        ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 0
+    done
+    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    do
+        for (( j=0; j<$LOOP; j=j+1 ))
+        do
+            ./build/fftw_mpi_threads $i  $BASE_SIZE $BASE_SIZE estimate 0 
+        done
+    done
+    # OpenMP
+    ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+    for (( j=1; j<$LOOP; j=j+1 ))
+    do
+        ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+    done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
         for (( j=0; j<$LOOP; j=j+1 ))
