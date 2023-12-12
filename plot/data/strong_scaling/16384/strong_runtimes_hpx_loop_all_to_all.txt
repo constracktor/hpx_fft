@@ -1,2 +1,0 @@
-n_threads;n_x;n_y;plan;comm_flag;total;initialization;fft_2d_total;first_fftw;first_split;first_comm;first_trans;second_fftw;second_split;second_comm;second_trans;
-wip

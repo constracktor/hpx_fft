@@ -18,6 +18,8 @@ then
     export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1"
     export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
     export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
+    # for fftw mpi
+    export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++ 
 elif [[ "$1" == "buran" ]]
 then
     # buran
@@ -26,6 +28,8 @@ then
     export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
     export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
     #export HPX_DIR=${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_collectives/install/lib64
+    # for fftw mpi
+    module load openmpi
 else
   echo 'Please specify system to compile: "epyc2" or "buran"'
   exit 1
@@ -35,7 +39,7 @@ export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++
 # fftw libs
 export FFTW_TH_DIR="$ROOT/fft_installations/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$ROOT/fft_installations/fftw_omp_mpi/install/lib"
-export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx_mpi/install/lib"
+export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx/install/lib"
 export PKG_CONFIG_PATH="$FFTW_OMP_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################

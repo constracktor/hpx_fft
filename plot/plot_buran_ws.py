@@ -147,7 +147,7 @@ ws_loop_dist_bar_both_split = plt.bar(ws_loop_dist_bar_positions, ws_loop_dist_f
                             linewidth=line_width,
                             hatch='\\',
                             alpha=opacity,
-                            label='Data preparation')
+                            label='Rearrange')
 sum+= ws_loop_dist_first_split+ ws_loop_dist_second_split
 ws_loop_dist_bar_both_comm = plt.bar(ws_loop_dist_bar_positions, ws_loop_dist_first_comm+ ws_loop_dist_second_comm, bar_width-epsilon,
                             bottom=sum,
@@ -159,7 +159,7 @@ ws_loop_dist_bar_both_comm = plt.bar(ws_loop_dist_bar_positions, ws_loop_dist_fi
                             label='Communication')
 
 ws_loop_dist_bars = [ws_loop_dist_bar_first_fft, ws_loop_dist_bar_second_fft, ws_loop_dist_bar_first_trans, ws_loop_dist_bar_second_trans, ws_loop_dist_bar_both_split, ws_loop_dist_bar_both_comm]
-ws_loop_dist_legend = plt.legend(ws_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist 24 threads', bbox_to_anchor=(1.0, 1), loc="upper left")
+ws_loop_dist_legend = plt.legend(ws_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist 24 threads', bbox_to_anchor=(1.0, 1), loc="upper left")
 plt.gca().add_artist(ws_loop_dist_legend)
 
 # plot parameters

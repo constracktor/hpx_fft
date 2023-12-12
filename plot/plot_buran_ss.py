@@ -169,7 +169,7 @@ ss_loop_dist_bar_both_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_f
                             linewidth=line_width,
                             hatch='\\',
                             alpha=opacity,
-                            label='Data preparation')
+                            label='Rearrange')
 sum+= ss_loop_dist_first_split+ ss_loop_dist_second_split
 ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_comm+ ss_loop_dist_second_comm, bar_width-epsilon,
                             bottom=sum,
@@ -181,7 +181,7 @@ ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_fi
                             label='Communication')
 
 ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
-ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper left")
+ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper left")
 plt.gca().add_artist(ss_loop_dist_legend)
 
 
@@ -240,7 +240,7 @@ ss_loop_opt_dist_bar_both_split = plt.bar(ss_loop_opt_dist_bar_positions, ss_loo
                             linewidth=line_width,
                             hatch='',
                             alpha=opacity,
-                            label='Data preparation')
+                            label='Rearrange')
 sum+= ss_loop_opt_dist_first_split+ ss_loop_opt_dist_second_split
 ss_loop_opt_dist_bar_both_comm = plt.bar(ss_loop_opt_dist_bar_positions, ss_loop_opt_dist_first_comm+ ss_loop_opt_dist_second_comm, bar_width-epsilon,
                             bottom=sum,
@@ -252,7 +252,7 @@ ss_loop_opt_dist_bar_both_comm = plt.bar(ss_loop_opt_dist_bar_positions, ss_loop
                             label='Communication')
 
 ss_loop_opt_dist_bars = [ss_loop_opt_dist_bar_first_fft, ss_loop_opt_dist_bar_second_fft, ss_loop_opt_dist_bar_first_trans, ss_loop_opt_dist_bar_second_trans, ss_loop_opt_dist_bar_both_split, ss_loop_opt_dist_bar_both_comm]
-ss_loop_opt_dist_legend = plt.legend(ss_loop_opt_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Data preparation', 'Communication'], title='HPX loop opt dist', bbox_to_anchor=(1.0, 0.5), loc="upper left")
+ss_loop_opt_dist_legend = plt.legend(ss_loop_opt_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop opt dist', bbox_to_anchor=(1.0, 0.5), loc="upper left")
 plt.gca().add_artist(ss_loop_opt_dist_legend)
 
 # plot parameters

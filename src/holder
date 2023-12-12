@@ -1,8 +1,8 @@
 ###
-# strong scaling data for fftw_omp
-ss_fftw_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_omp_matrix.shape[0]/n_loop) 
-ss_fftw_omp_averaged = np.zeros((n_entries, ss_fftw_omp_matrix.shape[1]))
+# strong scaling data for fftw_pt
+ss_fftw_pt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_pt.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_fftw_pt_matrix.shape[0]/n_loop) 
+ss_fftw_pt_averaged = np.zeros((n_entries, ss_fftw_pt_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_omp_averaged[i,:] = np.mean(ss_fftw_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_pt_averaged[i,:] = np.mean(ss_fftw_pt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###

@@ -52,6 +52,7 @@ target_link_libraries(fft_hpx_loop_shared
 # FFTW
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+find_package(OpenMP REQUIRED)
 
 # search for MPI+Threads
 find_library(
@@ -71,7 +72,6 @@ find_library(
     NAMES "fftw3_mpi"
     PATHS $ENV{FFTW_OMP_DIR}
 )
-find_package(OpenMP REQUIRED)
 find_library(
     FFTW_OMP_LIB
     NAMES "fftw3_omp"
