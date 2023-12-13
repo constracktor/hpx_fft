@@ -1,8 +1,20 @@
-###
-# strong scaling data for fftw_pt
-ss_fftw_pt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_pt.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_pt_matrix.shape[0]/n_loop) 
-ss_fftw_pt_averaged = np.zeros((n_entries, ss_fftw_pt_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_pt_averaged[i,:] = np.mean(ss_fftw_pt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
+ss_loop_dist_fft = ss_loop_dist_shared_averaged[:,8] + ss_loop_dist_shared_averaged[:,10]
+ss_loop_dist_trans = ss_loop_dist_shared_averaged[:,9] + ss_loop_dist_shared_averaged[:,11]
+
+ss_loop_dist_bar_positions = ticks_x
+
+ss_loop_dist_bar_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_fft, bar_width-epsilon,
+                            color=colors[2],
+                            edgecolor='black',
+                            linewidth=line_width,
+                            hatch='')
+ss_loop_dist_bar_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_trans , bar_width-epsilon,
+                            bottom=ss_loop_dist_fft,
+                            color=colors[6],
+                            edgecolor='black',
+                            linewidth=line_width,
+                            hatch='')
+
+ss_loop_dist_bars = [ss_loop_dist_bar_fft, ss_loop_dist_bar_trans]
+ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['FFT', 'Transpose'], title='For_loop_dist shared', bbox_to_anchor=(0.75, 1.0), loc="upper right")
+plt.gca().add_artist(ss_loop_dist_legend)

@@ -76,18 +76,18 @@ print(ss_task_agas_24_opt_averaged[:,7] / ss_task_agas_24_averaged[:,7] * 100)
 # strong SCALING RUNTIME
 points = [1,2,4,8,16]
 plt.figure(figsize=(10,3))
-# MPI + OpenMP data
-plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with MPI+OpenMP')
 # MPI total data
-plt.plot(points, ss_fftw_mpi_total_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI all ranks/node')
+plt.plot(points, ss_fftw_mpi_total_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+# MPI + OpenMP data
+plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v--', c=greyscale[3], linewidth=1, label='FFTW3 with MPI+OpenMP')
 # HPX loop dist data
-plt.plot(points, ss_loop_24_averaged[:,7], 's--', c=colors[2], linewidth=1, label='HPX loop')
+plt.plot(points, ss_loop_24_averaged[:,7], 's--', c=colors[2], linewidth=1, label='HPX for_loop dist')
+# HPX task agas dist data
+plt.plot(points, ss_task_agas_24_averaged[:,7], 'o--', c=colors[4], linewidth=1, label='HPX future agas dist')
 # HPX loop opt dist data
-plt.plot(points, ss_loop_24_opt_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX loop opt')
+plt.plot(points, ss_loop_24_opt_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist opt')
 # HPX task agas dist data
-plt.plot(points, ss_task_agas_24_averaged[:,7], 's--', c=colors[4], linewidth=1, label='HPX task agas')
-# HPX task agas dist data
-plt.plot(points, ss_task_agas_24_opt_averaged[:,7], 's--', c=colors[5], linewidth=1, label='HPX task agas opt')
+plt.plot(points, ss_task_agas_24_opt_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='HPX future agas dist opt')
 
 # plot parameters
 plt.title('Strong Scaling runtime for buran cluster with 24 threads and with $2^{14}$x$2^{14}$ matrix')

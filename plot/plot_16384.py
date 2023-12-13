@@ -148,20 +148,21 @@ for i in range (n_entries):
 # strong SCALING RUNTIME HPX
 plt.figure(figsize=(10,3))
 points = ss_loop_shared_averaged[:,0]
-# HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
-# HPX future sync shared data
-plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=1, label='HPX future sync shared')
-# HPX future shared data
-plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future shared')
-# HPX future agas shared data
-plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='HPX future agas shared')
 # HPX future naive shared data
-plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX future naive shared')
-# HPX loop dist data
-plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX loop dist')
+plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX future naive')
+# HPX future shared data
+plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future opt')
+# HPX future sync shared data
+plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=1, label='HPX future sync')
+# HPX future agas shared data
+plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='HPX future agas')
 # HPX future agas dist data
-plt.plot(points, ss_future_scatter_averaged[:,7], 's--', c=colors[5], linewidth=1, label='HPX future agas dist')
+plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='HPX future agas dist')
+# HPX loop shared data
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop')
+# HPX loop dist data
+plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist')
+
 # # PThread data
 # plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=1, label='FFTW3 with PThreads')
 # # OpenMP data
@@ -172,8 +173,8 @@ plt.plot(points, ss_future_scatter_averaged[:,7], 's--', c=colors[5], linewidth=
 # plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
 
 # plot parameters
-plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -185,21 +186,19 @@ plt.savefig('plot/figures/strong_scaling_16384_hpx_runtime.pdf', bbox_inches='ti
 # strong SCALING RUNTIME FFTW3
 plt.figure(figsize=(10,3))
 # MPI data
-plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[2], linewidth=1, label='FFTW3 with PThreads')
+plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with PThreads')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
-# HPX future shared data
-plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future shared')
+plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
 # HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop')
 
 # plot parameters
-plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -251,9 +250,180 @@ plt.savefig('plot/figures/strong_scaling_16384_fftw3_runtime.pdf', bbox_inches='
 # plt.yticks(ticks=ticks_y, labels=ticks_y)
 # plt.savefig('plot/figures/strong_scaling_16384_speedup.pdf', bbox_inches='tight')
 # ################################################################################
+# ################################################################################                                                
+# # Bar plot
+# plt.figure(figsize=(10,3.5))
+    
+# # plot details
+# bar_width = 0.25
+# epsilon = .015
+# line_width= 0.5
+# opacity = 1.0
+# ticks_x= np.linspace(1,8,8)
+
+# plt.rc('hatch', color='k', linewidth=0.5)
+# # HPX loop bars
+# ss_loop_first_fft = ss_loop_shared_averaged[:,8]
+# ss_loop_first_trans = ss_loop_shared_averaged[:,9]
+# ss_loop_second_fft = ss_loop_shared_averaged[:,10]
+# ss_loop_second_trans = ss_loop_shared_averaged[:,11]
+
+# ss_loop_bar_positions = ticks_x
+
+# ss_loop_bar_first_fft = plt.bar(ss_loop_bar_positions, ss_loop_first_fft, bar_width-epsilon,
+#                             color=colors[3],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='')
+# ss_loop_bar_second_fft = plt.bar(ss_loop_bar_positions, ss_loop_second_fft, bar_width-epsilon,
+#                             bottom=ss_loop_first_fft,
+#                             color=colors[2],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='')
+# ss_loop_bar_first_trans = plt.bar(ss_loop_bar_positions, ss_loop_first_trans , bar_width-epsilon,
+#                             bottom=ss_loop_first_fft+ss_loop_second_fft,
+#                             color=colors[5],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='')
+# ss_loop_bar_second_trans = plt.bar(ss_loop_bar_positions, ss_loop_second_trans, bar_width-epsilon,
+#                             bottom=ss_loop_first_fft+ss_loop_first_trans+ss_loop_second_fft,
+#                             color=colors[6],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='')
+
+# ss_loop_bars = [ss_loop_bar_first_fft, ss_loop_bar_second_fft, ss_loop_bar_first_trans, ss_loop_bar_second_trans]
+# ss_loop_legend = plt.legend(ss_loop_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX loop shared', bbox_to_anchor=(0.75, 1.0), loc="upper right")
+# plt.gca().add_artist(ss_loop_legend)
+
+# # HPX future async bars
+# ss_future_sync_first_fft = ss_future_sync_shared_averaged[:,7]
+# ss_future_sync_first_trans = ss_future_sync_shared_averaged[:,8]
+# ss_future_sync_second_fft = ss_future_sync_shared_averaged[:,9]
+# ss_future_sync_second_trans = ss_future_sync_shared_averaged[:,10]
+
+# ss_future_sync_bar_positions = ss_loop_bar_positions - bar_width
+
+# ss_future_sync_bar_first_fft = plt.bar(ss_future_sync_bar_positions, ss_future_sync_first_fft, bar_width-epsilon,
+#                             color=colors[3],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='///',
+#                             alpha=opacity,
+#                             label='First FFT')
+# ss_future_sync_bar_second_fft = plt.bar(ss_future_sync_bar_positions, ss_future_sync_second_fft, bar_width-epsilon,
+#                             bottom=ss_future_sync_first_fft,
+#                             color=colors[2],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='///',
+#                             alpha=opacity,
+#                             label='Second FFT')
+# ss_future_sync_bar_first_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_first_trans , bar_width-epsilon,
+#                             bottom=ss_future_sync_first_fft+ss_future_sync_second_fft,
+#                             color=colors[5],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='///',
+#                             alpha=opacity,
+#                             label='First transpose')
+# ss_future_sync_bar_second_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_second_trans, bar_width-epsilon,
+#                             bottom=ss_future_sync_first_fft+ss_future_sync_first_trans+ss_future_sync_second_fft,
+#                             color=colors[6],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='///',
+#                             alpha=opacity,
+#                             label='Second transpose')
+
+# ss_future_sync_bars = [ss_future_sync_bar_first_fft, ss_future_sync_bar_second_fft, ss_future_sync_bar_first_trans, ss_future_sync_bar_second_trans]
+# ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX future sync shared', bbox_to_anchor=(0.5, 1.0), loc="upper right")
+# plt.gca().add_artist(ss_future_sync_legend)
+
+# # HPX loop distributed bars
+# ss_loop_dist_first_fft = ss_loop_scatter_averaged[:,8]
+# ss_loop_dist_first_trans = ss_loop_scatter_averaged[:,11]
+# ss_loop_dist_second_fft = ss_loop_scatter_averaged[:,12]
+# ss_loop_dist_second_trans = ss_loop_scatter_averaged[:,15]
+
+# ss_loop_dist_first_split = ss_loop_scatter_averaged[:,9]
+# ss_loop_dist_first_comm = ss_loop_scatter_averaged[:,10]
+# ss_loop_dist_second_split = ss_loop_scatter_averaged[:,13]
+# ss_loop_dist_second_comm = ss_loop_scatter_averaged[:,14]
+
+# ss_loop_dist_bar_positions = ss_loop_bar_positions + bar_width
+
+# ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
+#                             color=colors[3],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='First FFT')
+# sum = ss_loop_dist_first_fft
+# ss_loop_dist_bar_second_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_fft, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[2],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Second FFT')
+# sum+= ss_loop_dist_second_fft
+# ss_loop_dist_bar_first_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_trans , bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[5],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='First transpose')
+# sum+= ss_loop_dist_first_trans
+# ss_loop_dist_bar_second_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_trans, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[6],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Second transpose')
+# sum+= ss_loop_dist_second_trans
+# ss_loop_dist_bar_both_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_split+ ss_loop_dist_second_split, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[8],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Rearrange')
+# sum+= ss_loop_dist_first_split+ ss_loop_dist_second_split
+# ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_comm+ ss_loop_dist_second_comm, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[9],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Communication (very small)')
+
+# ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
+# ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper right")
+# plt.gca().add_artist(ss_loop_dist_legend)
+
+# # plot parameters
+# plt.title('Strong Scaling distribution for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+# plt.xlabel('N cores')
+# #plt.xscale("log")
+# labels_x = points.astype(int).astype(str)
+# plt.xticks(ticks=ticks_x, labels= labels_x)
+# #plt.yscale("log")
+# plt.ylabel('Runtime in s')
+# plt.savefig('plot/figures/strong_scaling_16384_distribution.pdf', bbox_inches='tight')
 ################################################################################                                                
-# Bar plot
-plt.figure(figsize=(10,3.5))
+# Bar plot added up
+plt.figure(figsize=(12,3.5))
     
 # plot details
 bar_width = 0.25
@@ -264,153 +434,92 @@ ticks_x= np.linspace(1,8,8)
 
 plt.rc('hatch', color='k', linewidth=0.5)
 # HPX loop bars
-ss_loop_first_fft = ss_loop_shared_averaged[:,8]
-ss_loop_first_trans = ss_loop_shared_averaged[:,9]
-ss_loop_second_fft = ss_loop_shared_averaged[:,10]
-ss_loop_second_trans = ss_loop_shared_averaged[:,11]
+ss_loop_fft = ss_loop_shared_averaged[:,8] + ss_loop_shared_averaged[:,10]
+ss_loop_trans = ss_loop_shared_averaged[:,9] + ss_loop_shared_averaged[:,11]
 
 ss_loop_bar_positions = ticks_x
 
-ss_loop_bar_first_fft = plt.bar(ss_loop_bar_positions, ss_loop_first_fft, bar_width-epsilon,
-                            color=colors[3],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='')
-ss_loop_bar_second_fft = plt.bar(ss_loop_bar_positions, ss_loop_second_fft, bar_width-epsilon,
-                            bottom=ss_loop_first_fft,
+ss_loop_bar_fft = plt.bar(ss_loop_bar_positions, ss_loop_fft, bar_width-epsilon,
                             color=colors[2],
                             edgecolor='black',
                             linewidth=line_width,
                             hatch='')
-ss_loop_bar_first_trans = plt.bar(ss_loop_bar_positions, ss_loop_first_trans , bar_width-epsilon,
-                            bottom=ss_loop_first_fft+ss_loop_second_fft,
-                            color=colors[5],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='')
-ss_loop_bar_second_trans = plt.bar(ss_loop_bar_positions, ss_loop_second_trans, bar_width-epsilon,
-                            bottom=ss_loop_first_fft+ss_loop_first_trans+ss_loop_second_fft,
+ss_loop_bar_trans = plt.bar(ss_loop_bar_positions, ss_loop_trans , bar_width-epsilon,
+                            bottom=ss_loop_fft,
                             color=colors[6],
                             edgecolor='black',
                             linewidth=line_width,
                             hatch='')
 
-ss_loop_bars = [ss_loop_bar_first_fft, ss_loop_bar_second_fft, ss_loop_bar_first_trans, ss_loop_bar_second_trans]
-ss_loop_legend = plt.legend(ss_loop_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX loop shared', bbox_to_anchor=(0.75, 1.0), loc="upper right")
+ss_loop_bars = [ss_loop_bar_fft, ss_loop_bar_trans]
+ss_loop_legend = plt.legend(ss_loop_bars, ['FFT', 'Transpose'], title='HPX for_loop', bbox_to_anchor=(0.785, 1.0), loc="upper right")
 plt.gca().add_artist(ss_loop_legend)
 
 # HPX future async bars
-ss_future_sync_first_fft = ss_future_sync_shared_averaged[:,7]
-ss_future_sync_first_trans = ss_future_sync_shared_averaged[:,8]
-ss_future_sync_second_fft = ss_future_sync_shared_averaged[:,9]
-ss_future_sync_second_trans = ss_future_sync_shared_averaged[:,10]
+ss_future_sync_fft = ss_future_sync_shared_averaged[:,7] + ss_future_sync_shared_averaged[:,9]
+ss_future_sync_trans = ss_future_sync_shared_averaged[:,8] + ss_future_sync_shared_averaged[:,10]
 
 ss_future_sync_bar_positions = ss_loop_bar_positions - bar_width
 
-ss_future_sync_bar_first_fft = plt.bar(ss_future_sync_bar_positions, ss_future_sync_first_fft, bar_width-epsilon,
-                            color=colors[3],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='///',
-                            alpha=opacity,
-                            label='First FFT')
-ss_future_sync_bar_second_fft = plt.bar(ss_future_sync_bar_positions, ss_future_sync_second_fft, bar_width-epsilon,
-                            bottom=ss_future_sync_first_fft,
+ss_future_sync_bar_fft = plt.bar(ss_future_sync_bar_positions, ss_future_sync_fft, bar_width-epsilon,
                             color=colors[2],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='///',
-                            alpha=opacity,
-                            label='Second FFT')
-ss_future_sync_bar_first_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_first_trans , bar_width-epsilon,
-                            bottom=ss_future_sync_first_fft+ss_future_sync_second_fft,
-                            color=colors[5],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='///',
-                            alpha=opacity,
-                            label='First transpose')
-ss_future_sync_bar_second_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_second_trans, bar_width-epsilon,
-                            bottom=ss_future_sync_first_fft+ss_future_sync_first_trans+ss_future_sync_second_fft,
+                            hatch='\\')
+
+ss_future_sync_bar_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_trans , bar_width-epsilon,
+                            bottom=ss_future_sync_fft,
                             color=colors[6],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='///',
-                            alpha=opacity,
-                            label='Second transpose')
+                            hatch='\\')
 
-ss_future_sync_bars = [ss_future_sync_bar_first_fft, ss_future_sync_bar_second_fft, ss_future_sync_bar_first_trans, ss_future_sync_bar_second_trans]
-ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose'], title='HPX future sync shared', bbox_to_anchor=(0.5, 1.0), loc="upper right")
+ss_future_sync_bars = [ss_future_sync_bar_fft, ss_future_sync_bar_trans]
+ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['FFT', 'Transpose'], title='HPX future sync', bbox_to_anchor=(0.605, 1.0), loc="upper right")
 plt.gca().add_artist(ss_future_sync_legend)
 
 # HPX loop distributed bars
-ss_loop_dist_first_fft = ss_loop_scatter_averaged[:,8]
-ss_loop_dist_first_trans = ss_loop_scatter_averaged[:,11]
-ss_loop_dist_second_fft = ss_loop_scatter_averaged[:,12]
-ss_loop_dist_second_trans = ss_loop_scatter_averaged[:,15]
+ss_loop_dist_fft = ss_loop_scatter_averaged[:,8] + ss_loop_scatter_averaged[:,12]
+ss_loop_dist_trans = ss_loop_scatter_averaged[:,11] + ss_loop_scatter_averaged[:,15]
 
-ss_loop_dist_first_split = ss_loop_scatter_averaged[:,9]
-ss_loop_dist_first_comm = ss_loop_scatter_averaged[:,10]
-ss_loop_dist_second_split = ss_loop_scatter_averaged[:,13]
-ss_loop_dist_second_comm = ss_loop_scatter_averaged[:,14]
+ss_loop_dist_split = ss_loop_scatter_averaged[:,9] + ss_loop_scatter_averaged[:,13]
+ss_loop_dist_comm = ss_loop_scatter_averaged[:,10] + ss_loop_scatter_averaged[:,14]
 
 ss_loop_dist_bar_positions = ss_loop_bar_positions + bar_width
 
-ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
-                            color=colors[3],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='First FFT')
-sum = ss_loop_dist_first_fft
-ss_loop_dist_bar_second_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_fft, bar_width-epsilon,
-                            bottom=sum,
+ss_loop_dist_bar_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_fft, bar_width-epsilon,
                             color=colors[2],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Second FFT')
-sum+= ss_loop_dist_second_fft
-ss_loop_dist_bar_first_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_trans , bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[5],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='First transpose')
-sum+= ss_loop_dist_first_trans
-ss_loop_dist_bar_second_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_trans, bar_width-epsilon,
+                            hatch='//')
+sum = ss_loop_dist_fft
+ss_loop_dist_bar_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_trans , bar_width-epsilon,
                             bottom=sum,
                             color=colors[6],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Second transpose')
-sum+= ss_loop_dist_second_trans
-ss_loop_dist_bar_both_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_split+ ss_loop_dist_second_split, bar_width-epsilon,
+                            hatch='//')
+sum+= ss_loop_dist_trans
+ss_loop_dist_bar_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_split, bar_width-epsilon,
                             bottom=sum,
                             color=colors[8],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='\\',
+                            hatch='//',
                             alpha=opacity,
                             label='Rearrange')
-sum+= ss_loop_dist_first_split+ ss_loop_dist_second_split
-ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_comm+ ss_loop_dist_second_comm, bar_width-epsilon,
+sum+= ss_loop_dist_split
+ss_loop_dist_bar_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_comm, bar_width-epsilon,
                             bottom=sum,
                             color=colors[9],
                             edgecolor='black',
                             linewidth=line_width,
-                            hatch='\\',
+                            hatch='//',
                             alpha=opacity,
                             label='Communication (very small)')
 
-ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
-ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper right")
+ss_loop_dist_bars = [ss_loop_dist_bar_fft, ss_loop_dist_bar_trans, ss_loop_dist_bar_split, ss_loop_dist_bar_comm]
+ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['FFT', 'Transpose','Rearrange', 'Communicate'], title='HPX for_loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper right")
 plt.gca().add_artist(ss_loop_dist_legend)
 
 # plot parameters
@@ -422,3 +531,87 @@ plt.xticks(ticks=ticks_x, labels= labels_x)
 #plt.yscale("log")
 plt.ylabel('Runtime in s')
 plt.savefig('plot/figures/strong_scaling_16384_distribution.pdf', bbox_inches='tight')
+
+
+
+
+
+
+# ss_loop_dist_first_fft = ss_loop_scatter_averaged[:,8]
+# ss_loop_dist_first_trans = ss_loop_scatter_averaged[:,11]
+# ss_loop_dist_second_fft = ss_loop_scatter_averaged[:,12]
+# ss_loop_dist_second_trans = ss_loop_scatter_averaged[:,15]
+
+# ss_loop_dist_first_split = ss_loop_scatter_averaged[:,9]
+# ss_loop_dist_first_comm = ss_loop_scatter_averaged[:,10]
+# ss_loop_dist_second_split = ss_loop_scatter_averaged[:,13]
+# ss_loop_dist_second_comm = ss_loop_scatter_averaged[:,14]
+
+# ss_loop_dist_bar_positions = ss_loop_bar_positions + bar_width
+
+# ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
+#                             color=colors[3],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='First FFT')
+# sum = ss_loop_dist_first_fft
+# ss_loop_dist_bar_second_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_fft, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[2],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Second FFT')
+# sum+= ss_loop_dist_second_fft
+# ss_loop_dist_bar_first_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_trans , bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[5],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='First transpose')
+# sum+= ss_loop_dist_first_trans
+# ss_loop_dist_bar_second_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_trans, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[6],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Second transpose')
+# sum+= ss_loop_dist_second_trans
+# ss_loop_dist_bar_both_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_split+ ss_loop_dist_second_split, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[8],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Rearrange')
+# sum+= ss_loop_dist_first_split+ ss_loop_dist_second_split
+# ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_comm+ ss_loop_dist_second_comm, bar_width-epsilon,
+#                             bottom=sum,
+#                             color=colors[9],
+#                             edgecolor='black',
+#                             linewidth=line_width,
+#                             hatch='\\',
+#                             alpha=opacity,
+#                             label='Communication (very small)')
+
+# ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
+# ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist', bbox_to_anchor=(1.0, 1.0), loc="upper right")
+# plt.gca().add_artist(ss_loop_dist_legend)
+
+# # plot parameters
+# plt.title('Strong Scaling distribution for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+# plt.xlabel('N cores')
+# #plt.xscale("log")
+# labels_x = points.astype(int).astype(str)
+# plt.xticks(ticks=ticks_x, labels= labels_x)
+# #plt.yscale("log")
+# plt.ylabel('Runtime in s')
+# plt.savefig('plot/figures/strong_scaling_16384_distribution.pdf', bbox_inches='tight')

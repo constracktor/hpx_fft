@@ -187,20 +187,20 @@ points = ss_loop_shared_averaged[:,0]
 ################################################################################
 # strong SCALING RUNTIME HPX
 plt.figure(figsize=(10,3))
-# HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
-# HPX future sync shared data
-plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=1, label='HPX future sync shared')
-# HPX future shared data
-plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future shared')
-# HPX future agas shared data
-plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='HPX future agas shared')
 # HPX future naive shared data
-plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX future naive shared')
-# HPX loop dist data
-plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX loop dist')
+plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='Future naive')
+# HPX future shared data
+plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='Future opt')
+# HPX future sync shared data
+plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=1, label='Future sync')
+# HPX future agas shared data
+plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='Future agas')
 # HPX future agas dist data
-plt.plot(points, ss_future_scatter_averaged[:,7], 's--', c=colors[5], linewidth=1, label='HPX future agas dist')
+plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='Future agas dist')
+# HPX loop shared data
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='For_loop')
+# HPX loop dist data
+plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='For_loop dist')
 # # PThread data
 # plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=1, label='FFTW3 with PThreads')
 # # OpenMP data
@@ -211,8 +211,8 @@ plt.plot(points, ss_future_scatter_averaged[:,7], 's--', c=colors[5], linewidth=
 # plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
 
 # plot parameters
-plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{9}$x$2^{9}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{9}$x$2^{9}$ matrix')
+plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -224,21 +224,19 @@ plt.savefig('plot/figures/strong_scaling_512_hpx_runtime.pdf', bbox_inches='tigh
 # strong SCALING RUNTIME FFTW3
 plt.figure(figsize=(10,3))
 # MPI data
-plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[2], linewidth=1, label='FFTW3 with PThreads')
+plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with PThreads')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
-# HPX future shared data
-plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future shared')
+plt.plot(points, ss_fftw_hpx_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
 # HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='For_loop')
 
 # plot parameters
-plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{9}$x$2^{9}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 1), loc="upper left")
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{9}$x$2^{9}$ matrix')
+plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)

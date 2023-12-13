@@ -12,7 +12,7 @@ then
     # Compute benchmark script from 2^start to 2^stop
     POW_START=1
     POW_STOP=4
-    THREADS=24
+    THREADS=48
     ###############################
     # HPX loop
     # scatter loop
@@ -58,17 +58,30 @@ then
             srun -p buran -N $i -t 1:00:00 --exclusive -n $i ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE estimate 0 
         done
     done
-    # MPI total
-    srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+    # MPI + Threads
+    srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE estimate 1
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+        srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE estimate 0
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
         for (( j=0; j<$LOOP; j=j+1 ))
         do
-            srun -p buran -N $i -t 1:00:00 --exclusive -n $(($i*$THREADS)) ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0 
+            srun -p buran -N $i -t 1:00:00 --exclusive -n $i ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE estimate 0 
+        done
+    done
+    # MPI total
+    srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 1
+    for (( j=1; j<$LOOP; j=j+1 ))
+    do
+        srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 0
+    done
+    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    do
+        for (( j=0; j<$LOOP; j=j+1 ))
+        do
+            srun -p buran -N $i -t 1:00:00 --exclusive -n $(($i*$THREADS)) ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 0 
         done
     done
     # HPX
