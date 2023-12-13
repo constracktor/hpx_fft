@@ -28,6 +28,7 @@ then
     export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
     export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
     #export HPX_DIR=${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_collectives/install/lib64
+    module load gcc/11.2.1
     # for fftw mpi
     module load openmpi
 else
