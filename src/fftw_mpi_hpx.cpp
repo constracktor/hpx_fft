@@ -177,15 +177,15 @@ int main(int argc, char* argv[])
     // Print and store runtimes
     if( rank == 0)
     {
-        std::cout << "FFTW 2D with MPI + OpenMP:" 
+        std::cout << "FFTW 2D with MPI + HPX:" 
                   << "\n MPI ranks      = " << n_ranks
-                  << "\n OpenMP threads = " << n_threads
+                  << "\n HPX threads = " << n_threads
                   << "\n plan_r2c       = " << runtimes["plan_fftw_r2c"]
                   << "\n fftw_2d_r2c    = " << runtimes["total_fftw_r2c"]
                   << std::endl;
 
         std::ofstream runtime_file;
-        runtime_file.open ("result/runtimes_mpi_omp.txt", std::ios_base::app);
+        runtime_file.open ("result/runtimes_mpi_hpx.txt", std::ios_base::app);
 
         if(print_header)
         {

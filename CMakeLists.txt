@@ -79,11 +79,11 @@ find_library(
 )
 
 # search for HPX (MPI wip.)
-# find_library(
-#     FFTW_HPX_MPI_LIB
-#     NAMES "fftw3_mpi"
-#     PATHS $ENV{FFTW_HPX_DIR}
-# )
+find_library(
+    FFTW_HPX_MPI_LIB
+    NAMES "fftw3_mpi"
+    PATHS $ENV{FFTW_HPX_DIR}
+)
 find_library(
     FFTW_HPX_LIB
     NAMES "fftw3_hpx"
@@ -110,13 +110,13 @@ target_link_libraries(fftw_hpx
                         ${FFTW_HPX_LIB}
                         HPX::hpx)
 
-# add_executable(fftw_mpi_hpx src/fftw_mpi_hpx.cpp)
-# target_link_libraries(fftw_mpi_hpx
-#                         PkgConfig::FFTW
-#                         ${FFTW_HPX_MPI_LIB}
-#                         ${FFTW_HPX_LIB}
-#                         HPX::hpx
-#                         HPX::wrap_main)
+add_executable(fftw_mpi_hpx src/fftw_mpi_hpx.cpp)
+target_link_libraries(fftw_mpi_hpx
+                        PkgConfig::FFTW
+                        ${FFTW_HPX_MPI_LIB}
+                        ${FFTW_HPX_LIB}
+                        HPX::hpx
+                        HPX::wrap_main)
 
 ###########################################################
 # SEQUENTIAL

@@ -107,33 +107,33 @@ then
     #     done
     # done
     ###############################
-    # FFTW
-    # Threads
-    ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 1
-    for (( j=1; j<$LOOP; j=j+1 ))
-    do
-        ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 0
-    done
-    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-    do
-        for (( j=0; j<$LOOP; j=j+1 ))
-        do
-            ./build/fftw_mpi_threads $i  $BASE_SIZE $BASE_SIZE estimate 0 
-        done
-    done
-    # OpenMP
-    ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
-    for (( j=1; j<$LOOP; j=j+1 ))
-    do
-        ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
-    done
-    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-    do
-        for (( j=0; j<$LOOP; j=j+1 ))
-        do
-            ./build/fftw_mpi_omp $i  $BASE_SIZE $BASE_SIZE estimate 0 
-        done
-    done
+    # # FFTW
+    # # Threads
+    # ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 1
+    # for (( j=1; j<$LOOP; j=j+1 ))
+    # do
+    #     ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE estimate 0
+    # done
+    # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    # do
+    #     for (( j=0; j<$LOOP; j=j+1 ))
+    #     do
+    #         ./build/fftw_mpi_threads $i  $BASE_SIZE $BASE_SIZE estimate 0 
+    #     done
+    # done
+    # # OpenMP
+    # ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
+    # for (( j=1; j<$LOOP; j=j+1 ))
+    # do
+    #     ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 0
+    # done
+    # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    # do
+    #     for (( j=0; j<$LOOP; j=j+1 ))
+    #     do
+    #         ./build/fftw_mpi_omp $i  $BASE_SIZE $BASE_SIZE estimate 0 
+    #     done
+    # done
     # # MPI
     # mpirun -n 1 ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE estimate 1
     # for (( j=1; j<$LOOP; j=j+1 ))
@@ -148,18 +148,18 @@ then
     #     done
     # done
     # HPX
-    # FFTW3_HPX_NTHREADS=1 ./build/fftw_hpx 1 $BASE_SIZE $BASE_SIZE estimate 1
-    # for (( j=1; j<$LOOP; j=j+1 ))
-    # do
-    #     FFTW3_HPX_NTHREADS=1./build/fftw_hpx 1 $BASE_SIZE $BASE_SIZE estimate 0
-    # done
-    # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-    # do
-    #     for (( j=0; j<$LOOP; j=j+1 ))
-    #     do
-    #         FFTW3_HPX_NTHREADS=$i ./build/fftw_hpx $i  $BASE_SIZE $BASE_SIZE estimate 0 
-    #     done
-    # done
+    FFTW3_HPX_NTHREADS=1 ./build/fftw_mpi_hpx 1 $BASE_SIZE $BASE_SIZE estimate 1
+    for (( j=1; j<$LOOP; j=j+1 ))
+    do
+        FFTW3_HPX_NTHREADS=1./build/fftw_mpi_hpx 1 $BASE_SIZE $BASE_SIZE estimate 0
+    done
+    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    do
+        for (( j=0; j<$LOOP; j=j+1 ))
+        do
+            FFTW3_HPX_NTHREADS=$i ./build/fftw_mpi_hpx $i  $BASE_SIZE $BASE_SIZE estimate 0 
+        done
+    done
 elif [[ "$1" == "weak" ]]
 then
     # weak

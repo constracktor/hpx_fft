@@ -40,7 +40,7 @@ export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++
 # fftw libs
 export FFTW_TH_DIR="$ROOT/fft_installations/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$ROOT/fft_installations/fftw_omp_mpi/install/lib"
-export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx/install/lib"
+export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx_mpi/install/lib"
 export PKG_CONFIG_PATH="$FFTW_OMP_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################

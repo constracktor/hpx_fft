@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams.update({'font.size': 12})
+matplotlib.rcParams.update({'font.size': 14})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
 # CVD accessible colors
 # black - dark red - indigo (blueish) - yellow - teal (greenish) - light gray
@@ -54,7 +54,7 @@ ss_future_naive_shared_averaged = np.zeros((n_entries, ss_future_naive_shared_ma
 for i in range (n_entries):
     ss_future_naive_shared_averaged[i,:] = np.mean(ss_future_naive_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
-# strong scaling data for hpx loop shared
+# strong scaling data for hpx future shared
 ss_future_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_shared_matrix.shape[0]/n_loop) 
 ss_future_shared_averaged = np.zeros((n_entries, ss_future_shared_matrix.shape[1]))
@@ -102,6 +102,46 @@ n_entries = int(ss_fftw_hpx_matrix.shape[0]/n_loop)
 ss_fftw_hpx_averaged = np.zeros((n_entries, ss_fftw_hpx_matrix.shape[1]))
 for i in range (n_entries):
     ss_fftw_hpx_averaged[i,:] = np.mean(ss_fftw_hpx_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+
+
+##########################################
+# MEASURE
+###
+# strong scaling data for hpx loop shared
+ss_loop_measure_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_shared_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_loop_measure_shared_matrix.shape[0]/n_loop) 
+ss_loop_measure_shared_averaged = np.zeros((n_entries, ss_loop_measure_shared_matrix.shape[1]))
+for i in range (n_entries):
+    ss_loop_measure_shared_averaged[i,:] = np.mean(ss_loop_measure_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
+# strong scaling data for fftw_pt_measure
+ss_fftw_pt_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_threads_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_fftw_pt_measure_matrix.shape[0]/n_loop) 
+ss_fftw_pt_measure_averaged = np.zeros((n_entries, ss_fftw_pt_measure_matrix.shape[1]))
+for i in range (n_entries):
+    ss_fftw_pt_measure_averaged[i,:] = np.mean(ss_fftw_pt_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
+# strong scaling data for fftw_omp_measure
+ss_fftw_omp_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_fftw_omp_measure_matrix.shape[0]/n_loop) 
+ss_fftw_omp_measure_averaged = np.zeros((n_entries, ss_fftw_omp_measure_matrix.shape[1]))
+for i in range (n_entries):
+    ss_fftw_omp_measure_averaged[i,:] = np.mean(ss_fftw_omp_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
+# strong scaling data for fftw_mpi_measure
+ss_fftw_mpi_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_mpi_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_fftw_mpi_measure_matrix.shape[0]/n_loop)
+ss_fftw_mpi_measure_averaged = np.zeros((n_entries, ss_fftw_mpi_measure_matrix.shape[1]))
+for i in range (n_entries):
+    ss_fftw_mpi_measure_averaged[i,:] = np.mean(ss_fftw_mpi_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+###
+# strong scaling data for fftw_hpx_measure
+ss_fftw_hpx_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_hpx_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_fftw_hpx_measure_matrix.shape[0]/n_loop) 
+ss_fftw_hpx_measure_averaged = np.zeros((n_entries, ss_fftw_hpx_measure_matrix.shape[1]))
+for i in range (n_entries):
+    ss_fftw_hpx_measure_averaged[i,:] = np.mean(ss_fftw_hpx_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+# ################################################################################
 # ################################################################################
 # # STRONG SCALING PARALLEL EFFICIENCY
 # plt.figure(figsize=(10,3))
@@ -146,7 +186,7 @@ for i in range (n_entries):
 # plt.savefig('plot/figures/strong_scaling_16384_efficiency.pdf', bbox_inches='tight')
 ################################################################################
 # strong SCALING RUNTIME HPX
-plt.figure(figsize=(10,3))
+plt.figure(figsize=(7,6))
 points = ss_loop_shared_averaged[:,0]
 # HPX future naive shared data
 plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX future naive')
@@ -164,7 +204,7 @@ plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, l
 plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist')
 
 # # PThread data
-# plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=1, label='FFTW3 with PThreads')
+# plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=1, label='FFTW3 with pthreads')
 # # OpenMP data
 # plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
 # # MPI data
@@ -174,7 +214,7 @@ plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1,
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
+plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -184,11 +224,11 @@ plt.ylabel('Runtime in s')
 plt.savefig('plot/figures/strong_scaling_16384_hpx_runtime.pdf', bbox_inches='tight')
 
 # strong SCALING RUNTIME FFTW3
-plt.figure(figsize=(10,3))
+plt.figure(figsize=(7,6))
 # MPI data
 plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with PThreads')
+plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
 # OpenMP data
 plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # HPX data
@@ -198,7 +238,7 @@ plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, l
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 0.5), loc="center left")
+plt.legend(bbox_to_anchor=(0, 1.0), loc="upper left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -206,6 +246,60 @@ plt.xticks(ticks=points, labels= labels_x)
 plt.yscale("log")
 plt.ylabel('Runtime in s')
 plt.savefig('plot/figures/strong_scaling_16384_fftw3_runtime.pdf', bbox_inches='tight')
+
+# MEASURE
+# strong SCALING RUNTIME FFTW3
+plt.figure(figsize=(7,6))
+# MPI data
+plt.plot(points, ss_fftw_mpi_measure_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+# PThread data
+plt.plot(points, ss_fftw_pt_measure_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
+# OpenMP data
+plt.plot(points, ss_fftw_omp_measure_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+# HPX data
+plt.plot(points, ss_fftw_hpx_measure_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+# HPX loop measure shared data
+plt.plot(points, ss_loop_measure_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
+# HPX loop shared data
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
+
+# plot parameters
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+plt.legend(bbox_to_anchor=(1.0, 1.0), loc="upper right")
+plt.xlabel('N cores')
+plt.xscale("log")
+labels_x = points.astype(int).astype(str)
+plt.xticks(ticks=points, labels= labels_x)
+plt.yscale("log")
+plt.ylabel('Runtime in s')
+plt.savefig('plot/figures/strong_scaling_16384_fftw3_measure_runtime.pdf', bbox_inches='tight')
+
+# MEASURE planning
+# strong SCALING RUNTIME FFTW3
+plt.figure(figsize=(7,6))
+# MPI data
+plt.plot(points, ss_fftw_mpi_measure_averaged[:,5], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+# PThread data
+plt.plot(points, ss_fftw_pt_measure_averaged[:,5], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
+# OpenMP data
+plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+# HPX data
+plt.plot(points, ss_fftw_hpx_measure_averaged[:,4], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+# HPX loop measure shared data
+plt.plot(points, ss_loop_measure_shared_averaged[:,6], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
+# HPX loop shared data
+plt.plot(points, ss_loop_shared_averaged[:,6], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
+
+# plot parameters
+#plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
+plt.xlabel('N cores')
+plt.xscale("log")
+labels_x = points.astype(int).astype(str)
+plt.xticks(ticks=points, labels= labels_x)
+plt.yscale("log")
+plt.ylabel('Runtime in s')
+plt.savefig('plot/figures/strong_scaling_16384_fftw3_measure_plantime.pdf', bbox_inches='tight')
 # ################################################################################
 # # CORES PARALLEL SPEEDUP
 # # parallel efficiency
@@ -423,11 +517,11 @@ plt.savefig('plot/figures/strong_scaling_16384_fftw3_runtime.pdf', bbox_inches='
 # plt.savefig('plot/figures/strong_scaling_16384_distribution.pdf', bbox_inches='tight')
 ################################################################################                                                
 # Bar plot added up
-plt.figure(figsize=(12,3.5))
+plt.figure(figsize=(7,6))
     
 # plot details
 bar_width = 0.25
-epsilon = .015
+epsilon = .05
 line_width= 0.5
 opacity = 1.0
 ticks_x= np.linspace(1,8,8)
@@ -452,7 +546,7 @@ ss_loop_bar_trans = plt.bar(ss_loop_bar_positions, ss_loop_trans , bar_width-eps
                             hatch='')
 
 ss_loop_bars = [ss_loop_bar_fft, ss_loop_bar_trans]
-ss_loop_legend = plt.legend(ss_loop_bars, ['FFT', 'Transpose'], title='HPX for_loop', bbox_to_anchor=(0.785, 1.0), loc="upper right")
+ss_loop_legend = plt.legend(ss_loop_bars, ['FFT', 'Transpose'], title='HPX for_loop', bbox_to_anchor=(1.0, .676), loc="upper right")
 plt.gca().add_artist(ss_loop_legend)
 
 # HPX future async bars
@@ -475,7 +569,7 @@ ss_future_sync_bar_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_
                             hatch='\\')
 
 ss_future_sync_bars = [ss_future_sync_bar_fft, ss_future_sync_bar_trans]
-ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['FFT', 'Transpose'], title='HPX future sync', bbox_to_anchor=(0.605, 1.0), loc="upper right")
+ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['FFT', 'Transpose'], title='HPX future sync', bbox_to_anchor=(1.0, .47), loc="upper right")
 plt.gca().add_artist(ss_future_sync_legend)
 
 # HPX loop distributed bars
@@ -523,7 +617,7 @@ ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['FFT', 'Transpose','Rearran
 plt.gca().add_artist(ss_loop_dist_legend)
 
 # plot parameters
-plt.title('Strong Scaling distribution for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
+#plt.title('Strong Scaling distribution for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
 plt.xlabel('N cores')
 #plt.xscale("log")
 labels_x = points.astype(int).astype(str)
