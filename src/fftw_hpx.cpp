@@ -128,37 +128,66 @@ int main(int argc, char* argv[])
     ////
 
     ////////////////////////////////////////////////
-    // Cleanup
-    // FFTW cleanup
-    fftw_destroy_plan(plan_r2c_2d);
-    fftw_cleanup_threads();
-
-    ////////////////////////////////////////////////
     // Print and store runtimes
-
+    // get plan info
+    double add, mul, fma;
+    fftw_flops(plan_r2c_2d, &add, &mul, &fma);
+    const double plan_flops = add + mul + fma;
+    
+    ////////////////////////////////////////////////
+    // print runtime
     std::cout << "FFTW 2D with HPX shared:" 
                 << "\n HPX threads = " << n_threads
                 << "\n plan_r2c       = " << runtimes["plan_fftw_r2c"]
                 << "\n fftw_2d_r2c    = " << runtimes["total_fftw_r2c"]
+                << "\n plan flops     = " << plan_flops
                 << std::endl;
 
+    ////////////////////////////////////////////////
+    // store runtime and plan info
     std::ofstream runtime_file;
     runtime_file.open ("result/runtimes_shared_hpx.txt", std::ios_base::app);
 
     if(print_header)
     {
         runtime_file << "n_threads;n_x;n_y;plan;"
-                << "planning;fftw_2d_r2c;\n";
+                << "planning;fftw_2d_r2c;plan_flops\n";
     }
 
     runtime_file << n_threads << ";"
-                 << dim_c_x << ";"
-                 << dim_r_y << ";"
-                 << plan_flag << ";"
-                 << runtimes["plan_fftw_r2c"] << ";"
-                << runtimes["total_fftw_r2c"] << ";\n";
+                << dim_c_x << ";"
+                << dim_r_y << ";"
+                << plan_flag << ";"
+                << runtimes["plan_fftw_r2c"] << ";"
+                << runtimes["total_fftw_r2c"] << ";"
+                << plan_flops << ";\n";
     runtime_file.close();
+    ////////////////////////////////////////////////
+    // store plan and context
+    std::ofstream plan_info_file;
+    plan_info_file.open("plans/plan_shared_hpx.txt", std::ios_base::app);
+    plan_info_file  << "n_threads;n_x;n_y;plan;"
+                    << "planning;fftw_2d_r2c;plan_flops;\n" 
+                    << n_threads << ";"
+                    << dim_c_x << ";"
+                    << dim_r_y << ";"
+                    << plan_flag << ";"
+                    << runtimes["plan_fftw_r2c"] << ";"
+                    << runtimes["total_fftw_r2c"] << ";"
+                    << plan_flops << ";\n";
+    plan_info_file.close();
+    
+    FILE* plan_file = fopen ("plans/plan_shared_hpx.txt", "a");
+    fprintf(plan_file, "FFTW r2c 2D plan:\n");
+    fftw_fprint_plan(plan_r2c_2d, plan_file);
+    fprintf(plan_file, "\n\n");
+    fclose(plan_file);
 
+    ////////////////////////////////////////////////
+    // Cleanup
+    // FFTW cleanup
+    fftw_destroy_plan(plan_r2c_2d);
+    fftw_cleanup_threads();
     ////////////////////////////////////////////////
     return 0;
 }

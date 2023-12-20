@@ -33,6 +33,8 @@ struct fft
 
         real get_measurement(std::string name);
 
+        void write_plans_to_file(FILE* file_name);
+
         ~fft()
         {
             fftw_destroy_plan(plan_1d_r2c_);
@@ -69,6 +71,16 @@ struct fft
 real fft::get_measurement(std::string name)
 {
     return measurements_[name];
+}
+
+void fft::write_plans_to_file(FILE* file_name)
+{
+    fprintf(file_name, "FFTW r2c 1D plan:\n");
+    fftw_fprint_plan(plan_1d_r2c_, file_name);
+    fprintf(file_name, "\n");
+    fprintf(file_name, "FFTW c2c 1D plan:\n");
+    fftw_fprint_plan(plan_1d_c2c_, file_name);
+    fprintf(file_name, "\n\n");
 }
 
 void fft::fft_1d_r2c_inplace(const std::size_t i)
@@ -223,6 +235,8 @@ void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
     trans_values_vec_ = std::move(vector_2d<real>(dim_c_y_, 2 * dim_c_x_));
     //create fftw plans
     PLAN_FLAG_ = PLAN_FLAG;
+    // compute 1D FFTW plans
+    auto start_plan = t_.now(); 
     // r2c in y-direction
     plan_1d_r2c_ = fftw_plan_dft_r2c_1d(dim_r_y_,
                                        values_vec_.row(0),
@@ -234,6 +248,14 @@ void fft::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
                                    reinterpret_cast<fftw_complex*>(trans_values_vec_.row(0)), 
                                    FFTW_FORWARD,
                                    PLAN_FLAG);
+    auto stop_plan = t_.now();
+    measurements_["plan"] = stop_plan - start_plan;
+    // compute overall plan flops
+    double add_r2c, mul_r2c, fma_r2c;
+    fftw_flops(plan_1d_r2c_, &add_r2c, &mul_r2c, &fma_r2c);
+    double add_c2c, mul_c2c, fma_c2c;
+    fftw_flops(plan_1d_c2c_, &add_c2c, &mul_c2c, &fma_c2c);
+    measurements_["plan_flops"] = dim_r_y_ * (add_r2c + mul_r2c + fma_r2c) + dim_c_x_ * (add_c2c + mul_c2c + fma_c2c);
 }
 
 void print_vector_2d(const vector_2d<real>& input)
@@ -343,7 +365,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
                       "FFTW r2c      : {5}\n"
                       "First trans   : {6}\n"
                       "FFTW c2c      : {7}\n"
-                      "Second trans  : {8}\n";
+                      "Second trans  : {8}\n"
+                      "Plan time     : {9}\n"
+                      "Plan flops    : {10}\n";
     hpx::util::format_to(hpx::cout, msg,
                         run_flag,  
                         total,
@@ -352,7 +376,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
                         fft_computer.get_measurement("first_fftw"),
                         fft_computer.get_measurement("first_trans"),
                         fft_computer.get_measurement("second_fftw"),
-                        fft_computer.get_measurement("second_trans"))
+                        fft_computer.get_measurement("second_trans"),
+                        fft_computer.get_measurement("plan"),
+                        fft_computer.get_measurement("plan_flops"))
                         << std::flush;
     std::ofstream runtime_file;
     runtime_file.open ("result/runtimes_hpx_loop_shared.txt", std::ios_base::app);
@@ -363,7 +389,9 @@ int hpx_main(hpx::program_options::variables_map& vm)
                 << "first_fftw;"
                 << "first_trans;"
                 << "second_fftw;"
-                << "second_trans;\n";
+                << "second_trans;"
+                << "plan_time;"
+                << "plan_flops;\n";
     }
     runtime_file << hpx::get_os_thread_count() << ";" 
                 << dim_c_x << ";"
@@ -376,8 +404,42 @@ int hpx_main(hpx::program_options::variables_map& vm)
                 << fft_computer.get_measurement("first_fftw") << ";"
                 << fft_computer.get_measurement("first_trans") << ";"
                 << fft_computer.get_measurement("second_fftw") << ";"
-                << fft_computer.get_measurement("second_trans") << ";\n";
+                << fft_computer.get_measurement("second_trans") << ";"
+                << fft_computer.get_measurement("plan") << ";"
+                << fft_computer.get_measurement("plan_flops") << ";\n";
     runtime_file.close();
+
+    ////////////////////////////////////////////////
+    // store plan and context
+    std::ofstream plan_info_file;
+    plan_info_file.open("plans/plan_hpx_loop_shared.txt", std::ios_base::app);
+    plan_info_file  << "n_threads;n_x;n_y;plan;run_flag;total;initialization;"
+                << "fft_2d_total;"
+                << "first_fftw;"
+                << "first_trans;"
+                << "second_fftw;"
+                << "second_trans;"
+                << "plan_time;"
+                << "plan_flops;\n"
+                << hpx::get_os_thread_count() << ";" 
+                << dim_c_x << ";"
+                << dim_r_y << ";"
+                << plan_flag << ";"
+                << run_flag << ";"
+                << total << ";"
+                << init << ";"
+                << fft_computer.get_measurement("total") << ";"
+                << fft_computer.get_measurement("first_fftw") << ";"
+                << fft_computer.get_measurement("first_trans") << ";"
+                << fft_computer.get_measurement("second_fftw") << ";"
+                << fft_computer.get_measurement("second_trans") << ";"
+                << fft_computer.get_measurement("plan") << ";"
+                << fft_computer.get_measurement("plan_flops") << ";\n";
+    plan_info_file.close();
+    
+    FILE* plan_file = fopen("plans/plan_hpx_loop_shared.txt", "a");
+    fft_computer.write_plans_to_file(plan_file);
+    fclose(plan_file);
 
     ////////////////////////////////////////////////////////////////
     return hpx::finalize();

@@ -136,49 +136,35 @@ int main(int argc, char* argv[])
     // print_real(input, local_n0, dim_r_y, 0);
     // ////
 
-    ////////////////////////////////////////////////
-    // Compute FFTW
-    MPI_Barrier(comm);
-    auto start_fftw_r2c = t.now();
-    fftw_execute(plan_r2c_2d);
-    MPI_Barrier(comm);
-    auto stop_fftw_r2c = t.now();
-    runtimes["total_fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
-
-    // ////
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
-    // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-    // std::cout << "FFT: FFTW 2D" << std::endl;
-    // print_complex(input, local_n0, dim_r_y);
-    // ////
-
-    ////////////////////////////////////////////////
-    // Cleanup
-    // FFTW cleanup
-    fftw_destroy_plan(plan_r2c_2d);
-    fftw_cleanup_threads();
-    fftw_mpi_cleanup();
-    // MPI cleanup
-    MPI_Finalize();
 
     ////////////////////////////////////////////////
     // Print and store runtimes
     if( rank == 0)
     {
+        // get plan info
+        double add, mul, fma;
+        fftw_flops(plan_r2c_2d, &add, &mul, &fma);
+        const double plan_flops = add + mul + fma;
+        
+        ////////////////////////////////////////////////
+        // print runtime
         std::cout << "FFTW 2D with MPI + OpenMP:" 
                   << "\n MPI ranks      = " << n_ranks
                   << "\n OpenMP threads = " << n_threads
                   << "\n plan_r2c       = " << runtimes["plan_fftw_r2c"]
                   << "\n fftw_2d_r2c    = " << runtimes["total_fftw_r2c"]
+                  << "\n plan flops     = " << plan_flops
                   << std::endl;
 
+        ////////////////////////////////////////////////
+        // store runtime and plan info
         std::ofstream runtime_file;
-        runtime_file.open ("result/runtimes_mpi_omp.txt", std::ios_base::app);
+        runtime_file.open("result/runtimes_mpi_omp.txt", std::ios_base::app);
 
         if(print_header)
         {
             runtime_file << "n_ranks;n_threads;n_x;n_y;plan;"
-                    << "planning;fftw_2d_r2c;\n";
+                    << "planning;fftw_2d_r2c;plan_flops;\n";
         }
 
         runtime_file << n_ranks << ";" 
@@ -187,9 +173,40 @@ int main(int argc, char* argv[])
                      << dim_r_y << ";"
                      << plan_flag << ";"
                      << runtimes["plan_fftw_r2c"] << ";"
-                     << runtimes["total_fftw_r2c"] << ";\n";
+                     << runtimes["total_fftw_r2c"] << ";"
+                     << plan_flops << ";\n";
+
         runtime_file.close();
+        ////////////////////////////////////////////////
+        // store plan and context
+        std::ofstream plan_info_file;
+        plan_info_file.open("plans/plan_mpi_omp.txt", std::ios_base::app);
+        plan_info_file  << "n_ranks;n_threads;n_x;n_y;plan;"
+                        << "planning;fftw_2d_r2c;plan_flops;\n"
+                        << n_ranks << ";" 
+                        << n_threads << ";"
+                        << dim_c_x << ";"
+                        << dim_r_y << ";"
+                        << plan_flag << ";"
+                        << runtimes["plan_fftw_r2c"] << ";"
+                        << runtimes["total_fftw_r2c"] << ";"
+                        << plan_flops << ";\n";
+        plan_info_file.close();
+        
+        FILE* plan_file = fopen ("plans/plan_mpi_omp.txt", "a");
+        fprintf(plan_file, "FFTW r2c 2D plan:\n");
+        fftw_fprint_plan(plan_r2c_2d, plan_file);
+        fprintf(plan_file, "\n\n");
+        fclose(plan_file);
     }
+    ////////////////////////////////////////////////
+    // Cleanup
+    // FFTW cleanup
+    fftw_destroy_plan(plan_r2c_2d);
+    fftw_cleanup_threads();
+    fftw_mpi_cleanup();
+    // MPI cleanup
+    MPI_Finalize();
     ////////////////////////////////////////////////
     return 0;
 }

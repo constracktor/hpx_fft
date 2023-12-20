@@ -1,29 +1,5 @@
-###
-# strong scaling data for fftw_pt_measured
-ss_fftw_pt_measured_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_threads_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_pt_measured_matrix.shape[0]/n_loop) 
-ss_fftw_pt_measured_averaged = np.zeros((n_entries, ss_fftw_pt_measured_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_pt_measured_averaged[i,:] = np.mean(ss_fftw_pt_measured_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
-# strong scaling data for fftw_omp_measured
-ss_fftw_omp_measured_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp_measured_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_omp_measured_matrix.shape[0]/n_loop) 
-ss_fftw_omp_measured_averaged = np.zeros((n_entries, ss_fftw_omp_measured_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_omp_measured_averaged[i,:] = np.mean(ss_fftw_omp_measured_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
-# strong scaling data for fftw_mpi_measured
-ss_fftw_mpi_measured_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_mpi_measured_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_mpi_measured_matrix.shape[0]/n_loop)
-ss_fftw_mpi_measured_averaged = np.zeros((n_entries, ss_fftw_mpi_measured_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_mpi_measured_averaged[i,:] = np.mean(ss_fftw_mpi_measured_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
-# strong scaling data for fftw_hpx_measured
-ss_fftw_hpx_measured_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_hpx_measured_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_fftw_hpx_measured_matrix.shape[0]/n_loop) 
-ss_fftw_hpx_measured_averaged = np.zeros((n_entries, ss_fftw_hpx_measured_matrix.shape[1]))
-for i in range (n_entries):
-    ss_fftw_hpx_measured_averaged[i,:] = np.mean(ss_fftw_hpx_measured_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-# ################################################################################
+    double add_c2c, mul_c2c, fma_c2c;
+    fftw_flops(plan_1d_c2c_, &add_c2c, &mul_c2c, &fma_c2c);
+    
+    
+    const double plan_flops = add_c2c + mul_c2c + fma_c2c;
