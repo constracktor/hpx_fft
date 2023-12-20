@@ -1,8 +1,7 @@
 #!/bin/bash
 ################################################################################
 # Benchmark script for ipvs-epyc1 (dual-socket AMD EPYC 7742) behind slurm
-################################################################################
-LOOP=5
+########1
 if [[ "$1" == "strong" ]]
 then
     # strong
@@ -14,20 +13,20 @@ then
     POW_START=1
     POW_STOP=7
     # ###############################
-    # HPX loop
-    # shared
-    srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true --plan=$FFTW_PLAN
-    for (( j=1; j<$LOOP; j=j+1 ))
-    do
-        srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --plan=$FFTW_PLAN
-    done
-    for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
-    do
-        for (( j=0; j<$LOOP; j=j+1 ))
-        do
-            srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --plan=$FFTW_PLAN
-        done
-    done
+    # # HPX loop
+    # # shared
+    # srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --header=true --plan=$FFTW_PLAN
+    # for (( j=1; j<$LOOP; j=j+1 ))
+    # do
+    #     srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --plan=$FFTW_PLAN
+    # done
+    # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
+    # do
+    #     for (( j=0; j<$LOOP; j=j+1 ))
+    #     do
+    #         srun -t 1:00:00 --exclusive ./build/fft_hpx_loop_shared --hpx:threads=$i --nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --plan=$FFTW_PLAN
+    #     done
+    # done
     # # scatter
     # srun -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=1 --nx=$BASE_SIZE --ny=$BASE_SIZE --run=scatter --header=true --plan=$FFTW_PLAN
     # for (( j=1; j<$LOOP; j=j+1 ))

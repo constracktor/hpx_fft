@@ -148,6 +148,7 @@ int main(int argc, char* argv[])
     // std::cout << "FFT: FFTW 2D" << std::endl;
     // print_complex(input, local_n0, dim_r_y);
     // ////
+    std::cout << fftw_print_plan(plan_r2c_2d) << std::endl;
 
     ////////////////////////////////////////////////
     // Cleanup
