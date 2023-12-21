@@ -136,7 +136,22 @@ int main(int argc, char* argv[])
     // print_real(input, local_n0, dim_r_y, 0);
     // ////
 
+    ////////////////////////////////////////////////
+    // Compute FFTW
+    MPI_Barrier(comm);
+    auto start_fftw_r2c = t.now();
+    fftw_execute(plan_r2c_2d);
+    MPI_Barrier(comm);
+    auto stop_fftw_r2c = t.now();
+    runtimes["total_fftw_r2c"] = duration(stop_fftw_r2c - start_fftw_r2c).count();
 
+    // ////
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
+    // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
+    // std::cout << "FFT: FFTW 2D" << std::endl;
+    // print_complex(input, local_n0, dim_r_y);
+    // ////
+    
     ////////////////////////////////////////////////
     // Print and store runtimes
     if( rank == 0)
