@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
     fftw_execute(plan_r2c_2d);
     MPI_Barrier(comm);
     auto stop_fftw_r2c = t.now();
-    runtimes["total_fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
+    runtimes["total_fftw_r2c"] = duration(stop_fftw_r2c - start_fftw_r2c).count();
 
     // ////
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
@@ -154,10 +154,18 @@ int main(int argc, char* argv[])
     if( rank == 0)
     {
         // get plan info
-        double add, mul, fma;
-        fftw_flops(plan_r2c_2d, &add, &mul, &fma);
-        const double plan_flops = add + mul + fma;
-        
+        double plan_flops;
+        if (n_ranks == 1)
+        {
+            double add, mul, fma;
+            fftw_flops(plan_r2c_2d, &add, &mul, &fma);
+            plan_flops = add + mul + fma;
+        }
+        else
+        {
+            plan_flops = 0;
+        }
+
         ////////////////////////////////////////////////
         // print runtime
         std::cout << "FFTW 2D with MPI + pthreads:" 

@@ -8,10 +8,10 @@ then
     # strong
     mkdir result
     mkdir plans
-    BASE_SIZE=32768
+    BASE_SIZE=16384
     OFFSET=0
     LOOP=5
-    FFTW_PLAN=estimate
+    FFTW_PLAN=measure
     THREADS=40
     # Compute benchmark script from 2^start to 2^stop
     POW_START=1

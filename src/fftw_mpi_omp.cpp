@@ -151,16 +151,24 @@ int main(int argc, char* argv[])
     // std::cout << "FFT: FFTW 2D" << std::endl;
     // print_complex(input, local_n0, dim_r_y);
     // ////
-    
+
     ////////////////////////////////////////////////
     // Print and store runtimes
     if( rank == 0)
     {
         // get plan info
-        double add, mul, fma;
-        fftw_flops(plan_r2c_2d, &add, &mul, &fma);
-        const double plan_flops = add + mul + fma;
-        
+        double plan_flops;
+        if (n_ranks == 1)
+        {
+            double add, mul, fma;
+            fftw_flops(plan_r2c_2d, &add, &mul, &fma);
+            plan_flops = add + mul + fma;
+        }
+        else
+        {
+            plan_flops = 0;
+        }
+
         ////////////////////////////////////////////////
         // print runtime
         std::cout << "FFTW 2D with MPI + OpenMP:" 
