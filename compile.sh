@@ -31,6 +31,17 @@ then
     module load gcc/11.2.1
     # for fftw mpi
     module load openmpi
+elif [[ "$1" == "medusa" ]]
+then
+    # medusa
+    export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_meuda"
+    export FFTW_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
+    export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
+    export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
+    #export HPX_DIR=${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_collectives/install/lib64
+    module load gcc/11.2.1
+    # for fftw mpi
+    module load openmpi
 else
   echo 'Please specify system to compile: "epyc2" or "buran"'
   exit 1
@@ -40,7 +51,7 @@ export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++
 # fftw libs
 export FFTW_TH_DIR="$ROOT/fft_installations/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$ROOT/fft_installations/fftw_omp_mpi/install/lib"
-export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx_mpi/install/lib"
+export FFTW_HPX_DIR="$ROOT/fft_installations/fftw_hpx/install/lib"
 export PKG_CONFIG_PATH="$FFTW_OMP_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################

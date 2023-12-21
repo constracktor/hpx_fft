@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     auto start_fftw_r2c = t.now();
     fftw_execute(plan_r2c_2d);
     auto stop_fftw_r2c = t.now();
-    runtimes["total_fftw_r2c"] += duration(stop_fftw_r2c - start_fftw_r2c).count();
+    runtimes["total_fftw_r2c"] = duration(stop_fftw_r2c - start_fftw_r2c).count();
 
     ////
     // print_complex(input, dim_c_x, dim_r_y);
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
     if(print_header)
     {
         runtime_file << "n_threads;n_x;n_y;plan;"
-                << "planning;fftw_2d_r2c;plan_flops\n";
+                << "planning;fftw_2d_r2c;plan_flops;\n";
     }
 
     runtime_file << n_threads << ";"
