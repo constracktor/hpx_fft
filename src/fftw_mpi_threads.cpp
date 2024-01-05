@@ -103,7 +103,15 @@ int main(int argc, char* argv[])
         std::cout << "Threading not working\n";
     } 
     fftw_mpi_init();
-    if (threads_ok) fftw_plan_with_nthreads(n_threads);
+    if (threads_ok)
+    {
+        fftw_plan_with_nthreads(n_threads);
+        std::cout << "Threaded planning working\n";
+    }
+    else
+    {
+        std::cout << "Threaded planning not working\n";
+    } 
 
     // get local data size and allocate
     size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y, comm,
