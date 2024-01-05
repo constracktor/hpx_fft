@@ -141,8 +141,47 @@ n_entries = int(ss_fftw_hpx_measure_matrix.shape[0]/n_loop)
 ss_fftw_hpx_measure_averaged = np.zeros((n_entries, ss_fftw_hpx_measure_matrix.shape[1]))
 for i in range (n_entries):
     ss_fftw_hpx_measure_averaged[i,:] = np.mean(ss_fftw_hpx_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-# ################################################################################
-# ################################################################################
+################################################################################
+################################################################################
+# calculate factors
+
+# HPX loop measure shared data
+first_fft_measure = ss_loop_measure_shared_averaged[:,8]
+second_fft_measure = ss_loop_measure_shared_averaged[:,10]
+plan_measure = ss_loop_measure_shared_averaged[:,-3]
+
+# HPX loop shared data
+first_fft = ss_loop_shared_averaged[:,8]
+second_fft = ss_loop_shared_averaged[:,10]
+plan = ss_loop_shared_averaged[:,-3]
+
+first_speedup = first_fft / first_fft_measure
+print(first_speedup)
+print(np.mean(first_speedup[:-1]))
+
+second_speedup = second_fft /second_fft_measure
+print(second_speedup)
+print(np.mean(second_speedup[:-1]))
+
+plan_speedup = plan_measure /plan
+print(plan_speedup)
+print(np.mean(plan_speedup))
+
+# OpenMP data
+plan_openmp_2d = ss_fftw_omp_measure_averaged[:,5]
+# MPI data
+plan_mpi_2d = ss_fftw_mpi_measure_averaged[:,5]
+# PThread data
+plan_thread_2d = ss_fftw_pt_measure_averaged[:,5]
+# HPX data
+plan_hpx_2d = ss_fftw_hpx_measure_averaged[:,4] 
+
+plan_measure_2d = np.mean((plan_hpx_2d + plan_mpi_2d + plan_openmp_2d + plan_thread_2d) / 4)
+plan_2d_speedup = plan_measure_2d / plan_measure
+print(plan_2d_speedup) 
+print(np.mean(plan_2d_speedup))
+################################################################################
+################################################################################
 # # STRONG SCALING PARALLEL EFFICIENCY
 # plt.figure(figsize=(10,3))
 # # line
@@ -232,7 +271,7 @@ plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, la
 # OpenMP data
 plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+plt.plot(points, ss_fftw_hpx_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
 # HPX loop shared data
 plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop')
 
@@ -286,9 +325,9 @@ plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewi
 # HPX data
 plt.plot(points, ss_fftw_hpx_measure_averaged[:,4], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
 # HPX loop measure shared data
-plt.plot(points, ss_loop_measure_shared_averaged[:,6], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
+plt.plot(points, ss_loop_measure_shared_averaged[:,-3], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
 # HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,6], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
+plt.plot(points, ss_loop_shared_averaged[:,-3], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')

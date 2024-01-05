@@ -34,7 +34,7 @@ then
 elif [[ "$1" == "medusa" ]]
 then
     # medusa
-    export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_meuda"
+    export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa"
     export FFTW_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
     export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
     export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib

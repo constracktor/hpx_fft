@@ -91,10 +91,10 @@ int main(int argc, char* argv[])
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     threads_ok = provided >= MPI_THREAD_MULTIPLE;
     if (provided < MPI_THREAD_MULTIPLE)
-{
-    printf("ERROR: The MPI library does not have full thread support\n");
-    MPI_Abort(MPI_COMM_WORLD, 1);
-}
+    {
+        printf("ERROR: The MPI library does not have full thread support\n");
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
 
     MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &rank);
@@ -153,9 +153,17 @@ int main(int argc, char* argv[])
     if( rank == 0)
     {
         // get plan info
-        double add, mul, fma;
-        fftw_flops(plan_r2c_2d, &add, &mul, &fma);
-        const double plan_flops = add + mul + fma;
+        double plan_flops;
+        if (n_ranks == 1)
+        {
+            double add, mul, fma;
+            fftw_flops(plan_r2c_2d, &add, &mul, &fma);
+            plan_flops = add + mul + fma;
+        }
+        else
+        {
+            plan_flops = 0;
+        }
         
         ////////////////////////////////////////////////
         // print runtime

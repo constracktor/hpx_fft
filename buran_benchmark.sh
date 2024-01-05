@@ -10,7 +10,7 @@ then
     mkdir plans
     BASE_SIZE=32768
     OFFSET=0
-    LOOP=5
+    LOOP=7
     FFTW_PLAN=measure
     THREADS=48
     # Compute benchmark script from 2^start to 2^stop
@@ -19,10 +19,10 @@ then
     ###############################
     # HPX loop
     # scatter loop
-    srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
+    srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --plan=$FFTW_PLAN
+        srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --plan=$FFTW_PLAN
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
@@ -34,10 +34,10 @@ then
     ###############################
     # HPX future
     # scatter task agas
-    srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
+    srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --plan=$FFTW_PLAN 
+        srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --plan=$FFTW_PLAN 
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
@@ -49,10 +49,10 @@ then
     ###############################
     # FFTW
     # MPI + OpenMP
-    srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
+    srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
+        srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
@@ -62,10 +62,10 @@ then
         done
     done
     # MPI + Threads
-    srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
+    srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
+        srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_threads $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
@@ -75,10 +75,10 @@ then
         done
     done
     # MPI total
-    srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
+    srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
     for (( j=1; j<$LOOP; j=j+1 ))
     do
-        srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
+        srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_threads 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
     done
     for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     do
@@ -102,10 +102,10 @@ then
     ###############################
     # HPX loop
     # # scatter loop
-    # srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true
+    # srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true
     # for (( j=1; j<$LOOP; j=j+1 ))
     # do
-    #     srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter 
+    #     srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter 
     # done
     # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     # do
@@ -117,10 +117,10 @@ then
     ###############################
     # HPX future
     # # scatter task agas
-    # srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true
+    # srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true
     # for (( j=1; j<$LOOP; j=j+1 ))
     # do
-    #     srun -p buran -N 1 -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter 
+    #     srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive ./build/fft_hpx_task_agas --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter 
     # done
     # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     # do
@@ -132,10 +132,10 @@ then
     ###############################
     # FFTW
     # # MPI + OpenMP
-    # srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
+    # srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
     # for (( j=1; j<$LOOP; j=j+1 ))
     # do
-    #     srun -p buran -N 1 -t 1:00:00 --exclusive -n 1 ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
+    #     srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -N 1 -c $THREADS ./build/fftw_mpi_omp $THREADS $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
     # done
     # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     # do
@@ -146,10 +146,10 @@ then
     # done
 
     # # MPI total
-    # srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
+    # srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  1
     # for (( j=1; j<$LOOP; j=j+1 ))
     # do
-    #     srun -p buran -N 1 -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
+    #     srun -p buran -N 1 -c $THREADS -t 1:00:00 --exclusive -n $THREADS ./build/fftw_mpi_omp 1 $BASE_SIZE $BASE_SIZE $FFTW_PLAN  0
     # done
     # for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
     # do

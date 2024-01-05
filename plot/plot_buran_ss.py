@@ -23,7 +23,7 @@ n_loop = 5
 
 ###
 # strong scaling data for fftw_mpi_omp
-ss_fftw_mpi_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_omp_24.txt'), dtype='float', delimiter=';' , skip_header=1)
+ss_fftw_mpi_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_omp_48.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_omp_matrix.shape[0]/n_loop)
 ss_fftw_mpi_omp_averaged = np.zeros((n_entries, ss_fftw_mpi_omp_matrix.shape[1]))
 for i in range (n_entries):
@@ -31,7 +31,7 @@ for i in range (n_entries):
 
 ###
 # strong scaling data for fftw_mpi_threads
-ss_fftw_mpi_threads_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_threads_24.txt'), dtype='float', delimiter=';' , skip_header=1)
+ss_fftw_mpi_threads_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_threads_48.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_threads_matrix.shape[0]/n_loop)
 ss_fftw_mpi_threads_averaged = np.zeros((n_entries, ss_fftw_mpi_threads_matrix.shape[1]))
 for i in range (n_entries):
@@ -39,7 +39,7 @@ for i in range (n_entries):
 
 ###
 # strong scaling data for fftw_mpi_total
-ss_fftw_mpi_total_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_total_24.txt'), dtype='float', delimiter=';' , skip_header=1)
+ss_fftw_mpi_total_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_total_48.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_total_matrix.shape[0]/n_loop)
 ss_fftw_mpi_total_averaged = np.zeros((n_entries, ss_fftw_mpi_total_matrix.shape[1]))
 for i in range (n_entries):
@@ -47,39 +47,39 @@ for i in range (n_entries):
 
 ###
 # strong scaling data for hpx loop 24
-ss_loop_24_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_loop_24.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_24_matrix.shape[0]/n_loop)
-ss_loop_24_averaged = np.zeros((n_entries, ss_loop_24_matrix.shape[1]))
+ss_loop_48_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_loop_48.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_loop_48_matrix.shape[0]/n_loop)
+ss_loop_48_averaged = np.zeros((n_entries, ss_loop_48_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_24_averaged[i,:] = np.mean(ss_loop_24_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_loop_48_averaged[i,:] = np.mean(ss_loop_48_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+
+# ###
+# # strong scaling data for hpx loop 24_opt
+# ss_loop_48_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_loop_48_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
+# n_entries = int(ss_loop_48_opt_matrix.shape[0]/n_loop)
+# ss_loop_48_opt_averaged = np.zeros((n_entries, ss_loop_48_opt_matrix.shape[1]))
+# for i in range (n_entries):
+#     ss_loop_48_opt_averaged[i,:] = np.mean(ss_loop_48_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 
 ###
-# strong scaling data for hpx loop 24_opt
-ss_loop_24_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_loop_24_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_24_opt_matrix.shape[0]/n_loop)
-ss_loop_24_opt_averaged = np.zeros((n_entries, ss_loop_24_opt_matrix.shape[1]))
+# strong scaling data for hpx task agas_48
+ss_task_agas_48_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_task_agas_48.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_task_agas_48_matrix.shape[0]/n_loop)
+ss_task_agas_48_averaged = np.zeros((n_entries, ss_task_agas_48_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_24_opt_averaged[i,:] = np.mean(ss_loop_24_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_task_agas_48_averaged[i,:] = np.mean(ss_task_agas_48_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)    
 
-###
-# strong scaling data for hpx task agas_24
-ss_task_agas_24_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_task_agas_24.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_agas_24_matrix.shape[0]/n_loop)
-ss_task_agas_24_averaged = np.zeros((n_entries, ss_task_agas_24_matrix.shape[1]))
-for i in range (n_entries):
-    ss_task_agas_24_averaged[i,:] = np.mean(ss_task_agas_24_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)    
-
-###
-# strong scaling data for hpx task agas_24_opt
-ss_task_agas_24_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_task_agas_24_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_task_agas_24_opt_matrix.shape[0]/n_loop)
-ss_task_agas_24_opt_averaged = np.zeros((n_entries, ss_task_agas_24_opt_matrix.shape[1]))
-for i in range (n_entries):
-    ss_task_agas_24_opt_averaged[i,:] = np.mean(ss_task_agas_24_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)     
+# ###
+# # strong scaling data for hpx task agas_48_opt
+# ss_task_agas_48_opt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_hpx_task_agas_48_opt.txt'), dtype='float', delimiter=';' , skip_header=1)
+# n_entries = int(ss_task_agas_48_opt_matrix.shape[0]/n_loop)
+# ss_task_agas_48_opt_averaged = np.zeros((n_entries, ss_task_agas_48_opt_matrix.shape[1]))
+# for i in range (n_entries):
+#     ss_task_agas_48_opt_averaged[i,:] = np.mean(ss_task_agas_48_opt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)     
 
 # # print how many percent optimized version is faster
-# print((ss_loop_24_opt_averaged[:,10] + ss_loop_24_opt_averaged[:,14]) / (ss_loop_24_averaged[:,10] + ss_loop_24_averaged[:,14])  * 100)
-# print(ss_task_agas_24_opt_averaged[:,7] / ss_task_agas_24_averaged[:,7] * 100)
+# print((ss_loop_48_opt_averaged[:,10] + ss_loop_48_opt_averaged[:,14]) / (ss_loop_48_averaged[:,10] + ss_loop_48_averaged[:,14])  * 100)
+# print(ss_task_agas_48_opt_averaged[:,7] / ss_task_agas_48_averaged[:,7] * 100)
 # ################################################################################
 # strong SCALING RUNTIME
 points = [1,2,4,8,16]
@@ -91,13 +91,13 @@ plt.plot(points, ss_fftw_mpi_threads_averaged[:,6], 'v--', c=greyscale[1], linew
 # MPI + OpenMP data
 plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v--', c=greyscale[3], linewidth=1, label='FFTW3 with MPI+OpenMP')
 # HPX loop dist data
-plt.plot(points, ss_loop_24_averaged[:,7], 's--', c=colors[2], linewidth=1, label='HPX for_loop dist')
+plt.plot(points, ss_loop_48_averaged[:,7], 's--', c=colors[2], linewidth=1, label='HPX for_loop dist')
 # HPX task agas dist data
-plt.plot(points, ss_task_agas_24_averaged[:,7], 'o--', c=colors[4], linewidth=1, label='HPX future agas dist')
-# HPX loop opt dist data
-plt.plot(points, ss_loop_24_opt_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist opt')
-# HPX task agas dist data
-plt.plot(points, ss_task_agas_24_opt_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='HPX future agas dist opt')
+plt.plot(points, ss_task_agas_48_averaged[:,7], 'o--', c=colors[4], linewidth=1, label='HPX future agas dist')
+# # HPX loop opt dist data
+# plt.plot(points, ss_loop_48_opt_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist opt')
+# # HPX task agas dist data
+# plt.plot(points, ss_task_agas_48_opt_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='HPX future agas dist opt')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for buran cluster with 24 threads and with $2^{14}$x$2^{14}$ matrix')
@@ -125,15 +125,15 @@ plt.savefig('plot/figures/strong_scaling_buran_runtime.pdf', bbox_inches='tight'
 
 # plt.rc('hatch', color='k', linewidth=0.5)
 # # HPX loop distributed bars
-# ss_loop_dist_first_fft = ss_loop_24_averaged[:,8]
-# ss_loop_dist_first_trans = ss_loop_24_averaged[:,11]
-# ss_loop_dist_second_fft = ss_loop_24_averaged[:,12]
-# ss_loop_dist_second_trans = ss_loop_24_averaged[:,15]
+# ss_loop_dist_first_fft = ss_loop_48_averaged[:,8]
+# ss_loop_dist_first_trans = ss_loop_48_averaged[:,11]
+# ss_loop_dist_second_fft = ss_loop_48_averaged[:,12]
+# ss_loop_dist_second_trans = ss_loop_48_averaged[:,15]
 
-# ss_loop_dist_first_split = ss_loop_24_averaged[:,9]
-# ss_loop_dist_first_comm = ss_loop_24_averaged[:,10]
-# ss_loop_dist_second_split = ss_loop_24_averaged[:,13]
-# ss_loop_dist_second_comm = ss_loop_24_averaged[:,14]
+# ss_loop_dist_first_split = ss_loop_48_averaged[:,9]
+# ss_loop_dist_first_comm = ss_loop_48_averaged[:,10]
+# ss_loop_dist_second_split = ss_loop_48_averaged[:,13]
+# ss_loop_dist_second_comm = ss_loop_48_averaged[:,14]
 
 # ss_loop_dist_bar_positions = ticks_x 
 
@@ -196,15 +196,15 @@ plt.savefig('plot/figures/strong_scaling_buran_runtime.pdf', bbox_inches='tight'
 
 
 # # HPX loop opt distributed bars
-# ss_loop_opt_dist_first_fft = ss_loop_24_opt_averaged[:,8]
-# ss_loop_opt_dist_first_trans = ss_loop_24_opt_averaged[:,11]
-# ss_loop_opt_dist_second_fft = ss_loop_24_opt_averaged[:,12]
-# ss_loop_opt_dist_second_trans = ss_loop_24_opt_averaged[:,15]
+# ss_loop_opt_dist_first_fft = ss_loop_48_opt_averaged[:,8]
+# ss_loop_opt_dist_first_trans = ss_loop_48_opt_averaged[:,11]
+# ss_loop_opt_dist_second_fft = ss_loop_48_opt_averaged[:,12]
+# ss_loop_opt_dist_second_trans = ss_loop_48_opt_averaged[:,15]
 
-# ss_loop_opt_dist_first_split = ss_loop_24_opt_averaged[:,9]
-# ss_loop_opt_dist_first_comm = ss_loop_24_opt_averaged[:,10]
-# ss_loop_opt_dist_second_split = ss_loop_24_opt_averaged[:,13]
-# ss_loop_opt_dist_second_comm = ss_loop_24_opt_averaged[:,14]
+# ss_loop_opt_dist_first_split = ss_loop_48_opt_averaged[:,9]
+# ss_loop_opt_dist_first_comm = ss_loop_48_opt_averaged[:,10]
+# ss_loop_opt_dist_second_split = ss_loop_48_opt_averaged[:,13]
+# ss_loop_opt_dist_second_comm = ss_loop_48_opt_averaged[:,14]
 
 # ss_loop_opt_dist_bar_positions = ticks_x  + bar_width
 

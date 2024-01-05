@@ -11,3 +11,5 @@ python3 plot/plot_16384.py
 python3 plot/plot_512.py
 python3 plot/plot_buran_ss.py
 python3 plot/plot_buran_ws.py
+
+python3 plot/plot_medusa_ss.py

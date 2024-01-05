@@ -83,9 +83,16 @@ int main(int argc, char* argv[])
     int threads_ok, provided;
     int rank, n_ranks;
 
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
-    threads_ok = provided >= MPI_THREAD_FUNNELED;
-
+    // MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+    // threads_ok = provided >= MPI_THREAD_FUNNELED;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+    threads_ok = provided >= MPI_THREAD_MULTIPLE;
+    if (provided < MPI_THREAD_MULTIPLE)
+    {
+        printf("ERROR: The MPI library does not have full thread support\n");
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+    
     MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &n_ranks);
