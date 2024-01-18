@@ -12,11 +12,11 @@
 #include <fstream>
 #include <fftw3.h>
 
-typedef double real;
 #include "vector_2d.hpp"
 
-void print_vector_2d(const vector_2d<real>& input);
+typedef double real;
 
+// FFT calculation structs
 struct fft_server : hpx::components::component_base<fft_server>
 {
     typedef fftw_plan fft_backend_plan;
@@ -25,11 +25,16 @@ struct fft_server : hpx::components::component_base<fft_server>
     public:
         fft_server() = default;
 
-        void initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG);
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, initialize, initialize_action)
+        void initialize(vector_2d<real> values_vec,
+                        const unsigned PLAN_FLAG);
+        HPX_DEFINE_COMPONENT_ACTION(fft_server, 
+                                    initialize,
+                                    initialize_action)
 
         vector_2d<real> fft_2d_r2c();
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_2d_r2c, fft_2d_r2c_action)
+        HPX_DEFINE_COMPONENT_ACTION(fft_server,
+                                    fft_2d_r2c,
+                                    fft_2d_r2c_action)
 
         virtual ~fft_server()
         {
@@ -39,17 +44,25 @@ struct fft_server : hpx::components::component_base<fft_server>
         }
 
     private:
+        // FFT backend
         void fft_1d_r2c_inplace(const std::size_t i);
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_1d_r2c_inplace, fft_1d_r2c_inplace_action)
-
+        HPX_DEFINE_COMPONENT_ACTION(fft_server, 
+                                    fft_1d_r2c_inplace, 
+                                    fft_1d_r2c_inplace_action)
         void fft_1d_c2c_inplace(const std::size_t i);
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, fft_1d_c2c_inplace, fft_1d_c2c_inplace_action)
+        HPX_DEFINE_COMPONENT_ACTION(fft_server, 
+                                    fft_1d_c2c_inplace,
+                                    fft_1d_c2c_inplace_action)
 
+        // transpose
         void transpose_shared_y_to_x(const std::size_t index);
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, transpose_shared_y_to_x, transpose_shared_y_to_x_action)
-
+        HPX_DEFINE_COMPONENT_ACTION(fft_server,
+                                    transpose_shared_y_to_x,
+                                    transpose_shared_y_to_x_action)
         void transpose_shared_x_to_y(const std::size_t index_trans);  
-        HPX_DEFINE_COMPONENT_ACTION(fft_server, transpose_shared_x_to_y, transpose_shared_x_to_y_action)
+        HPX_DEFINE_COMPONENT_ACTION(fft_server,
+                                    transpose_shared_x_to_y, 
+                                    transpose_shared_x_to_y_action)
    
     private:
         // parameters
@@ -96,15 +109,17 @@ struct fft : hpx::components::client_base<fft, fft_server>
         return hpx::async(fft_2d_r2c_action(), get_id());
     }
 
-    hpx::future<void> initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
+    hpx::future<void> initialize(vector_2d<real> values_vec,
+                                 const unsigned PLAN_FLAG)
     {
-        return hpx::async(initialize_action(), get_id(), std::move(values_vec), PLAN_FLAG);
+        return hpx::async(initialize_action(), get_id(),
+                          std::move(values_vec), PLAN_FLAG);
     }
 
     ~fft() = default;
 };
 
-/////////////////////////////////////////////////////////////////////////
+// FFT backend
 void fft_server::fft_1d_r2c_inplace(const std::size_t i)
 {
     fftw_execute_dft_r2c(plan_1d_r2c_, 
@@ -119,8 +134,6 @@ void fft_server::fft_1d_c2c_inplace(const std::size_t i)
                         reinterpret_cast<fftw_complex*>(trans_values_vec_.row(i)));
 }
 
-
-////
 // transpose with write running index
 void fft_server::transpose_shared_y_to_x(const std::size_t index)
 {
@@ -131,26 +144,7 @@ void fft_server::transpose_shared_y_to_x(const std::size_t index)
     }     
 }  
 
-// void fft_server::transpose_shared_x_to_y(const std::size_t index)
-// {
-//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
-//     {
-//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
-//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
-//     }     
-// } 
-
-////
 // transpose with read running index
-// void fft_server::transpose_shared_y_to_x(const std::size_t index_trans)
-// {
-//     for( std::size_t index = 0; index < dim_c_y_; ++index)
-//     {
-//         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
-//         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
-//     }     
-// }
-
 void fft_server::transpose_shared_x_to_y(const std::size_t index_trans)
 {
     for( std::size_t index = 0; index < dim_c_x_; ++index)
@@ -160,7 +154,7 @@ void fft_server::transpose_shared_x_to_y(const std::size_t index_trans)
     }     
 }    
 
-
+// 2D FFT algorithm
 vector_2d<real> fft_server::fft_2d_r2c()
 {
 
@@ -171,7 +165,8 @@ vector_2d<real> fft_server::fft_2d_r2c()
         r2c_futures_[i] = hpx::async(fft_1d_r2c_inplace_action(), get_id(), i);
     }
     // global synchronization
-    hpx::shared_future<vector_future> all_r2c_futures = hpx::when_all(r2c_futures_);
+    hpx::shared_future<vector_future> all_r2c_futures = \
+    hpx::when_all(r2c_futures_);
     for(std::size_t i = 0; i < dim_c_y_; ++i)
     {
         // transpose from y-direction to x-direction
@@ -197,13 +192,17 @@ vector_2d<real> fft_server::fft_2d_r2c()
                return hpx::async(transpose_shared_x_to_y_action(), get_id(), i);
             }); 
     }
-    hpx::shared_future<vector_future> all_trans_x_to_y_futures = hpx::when_all(trans_x_to_y_futures_);
+    hpx::shared_future<vector_future> all_trans_x_to_y_futures = \
+    hpx::when_all(trans_x_to_y_futures_);
     // global synchronization step
     all_trans_x_to_y_futures.get();
+
     return std::move(values_vec_);
 }
 
-void fft_server::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG)
+// initialization
+void fft_server::initialize(vector_2d<real> values_vec, 
+                            const unsigned PLAN_FLAG)
 {
     // move data into own data structure
     values_vec_ = std::move(values_vec);
@@ -233,6 +232,7 @@ void fft_server::initialize(vector_2d<real> values_vec, const unsigned PLAN_FLAG
     trans_x_to_y_futures_.resize(dim_c_y_);
 }
 
+// helpers
 void print_vector_2d(const vector_2d<real>& input)
 {
     const std::string msg = "\n";
@@ -266,20 +266,21 @@ void print_vector_2d(const vector_2d<real>& input)
 int hpx_main(hpx::program_options::variables_map& vm)
 {
     ////////////////////////////////////////////////////////////////
-    // Parameters and Data structures
-    // hpx parameters
+    // Check if shared memory
     const std::size_t num_localities = hpx::get_num_localities(hpx::launch::sync);
     if (std::size_t(1) != num_localities)
     {
         std::cout << "Localities " << num_localities << " instead of 1: Abort runtime\n";
         return hpx::finalize();
     }
+    ////////////////////////////////////////////////////////////////
+    // Parameters and Data structures
     const std::string plan_flag = vm["plan"].as<std::string>();
     bool print_result = vm["result"].as<bool>();
     bool print_header = vm["header"].as<bool>();
     // time measurement
     auto t = hpx::chrono::high_resolution_timer();
-    // fft dimension parameters
+    // FFT dimension parameters
     const std::size_t dim_c_x = vm["nx"].as<std::size_t>();//N_X; 
     const std::size_t dim_r_y = vm["ny"].as<std::size_t>();//N_Y;
     const std::size_t dim_c_y = dim_r_y / 2 + 1;
@@ -297,22 +298,22 @@ int hpx_main(hpx::program_options::variables_map& vm)
     {
         FFT_BACKEND_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
+
     ////////////////////////////////////////////////////////////////
-    // initialize values
-    // data vector
-    vector_2d<real> values_vec(dim_c_x, 2*dim_c_y);
+    // Initialization
+    vector_2d<real> values_vec(dim_c_x, 2 * dim_c_y);
     for(std::size_t i = 0; i < dim_c_x; ++i)
     {
         std::iota(values_vec.row(i), values_vec.row(i+1) - 2, 0.0);
     }
 
     ////////////////////////////////////////////////////////////////
-    // computation   
-    // create and initialize object (deleted when out of scope)
+    // Computation    
     fft fft_computer;
     auto start_total = t.now();
-    hpx::future<void> future_initialize = fft_computer.initialize(std::move(values_vec), 
-                                                                  FFT_BACKEND_PLAN_FLAG);
+    hpx::future<void> future_initialize = \
+    fft_computer.initialize(std::move(values_vec), 
+                            FFT_BACKEND_PLAN_FLAG);
     future_initialize.get();
     auto stop_init = t.now();
     hpx::future<vector_2d<real>> future_result = fft_computer.fft_2d_r2c();
@@ -326,18 +327,20 @@ int hpx_main(hpx::program_options::variables_map& vm)
     }
 
     ////////////////////////////////////////////////////////////////
-    // print runtimes
+    // Postprocessing
+    // print and store runtimes
     auto total = stop_total - start_total;
     auto init = stop_init - start_total;
     auto fft2d = stop_total - stop_init;
-    std::string msg = "\nLocality 0 - shared task with agas\n"
+    std::string msg = "\nLocality 0 - agas shared\n"
                       "Total runtime : {1}\n"
                       "Initialization: {2}\n"
                       "FFT 2D runtime: {3}\n";
     hpx::util::format_to(hpx::cout, msg,  
                          total,
                          init,
-                         fft2d) << std::flush;
+                         fft2d)
+                        << std::flush;
     std::ofstream runtime_file;
     runtime_file.open ("result/runtimes_hpx_task_agas_shared.txt", std::ios_base::app);
     if(print_header)
@@ -354,6 +357,8 @@ int hpx_main(hpx::program_options::variables_map& vm)
                 << fft2d << ";\n";
     runtime_file.close();
     
+    ////////////////////////////////////////////////////////////////
+    // Finalize HPX runtime
     return hpx::finalize();
 }
 
@@ -363,11 +368,16 @@ int main(int argc, char* argv[])
 
     options_description desc_commandline;
     desc_commandline.add_options()
-    ("result", value<bool>()->default_value(0), "print generated results (default: false)")
-    ("nx", value<std::size_t>()->default_value(8), "Total x dimension")
-    ("ny", value<std::size_t>()->default_value(14), "Total y dimension")
-    ("plan", value<std::string>()->default_value("estimate"), "FFTW plan (default: estimate)")
-    ("header",value<bool>()->default_value(0), "Write runtime file header");
+    ("result", value<bool>()->default_value(0), 
+    "Print generated results (default: false)")
+    ("nx", value<std::size_t>()->default_value(8),
+    "Total x dimension")
+    ("ny", value<std::size_t>()->default_value(14), 
+    "Total y dimension")
+    ("plan", value<std::string>()->default_value("estimate"), 
+    "FFTW plan (default: estimate)")
+    ("header",value<bool>()->default_value(0), 
+    "Write runtime file header");
 
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;

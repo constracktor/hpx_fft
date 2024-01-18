@@ -17,10 +17,8 @@ struct vector_2d
     std::size_t n_col_; // Second dimension 
 
 public:
-
     using iterator = T*;
     using const_iterator = const T*;
-
     // default constructor
     vector_2d();
     vector_2d(std::size_t n_row, std::size_t n_col);
@@ -32,19 +30,15 @@ public:
     vector_2d(vector_2d<T>&&) noexcept;
     // destructor
     ~vector_2d()=default;
-    // {
-    //     delete [ ]  values_;
-    // }
+    // operators
     vector_2d<T>& operator=(vector_2d<T>&);
     vector_2d<T>& operator=(vector_2d<T>&&) noexcept;
-
     T& operator()(std::size_t i, std::size_t j);
     const T& operator()(std::size_t i, std::size_t j) const;
     T& at(std::size_t i, std::size_t j);
     const T& at(std::size_t i, std::size_t j) const;
     constexpr T* data() noexcept;
     constexpr const T* data() const noexcept;
-
     // iterators
     iterator begin() noexcept;
     const_iterator begin() const noexcept;
@@ -52,21 +46,14 @@ public:
     const_iterator end() const noexcept;
     const_iterator cbegin() const noexcept;
     const_iterator  cend() const noexcept;
-
     iterator row(std::size_t i) noexcept;
     const_iterator row(std::size_t i) const noexcept;
-    // iterator row_end(std::size_t i) noexcept;
-    // const_iterator row_end(std::size_t i) const noexcept;
-
-
     // size
     std::size_t size() const noexcept;
     std::size_t n_row() const noexcept;
     std::size_t n_col() const noexcept;
-
     // Non-Member Functions
     template<typename H> friend bool operator==(const vector_2d<H>& lhs, const vector_2d<H>& rhs);
-
     // see https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
     friend void swap(vector_2d& first, vector_2d& second)
     {
@@ -75,6 +62,7 @@ public:
         std::swap(first.size_, second.size_);
         std::swap(first.values_, second.values_);
     }
+
 private:
     // Serialization support: even if all of the code below runs on one
     // locality only, we need to provide an (empty) implementation for the
@@ -151,8 +139,6 @@ inline vector_2d<T>::vector_2d(vector_2d<T>&& mv) noexcept
     swap(*this, mv);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 template<typename T>
 inline vector_2d<T>& vector_2d<T>::operator=(vector_2d<T>& src)
 {
@@ -216,20 +202,6 @@ inline typename vector_2d<T>::const_iterator vector_2d<T>::row(std::size_t i) co
 {
     return values_ + i * n_col_;
 }
-
-// template<typename T>
-// inline typename vector_2d<T>::iterator vector_2d<T>::row_end(std::size_t i) noexcept
-// {
-//     return values_ + i * n_col_ + dim_r;
-// }
-
-// template<typename T>
-// inline typename vector_2d<T>::const_iterator vector_2d<T>::row_end(std::size_t i) const noexcept
-// {
-//     return values_ + i * n_col_;
-// }
-
-//////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
 inline T& vector_2d<T>::operator( ) (std::size_t i, std::size_t j)
@@ -303,5 +275,4 @@ inline bool operator==(const vector_2d<H>& lhs, const vector_2d<H>& rhs)
 
     return true;
 }
-
 #endif // vector_2d_H_INCLUDED

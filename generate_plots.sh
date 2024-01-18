@@ -13,3 +13,4 @@ python3 plot/plot_buran_ss.py
 python3 plot/plot_buran_ws.py
 
 python3 plot/plot_medusa_ss.py
+python3 plot/plot_fugaku.py

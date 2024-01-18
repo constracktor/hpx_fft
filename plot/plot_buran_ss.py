@@ -85,15 +85,15 @@ for i in range (n_entries):
 points = [1,2,4,8,16]
 plt.figure(figsize=(7,6))
 # MPI total data
-plt.plot(points, ss_fftw_mpi_total_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_total_averaged[:,6], 'v-', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # MPI + OpenMP data
-plt.plot(points, ss_fftw_mpi_threads_averaged[:,6], 'v--', c=greyscale[1], linewidth=1, label='FFTW3 with MPI+pthreads')
+plt.plot(points, ss_fftw_mpi_threads_averaged[:,6], 'v-', c=greyscale[1], linewidth=1, label='FFTW3 with MPI+pthreads')
 # MPI + OpenMP data
-plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v--', c=greyscale[3], linewidth=1, label='FFTW3 with MPI+OpenMP')
+plt.plot(points, ss_fftw_mpi_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with MPI+OpenMP')
 # HPX loop dist data
-plt.plot(points, ss_loop_48_averaged[:,7], 's--', c=colors[2], linewidth=1, label='HPX for_loop dist')
+plt.plot(points, ss_loop_48_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop dist')
 # HPX task agas dist data
-plt.plot(points, ss_task_agas_48_averaged[:,7], 'o--', c=colors[4], linewidth=1, label='HPX future agas dist')
+plt.plot(points, ss_task_agas_48_averaged[:,7], 'o-', c=colors[4], linewidth=1, label='HPX future agas dist')
 # # HPX loop opt dist data
 # plt.plot(points, ss_loop_48_opt_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist opt')
 # # HPX task agas dist data

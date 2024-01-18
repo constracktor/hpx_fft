@@ -293,8 +293,10 @@ plt.figure(figsize=(7,6))
 plt.plot(points, ss_fftw_mpi_measure_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # PThread data
 plt.plot(points, ss_fftw_pt_measure_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
+# # OpenMP data
+# plt.plot(points, ss_fftw_omp_measure_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_measure_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with HPX new')
 # HPX data
 plt.plot(points, ss_fftw_hpx_measure_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
 # HPX loop measure shared data
@@ -320,8 +322,10 @@ plt.figure(figsize=(7,6))
 plt.plot(points, ss_fftw_mpi_measure_averaged[:,5], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
 # PThread data
 plt.plot(points, ss_fftw_pt_measure_averaged[:,5], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
+# # OpenMP data
+# plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_omp_measure_averaged[:,4], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with HPX new')
 # HPX data
 plt.plot(points, ss_fftw_hpx_measure_averaged[:,4], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
 # HPX loop measure shared data

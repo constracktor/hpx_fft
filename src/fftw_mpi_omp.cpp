@@ -6,58 +6,63 @@
 #include <thread>
 #include <fstream>
 
+#include "omp.h"
 #include "fftw3-mpi.h"
-#include "omp.h" 
 
 typedef double real;
 typedef std::vector<real, std::allocator<real>> vector;
 typedef std::chrono::duration<real> duration;
 
-void print_real(const std::vector<real>& input, int dim_x, int dim_y, int scaling = 0)
-{
-    real factor = 1.0;
-    if (scaling > 0)
-    {
-        factor = factor / (scaling * dim_x * dim_y);
-    }
-    
-    for(int i=0; i<dim_x; ++i)
-    {
-        for(int j=0; j<dim_y + 2; ++j)
-        {
-            std::cout << input[(dim_y+2)*i + j] * factor << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-}
+// debug helper
+// void print_real(const std::vector<real>& input, 
+//                 int dim_x, 
+//                 int dim_y, 
+//                 int scaling = 0)
+// {
+//     real factor = 1.0;
+//     if (scaling > 0)
+//     {
+//         factor = factor / (scaling * dim_x * dim_y);
+//     }
+//     for(int i=0; i<dim_x; ++i)
+//     {
+//         for(int j=0; j<dim_y + 2; ++j)
+//         {
+//             std::cout << input[(dim_y+2)*i + j] * factor << " ";
+//         }
+//         std::cout << std::endl;
+//     }
+//     std::cout << std::endl;
+// }
 
-void print_complex(const std::vector<real>& input, int dim_x, int dim_y)
-{
-    for(int i=0; i<dim_x; ++i)
-    {
-        for(int j=0; j<dim_y + 2; j=j+2)
-        {
-            std::cout << "(" << input[(dim_y+2)*i + j] << " " << input[(dim_y+2)*i + j +1]  << ")";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-}
+// void print_complex(const std::vector<real>& input, 
+//                    int dim_x, 
+//                    int dim_y)
+// {
+//     for(int i=0; i<dim_x; ++i)
+//     {
+//         for(int j=0; j<dim_y + 2; j=j+2)
+//         {
+//             std::cout << "(" << input[(dim_y+2)*i + j] << " " << input[(dim_y+2)*i + j +1]  << ")";
+//         }
+//         std::cout << std::endl;
+//     }
+//     std::cout << std::endl;
+// }
 
 int main(int argc, char* argv[])
 {
-    //      nodes ranks prog  threads N_X N_Y  plan     header
-    // srun -N 2 -n 4 fftw_mpi  4     8   14  estimate    0
-    ////////////////////////////////////////////////
+    //      nodes ranks prog  threads N_X N_Y    plan  header
+    // srun -N 2  -n 4 fftw_mpi  4     8   14  estimate  0
+    ////////////////////////////////////////////////////////////////
     // Parameters and Data Structures
     int n_threads = std::stoi(argv[1]);
     bool print_header = std::stoi(argv[5]);
-    // fft dimension parameters
+    // FFT dimension parameters
     const std::uint32_t dim_c_x = std::stoi(argv[2]);//N_X; 
     const std::uint32_t dim_r_y = std::stoi(argv[3]);//N_Y;
     const std::uint32_t dim_c_y = dim_r_y / 2 + 1;
-    // fftw flag
+    // FFTW plans
     std::string plan_flag = argv[4];
     unsigned FFTW_PLAN_FLAG = FFTW_ESTIMATE;
     if( plan_flag == "measure" )
@@ -72,47 +77,37 @@ int main(int argc, char* argv[])
     {
         FFTW_PLAN_FLAG = FFTW_EXHAUSTIVE;
     }
-    ////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////
     // Time measurement
     auto t = std::chrono::steady_clock();
-    // runtime storage
     std::map<std::string, real> runtimes;
     
-    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
     // MPI setup
     int threads_ok, provided;
     int rank, n_ranks;
-
-    // MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
-    // threads_ok = provided >= MPI_THREAD_FUNNELED;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-    threads_ok = provided >= MPI_THREAD_MULTIPLE;
-    if (provided < MPI_THREAD_MULTIPLE)
-    {
-        printf("ERROR: The MPI library does not have full thread support\n");
-        MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-    
+    // check MPI threading support
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+    threads_ok = provided >= MPI_THREAD_FUNNELED;   
+    // setup communicator
     MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &n_ranks);
-    
-    ////////////////////////////////////////////////
-    // FFTW MPI setup
+
+    ////////////////////////////////////////////////////////////////
+    // FFTW MPI+X setup
     std::ptrdiff_t size_local, local_n0, local_0_start;
-    
     if (threads_ok) threads_ok = fftw_init_threads();
     fftw_mpi_init();
-
+    omp_set_num_threads(n_threads);
+    if (threads_ok) fftw_plan_with_nthreads(n_threads);
     // get local data size and allocate
     size_local = fftw_mpi_local_size_2d(dim_c_x, dim_r_y, comm,
                                          &local_n0, &local_0_start);
     vector input(2*size_local);
-
     
-    omp_set_num_threads(n_threads);
-    if (threads_ok) fftw_plan_with_nthreads(n_threads);
-    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
     // FFTW plan
     MPI_Barrier(comm);
     auto start_plan_fftw_r2c = t.now();
@@ -125,43 +120,33 @@ int main(int argc, char* argv[])
     auto stop_plan_fftw_r2c = t.now();
     runtimes["plan_fftw_r2c"] = duration(stop_plan_fftw_r2c - start_plan_fftw_r2c).count();
 
-    ////////////////////////////////////////////////
-    // Data initialization
-    // intialize from 0 with complex spacers at the end
+    ////////////////////////////////////////////////////////////////
+    // Initialization
+    // intialize row-wise from 0 with complex spacers at the end
     for(int i=0; i<int(local_n0); ++i)
     {
          for(int j=0; j<dim_r_y; ++j)
         {
-            input[(dim_r_y+2)*i + j] = j;//(dim_r_y)*i + j;
+            input[(dim_r_y+2)*i + j] = j;
         }
     }
-
-    // ////
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
     // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-    // std::cout << "Before:" << std::endl;
     // print_real(input, local_n0, dim_r_y, 0);
-    // ////
 
-    ////////////////////////////////////////////////
-    // Compute FFTW
+    ////////////////////////////////////////////////////////////////
+    // Computation
     MPI_Barrier(comm);
     auto start_fftw_r2c = t.now();
     fftw_execute(plan_r2c_2d);
     MPI_Barrier(comm);
     auto stop_fftw_r2c = t.now();
     runtimes["total_fftw_r2c"] = duration(stop_fftw_r2c - start_fftw_r2c).count();
-
-    // ////
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000*rank)); 
     // std::cout << "Node: " << rank + 1 << " / " << n_ranks << std::endl;
-    // std::cout << "FFT: FFTW 2D" << std::endl;
     // print_complex(input, local_n0, dim_r_y);
-    // ////
 
-    ////////////////////////////////////////////////
-    // Print and store runtimes
-    if( rank == 0)
+    ////////////////////////////////////////////////////////////////
+    // Postprocessing
+    if(rank == 0)
     {
         // get plan info
         double plan_flops;
@@ -175,9 +160,7 @@ int main(int argc, char* argv[])
         {
             plan_flops = 0;
         }
-
-        ////////////////////////////////////////////////
-        // print runtime
+        // print runtimes
         std::cout << "FFTW 2D with MPI + OpenMP:" 
                   << "\n MPI ranks      = " << n_ranks
                   << "\n OpenMP threads = " << n_threads
@@ -185,18 +168,14 @@ int main(int argc, char* argv[])
                   << "\n fftw_2d_r2c    = " << runtimes["total_fftw_r2c"]
                   << "\n plan flops     = " << plan_flops
                   << std::endl;
-
-        ////////////////////////////////////////////////
         // store runtime and plan info
         std::ofstream runtime_file;
         runtime_file.open("result/runtimes_mpi_omp.txt", std::ios_base::app);
-
         if(print_header)
         {
             runtime_file << "n_ranks;n_threads;n_x;n_y;plan;"
                     << "planning;fftw_2d_r2c;plan_flops;\n";
         }
-
         runtime_file << n_ranks << ";" 
                      << n_threads << ";"
                      << dim_c_x << ";"
@@ -205,10 +184,9 @@ int main(int argc, char* argv[])
                      << runtimes["plan_fftw_r2c"] << ";"
                      << runtimes["total_fftw_r2c"] << ";"
                      << plan_flops << ";\n";
-
         runtime_file.close();
-        ////////////////////////////////////////////////
-        // store plan and context
+
+        // store plan info
         std::ofstream plan_info_file;
         plan_info_file.open("plans/plan_mpi_omp.txt", std::ios_base::app);
         plan_info_file  << "n_ranks;n_threads;n_x;n_y;plan;"
@@ -222,14 +200,15 @@ int main(int argc, char* argv[])
                         << runtimes["total_fftw_r2c"] << ";"
                         << plan_flops << ";\n";
         plan_info_file.close();
-        
+        // store plan
         FILE* plan_file = fopen ("plans/plan_mpi_omp.txt", "a");
         fprintf(plan_file, "FFTW r2c 2D plan:\n");
         fftw_fprint_plan(plan_r2c_2d, plan_file);
         fprintf(plan_file, "\n\n");
         fclose(plan_file);
     }
-    ////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////
     // Cleanup
     // FFTW cleanup
     fftw_destroy_plan(plan_r2c_2d);
@@ -237,6 +216,6 @@ int main(int argc, char* argv[])
     fftw_mpi_cleanup();
     // MPI cleanup
     MPI_Finalize();
-    ////////////////////////////////////////////////
+
     return 0;
 }
