@@ -30,7 +30,7 @@ fi
 ###############################
 # HPX loop
 # scatter loop
-srun -p $PARTITION -N 1 -c $THREADS  -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
+srun -p $PARTITION -N 1 -n 4 -c $THREADS  -t 1:00:00 --exclusive ./build/fft_hpx_loop --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --header=true --plan=$FFTW_PLAN
 for (( j=1; j<$LOOP; j=j+1 ))
 do
     srun -p $PARTITION -N 1 -c $THREADS  -t 1:00:00 --exclusive ./build/fft_hpx_loop --hpx:threads=$THREADS --nx=$BASE_SIZE  --ny=$BASE_SIZE  --run=scatter --plan=$FFTW_PLAN

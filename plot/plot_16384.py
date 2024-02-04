@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams.update({'font.size': 14})
+matplotlib.rcParams.update({'font.size': 16})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
 # CVD accessible colors
 # black - dark red - indigo (blueish) - yellow - teal (greenish) - light gray
@@ -186,31 +186,31 @@ print(np.mean(plan_2d_speedup))
 # plt.figure(figsize=(10,3))
 # # line
 # points = ss_loop_shared_averaged[:,0]
-# plt.plot(points, 100 *np.ones(points.size), 'k:', linewidth=1)
+# plt.plot(points, 100 *np.ones(points.size), 'k:', linewidth=2)
 # # OpenMP data
 # parallel_efficiency = 100 * ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,6] * ss_fftw_omp_averaged[:,1])
-# plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
+# plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[0], linewidth=2, label='FFTW3 with OpenMP')
 # # MPI data
 # parallel_efficiency = 100 * ss_fftw_mpi_averaged[0,6] / (ss_fftw_mpi_averaged[:,6] * ss_fftw_mpi_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+# plt.plot(points, parallel_efficiency, 'v-.', c=greyscale[3], linewidth=2, label='FFTW3 with MPI')
 # # HPX loop shared data
 # parallel_efficiency = 100 * ss_loop_shared_averaged[0,7] / (ss_loop_shared_averaged[:,7] * ss_loop_shared_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
+# plt.plot(points, parallel_efficiency, 'o-', c=colors[2], linewidth=2, label='HPX loop shared')
 # # HPX future sync shared data
 # parallel_efficiency = 100 * ss_future_sync_shared_averaged[0,6] / (ss_future_sync_shared_averaged[:,6] * ss_future_sync_shared_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 'o-', c=colors[9], linewidth=1, label='HPX future sync shared')
+# plt.plot(points, parallel_efficiency, 'o-', c=colors[9], linewidth=2, label='HPX future sync shared')
 # # HPX future shared data
 # parallel_efficiency = 100 * ss_future_shared_averaged[0,6] / (ss_future_shared_averaged[:,6] * ss_future_shared_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 'o-', c=colors[12], linewidth=1, label='HPX future shared')
+# plt.plot(points, parallel_efficiency, 'o-', c=colors[12], linewidth=2, label='HPX future shared')
 # # HPX future agas shared data
 # parallel_efficiency = 100 * ss_future_agas_shared_averaged[0,6] / (ss_future_agas_shared_averaged[:,6] * ss_future_agas_shared_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 'o-', c=colors[4], linewidth=1, label='HPX future agas shared')
+# plt.plot(points, parallel_efficiency, 'o-', c=colors[4], linewidth=2, label='HPX future agas shared')
 # # HPX loop dist data
 # parallel_efficiency = 100 * ss_loop_scatter_averaged[0,7] / (ss_loop_scatter_averaged[:,7] * ss_loop_scatter_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 's--', c=colors[3], linewidth=1, label='HPX loop dist')
+# plt.plot(points, parallel_efficiency, 's--', c=colors[3], linewidth=2, label='HPX loop dist')
 # # HPX future agas dist data
 # parallel_efficiency = 100 * ss_future_scatter_averaged[0,7] / (ss_future_scatter_averaged[:,7] * ss_future_scatter_averaged[:,0])
-# plt.plot(points, parallel_efficiency, 's--', c=colors[5], linewidth=1, label='HPX future agas dist')
+# plt.plot(points, parallel_efficiency, 's--', c=colors[5], linewidth=2, label='HPX future agas dist')
 
 # # plot parameters
 # plt.title('Strong Scaling efficiency for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -228,28 +228,28 @@ print(np.mean(plan_2d_speedup))
 plt.figure(figsize=(7,6))
 points = ss_loop_shared_averaged[:,0]
 # HPX future naive shared data
-plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='HPX future naive')
+plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linewidth=2, label='HPX future naive')
 # HPX future shared data
-plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=1, label='HPX future opt')
+plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=2, label='HPX future opt')
 # HPX future sync shared data
-plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=1, label='HPX future sync')
+plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=2, label='HPX future sync')
 # HPX future agas shared data
-plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=1, label='HPX future agas')
+plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=2, label='HPX future agas')
 # HPX future agas dist data
-plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=1, label='HPX future agas dist')
+plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=2, label='HPX future agas dist')
 # HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop')
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=2, label='HPX for_loop')
 # HPX loop dist data
-plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=1, label='HPX for_loop dist')
+plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=2, label='HPX for_loop dist')
 
 # # PThread data
-# plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=1, label='FFTW3 with pthreads')
+# plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-.', c=greyscale[1], linewidth=2, label='FFTW3 with pthreads')
 # # OpenMP data
-# plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
+# plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-.', c=greyscale[0], linewidth=2, label='FFTW3 with OpenMP')
 # # MPI data
-# plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+# plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v-.', c=greyscale[3], linewidth=2, label='FFTW3 with MPI')
 # # HPX data
-# plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=1, label='FFTW3 with HPX')
+# plt.plot(points[:-1], ss_fftw_hpx_averaged[:,5], 'v-.', c=greyscale[4], linewidth=2, label='FFTW3 with HPX')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -265,15 +265,15 @@ plt.savefig('plot/figures/strong_scaling_16384_hpx_runtime.pdf', bbox_inches='ti
 # strong SCALING RUNTIME FFTW3
 plt.figure(figsize=(7,6))
 # MPI data
-plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_averaged[:,6], 'v--', c=greyscale[0], linewidth=2, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
+plt.plot(points, ss_fftw_pt_averaged[:,6], 'v-', c=colors[13], linewidth=2, label='FFTW3 with pthreads')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_omp_averaged[:,6], 'v-', c=colors[12], linewidth=2, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points, ss_fftw_hpx_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+plt.plot(points, ss_fftw_hpx_averaged[:,5], 'v-', c=colors[9], linewidth=2, label='FFTW3 with HPX') 
 # HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop')
+plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=2, label='HPX for_loop')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -290,19 +290,20 @@ plt.savefig('plot/figures/strong_scaling_16384_fftw3_runtime.pdf', bbox_inches='
 # strong SCALING RUNTIME FFTW3
 plt.figure(figsize=(7,6))
 # MPI data
-plt.plot(points, ss_fftw_mpi_measure_averaged[:,6], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_measure_averaged[:,6], 'v--', c=greyscale[0], linewidth=2, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_measure_averaged[:,6], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
-# # OpenMP data
-# plt.plot(points, ss_fftw_omp_measure_averaged[:,6], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_pt_measure_averaged[:,6], 'v-', c=colors[13], linewidth=2, label='FFTW3 with pthreads')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with HPX new')
+plt.plot(points, ss_fftw_omp_measure_averaged[:,6], 'v-', c=colors[12], linewidth=2, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points, ss_fftw_hpx_measure_averaged[:,5], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+plt.plot(points, ss_fftw_hpx_measure_averaged[:,5], 'v-', c=colors[9], linewidth=2, label='FFTW3 with HPX') 
 # HPX loop measure shared data
-plt.plot(points, ss_loop_measure_shared_averaged[:,7], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
-# HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
+plt.plot(points, ss_loop_measure_shared_averaged[:,7], 's-', c=colors[2], linewidth=2, label='HPX for_loop')
+
+# # HPX loop measure shared data
+# plt.plot(points, ss_loop_measure_shared_averaged[:,7], 's-', c=colors[2], linewidth=2, label='HPX for_loop (measure)')
+# # HPX loop shared data
+# plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[3], linewidth=2, label='HPX for_loop (estimate)')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -319,19 +320,19 @@ plt.savefig('plot/figures/strong_scaling_16384_fftw3_measure_runtime.pdf', bbox_
 # strong SCALING RUNTIME FFTW3
 plt.figure(figsize=(7,6))
 # MPI data
-plt.plot(points, ss_fftw_mpi_measure_averaged[:,5], 'v--', c=greyscale[0], linewidth=1, label='FFTW3 with MPI')
+plt.plot(points, ss_fftw_mpi_measure_averaged[:,5], 'v--', c=greyscale[0], linewidth=2, label='FFTW3 with MPI')
 # PThread data
-plt.plot(points, ss_fftw_pt_measure_averaged[:,5], 'v-', c=greyscale[2], linewidth=1, label='FFTW3 with pthreads')
-# # OpenMP data
-# plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with OpenMP')
+plt.plot(points, ss_fftw_pt_measure_averaged[:,5], 'v-', c=colors[13], linewidth=2, label='FFTW3 with pthreads')
 # OpenMP data
-plt.plot(points, ss_fftw_omp_measure_averaged[:,4], 'v-', c=greyscale[3], linewidth=1, label='FFTW3 with HPX new')
+plt.plot(points, ss_fftw_omp_measure_averaged[:,5], 'v-', c=colors[12], linewidth=2, label='FFTW3 with OpenMP')
 # HPX data
-plt.plot(points, ss_fftw_hpx_measure_averaged[:,4], 'v-', c=greyscale[4], linewidth=1, label='FFTW3 with HPX') 
+plt.plot(points, ss_fftw_hpx_measure_averaged[:,4], 'v-', c=colors[9], linewidth=2, label='FFTW3 with HPX') 
 # HPX loop measure shared data
-plt.plot(points, ss_loop_measure_shared_averaged[:,-3], 's-', c=colors[2], linewidth=1, label='HPX for_loop (measure)')
-# HPX loop shared data
-plt.plot(points, ss_loop_shared_averaged[:,-3], 's-', c=colors[3], linewidth=1, label='HPX for_loop (estimate)')
+plt.plot(points, ss_loop_measure_shared_averaged[:,-3], 's-', c=colors[2], linewidth=2, label='HPX for_loop')
+# # HPX loop measure shared data
+# plt.plot(points, ss_loop_measure_shared_averaged[:,-3], 's-', c=colors[2], linewidth=2, label='HPX for_loop (measure)')
+# # HPX loop shared data
+# plt.plot(points, ss_loop_shared_averaged[:,-3], 's-', c=colors[3], linewidth=2, label='HPX for_loop (estimate)')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -348,31 +349,31 @@ plt.savefig('plot/figures/strong_scaling_16384_fftw3_measure_plantime.pdf', bbox
 # # parallel efficiency
 # plt.figure(figsize=(10,3))
 # # line
-# plt.plot(points,points, 'k:', linewidth=1)
+# plt.plot(points,points, 'k:', linewidth=2)
 # # OpenMP data
 # parallel_speedup = ss_fftw_omp_averaged[0,6] / (ss_fftw_omp_averaged[:,6])
-# plt.plot(points, parallel_speedup, 'v-.', c=greyscale[0], linewidth=1, label='FFTW3 with OpenMP')
+# plt.plot(points, parallel_speedup, 'v-.', c=greyscale[0], linewidth=2, label='FFTW3 with OpenMP')
 # # MPI data
 # parallel_speedup = ss_fftw_mpi_averaged[0,6] / (ss_fftw_mpi_averaged[:,6])
-# plt.plot(points, parallel_speedup, 'v-.', c=greyscale[3], linewidth=1, label='FFTW3 with MPI')
+# plt.plot(points, parallel_speedup, 'v-.', c=greyscale[3], linewidth=2, label='FFTW3 with MPI')
 # # HPX loop shared data
 # parallel_speedup = ss_loop_shared_averaged[0,7] / (ss_loop_shared_averaged[:,7])
-# plt.plot(points, parallel_speedup, 'o-', c=colors[2], linewidth=1, label='HPX loop shared')
+# plt.plot(points, parallel_speedup, 'o-', c=colors[2], linewidth=2, label='HPX loop shared')
 # # HPX future sync shared data
 # parallel_speedup = ss_future_sync_shared_averaged[0,6] / (ss_future_sync_shared_averaged[:,6])
-# plt.plot(points, parallel_speedup, 'o-', c=colors[9], linewidth=1, label='HPX future sync shared')
+# plt.plot(points, parallel_speedup, 'o-', c=colors[9], linewidth=2, label='HPX future sync shared')
 # # HPX future shared data
 # parallel_speedup = ss_future_shared_averaged[0,6] / (ss_future_shared_averaged[:,6])
-# plt.plot(points, parallel_speedup, 'o-', c=colors[12], linewidth=1, label='HPX future shared')
+# plt.plot(points, parallel_speedup, 'o-', c=colors[12], linewidth=2, label='HPX future shared')
 # # HPX future agas shared data
 # parallel_speedup = ss_future_agas_shared_averaged[0,6] / (ss_future_agas_shared_averaged[:,6])
-# plt.plot(points, parallel_speedup, 'o-', c=colors[4], linewidth=1, label='HPX future agas shared')
+# plt.plot(points, parallel_speedup, 'o-', c=colors[4], linewidth=2, label='HPX future agas shared')
 # # HPX loop dist data
 # parallel_speedup = ss_loop_scatter_averaged[0,7] / (ss_loop_scatter_averaged[:,7])
-# plt.plot(points, parallel_speedup, 's--', c=colors[3], linewidth=1, label='HPX loop dist')
+# plt.plot(points, parallel_speedup, 's--', c=colors[3], linewidth=2, label='HPX loop dist')
 # # HPX future agas dist data
 # parallel_speedup = ss_future_scatter_averaged[0,7] / (ss_future_scatter_averaged[:,7])
-# plt.plot(points, parallel_speedup, 's--', c=colors[5], linewidth=1, label='HPX future agas dist')
+# plt.plot(points, parallel_speedup, 's--', c=colors[5], linewidth=2, label='HPX future agas dist')
 
 # # plot parameters
 # plt.title('Parallel speedup for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
@@ -589,7 +590,7 @@ ss_loop_bar_trans = plt.bar(ss_loop_bar_positions, ss_loop_trans , bar_width-eps
                             hatch='')
 
 ss_loop_bars = [ss_loop_bar_fft, ss_loop_bar_trans]
-ss_loop_legend = plt.legend(ss_loop_bars, ['FFT', 'Transpose'], title='HPX for_loop', bbox_to_anchor=(1.0, .676), loc="upper right")
+ss_loop_legend = plt.legend(ss_loop_bars, ['FFT', 'Transpose'], title='HPX for_loop', bbox_to_anchor=(1.0, .628), loc="upper right")
 plt.gca().add_artist(ss_loop_legend)
 
 # HPX future async bars
@@ -612,7 +613,7 @@ ss_future_sync_bar_trans = plt.bar(ss_future_sync_bar_positions, ss_future_sync_
                             hatch='\\')
 
 ss_future_sync_bars = [ss_future_sync_bar_fft, ss_future_sync_bar_trans]
-ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['FFT', 'Transpose'], title='HPX future sync', bbox_to_anchor=(1.0, .47), loc="upper right")
+ss_future_sync_legend = plt.legend(ss_future_sync_bars, ['FFT', 'Transpose'], title='HPX future sync', bbox_to_anchor=(1.0, .39), loc="upper right")
 plt.gca().add_artist(ss_future_sync_legend)
 
 # HPX loop distributed bars
