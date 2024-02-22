@@ -9,7 +9,7 @@ LOOP=1
 BASE_SIZE=16384
 FFTW_PLAN=estimate
 #FFTW_PLAN=measure
-# Compute benchmark script from 2^start to 2^stop
+# Compute benchmark script from 2^start to 2^stop cores
 POW_START=1
 POW_STOP=7
 PARTITION=medusa

@@ -50,9 +50,7 @@ struct fft
 
         // transpose
         void transpose_shared_y_to_x(const std::size_t index);
-        //void transpose_shared_y_to_x(const std::size_t index_trans);
-        //void transpose_shared_x_to_y(const std::size_t index);
-        void transpose_shared_x_to_y(const std::size_t index_trans);    
+        void transpose_shared_x_to_y(const std::size_t index);
    
     private:
         // parameters
@@ -94,62 +92,43 @@ void fft::transpose_shared_y_to_x(const std::size_t index)
     }     
 }  
 
-// void fft::transpose_shared_x_to_y(const std::size_t index)
-// {
-//     for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
-//     {
-//         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
-//         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
-//     }     
-// } 
-
-// transpose with read running index
-// void fft::transpose_shared_y_to_x(const std::size_t index_trans)
-// {
-//     for( std::size_t index = 0; index < dim_c_y_; ++index)
-//     {
-//         trans_values_vec_(index, 2 * index_trans) = values_vec_(index_trans, 2 * index);
-//         trans_values_vec_(index, 2 * index_trans + 1) = values_vec_(index_trans, 2 * index + 1);
-//     }     
-// }
-
-void fft::transpose_shared_x_to_y(const std::size_t index_trans)
+void fft::transpose_shared_x_to_y(const std::size_t index)
 {
-    for( std::size_t index = 0; index < dim_c_x_; ++index)
+    for( std::size_t index_trans = 0; index_trans < dim_c_y_; ++index_trans)
     {
         values_vec_(index, 2 * index_trans) = trans_values_vec_(index_trans, 2 * index);
         values_vec_(index, 2 * index_trans + 1) = trans_values_vec_(index_trans, 2 * index + 1);
     }     
-}  
-    
+} 
+
+
 // 2D FFT algorithm
 vector_2d<real> fft::fft_2d_r2c_par()
 {
     /////////////////////////////////////////////////////////////////
+    hpx::execution::adaptive_static_chunk_size asc;
     // first dimension
     auto start_total = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par.with(asc), 0, dim_c_x_, [&](auto i)
     {
         // 1d FFT r2c in y-direction
         fft_1d_r2c_inplace(i);
     });
     auto start_first_trans = t_.now();
-    //hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i) for other transpose
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par.with(asc), 0, dim_c_y_, [&](auto i)
     {
-        // transpose from y-direction to x-direction
+        // transpose from y-direction to x-direction:wq
         transpose_shared_y_to_x(i);
     });
     // second dimension
     auto start_second_fft = t_.now();
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par.with(asc), 0, dim_c_y_, [&](auto i)
     {
         // 1D FFT c2c in x-direction
         fft_1d_c2c_inplace(i);
     });
     auto start_second_trans = t_.now();
-    // hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_x_, [&](auto i) for other transpose
-    hpx::experimental::for_loop(hpx::execution::par, 0, dim_c_y_, [&](auto i)
+    hpx::experimental::for_loop(hpx::execution::par.with(asc), 0, dim_c_x_, [&](auto i)
     {
         // transpose from x-direction to y-direction
         transpose_shared_x_to_y(i);
