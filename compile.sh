@@ -19,6 +19,7 @@ elif [[ "$1" == "buran" ]]
 then
     # buran
     export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1"
+    #export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1"
     export FFTW_SEQ_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
 elif [[ "$1" == "medusa" ]]
 then

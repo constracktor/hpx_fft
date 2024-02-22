@@ -7,7 +7,7 @@ source plot_env/bin/activate
 pip install numpy matplotlib
 # launch 
 #python3 plot/plot_planning.py
-# python3 plot/plot_16384.py
+python3 plot/plot_16384.py
 # python3 plot/plot_512.py
 # python3 plot/plot_buran_ss.py
 # python3 plot/plot_buran_ws.py
@@ -15,6 +15,6 @@ pip install numpy matplotlib
 # python3 plot/plot_medusa_ss.py
 # python3 plot/plot_fugaku.py
 
-# python3 plot/plot_clusters.py
+python3 plot/plot_clusters.py
 
 python3 plot/plot_buran_50.py

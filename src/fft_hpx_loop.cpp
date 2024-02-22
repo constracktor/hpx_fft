@@ -582,7 +582,7 @@ int main(int argc, char* argv[])
     desc_commandline.add_options()
     ("result", value<bool>()->default_value(0), 
     "Print generated results (default: false)")
-    ("nx", value<std::size_t>()->default_value(8), 
+    ("nnx", value<std::size_t>()->default_value(8), 
     "Total x dimension")
     ("ny", value<std::size_t>()->default_value(14), 
     "Total y dimension")

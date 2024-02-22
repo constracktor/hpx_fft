@@ -19,24 +19,33 @@ colors = ['#000000','#004949', '#009292', '#24ff24', '#006edb', '#6db6ff', '#b6d
 greyscale = ['#000000', '#333333', '#666666', '#999999', '#cccccc']
 
 # get header
-n_loop = 5
+n_loop = 50
+
+###
+# strong scaling data for hpx loop 48_lci
+ss_loop_48_lci_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran_median/strong_runtimes_hpx_loop_48_lci.txt'), dtype='float', delimiter=';' , skip_header=1)
+n_entries = int(ss_loop_48_lci_matrix.shape[0]/n_loop)
+ss_loop_48_lci_averaged = np.zeros((n_entries, ss_loop_48_lci_matrix.shape[1]))
+for i in range (n_entries):
+    ss_loop_48_lci_averaged[i,:] = np.median(ss_loop_48_lci_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 
 ###
 # strong scaling data for fftw_mpi_omp buran
-ss_fftw_mpi_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran/strong_runtimes_fftw_mpi_omp_48.txt'), dtype='float', delimiter=';' , skip_header=1)
+ss_fftw_mpi_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/buran_median/strong_runtimes_fftw_mpi_omp_48.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_omp_matrix.shape[0]/n_loop)
 ss_fftw_mpi_omp_averaged = np.zeros((n_entries, ss_fftw_mpi_omp_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_mpi_omp_averaged[i,:] = np.mean(ss_fftw_mpi_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_mpi_omp_averaged[i,:] = np.median(ss_fftw_mpi_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 
 ###
 # strong scaling data for fftw_mpi_omp medusa
-ss_fftw_mpi_omp_medusa_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/medusa/strong_runtimes_fftw_mpi_omp_medusa.txt'), dtype='float', delimiter=';' , skip_header=1)
+ss_fftw_mpi_omp_medusa_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/medusa/strong_runtimes_fftw_mpi_omp.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_omp_medusa_matrix.shape[0]/n_loop)
 ss_fftw_mpi_omp_medusa_averaged = np.zeros((n_entries, ss_fftw_mpi_omp_medusa_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_mpi_omp_medusa_averaged[i,:] = np.mean(ss_fftw_mpi_omp_medusa_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_mpi_omp_medusa_averaged[i,:] = np.median(ss_fftw_mpi_omp_medusa_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 
+n_loop = 5
 ###
 # strong scaling data for fftw_mpi_omp simcl1
 ss_fftw_mpi_omp_simcl_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/medusa/strong_runtimes_fftw_mpi_omp_simcl1.txt'), dtype='float', delimiter=';' , skip_header=1)
@@ -70,6 +79,8 @@ plt.plot(points[:-1], ss_fftw_mpi_omp_medusa_averaged[:,6], 'o-', c=colors[7], l
 plt.plot(points[:-2], ss_fftw_mpi_omp_simcl_averaged[:,6], 'o-', c=colors[13], linewidth=1, label='simcl (AMD)')
 # MPI + OpenMP sgscl1
 plt.plot(points[:-1], ss_fftw_mpi_omp_sgscl_averaged[:,6], 'o-', c=colors[6], linewidth=1, label='sgscl (Intel)')
+# HPX loop lci
+plt.plot(points, ss_loop_48_lci_averaged[:,7], 's-', c=colors[3], linewidth=1, label='buran HPX with LCI')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for buran cluster with 24 threads and with $2^{14}$x$2^{14}$ matrix')

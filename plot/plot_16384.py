@@ -19,7 +19,7 @@ colors = ['#000000','#004949', '#009292', '#24ff24', '#006edb', '#6db6ff', '#b6d
 greyscale = ['#000000', '#333333', '#666666', '#999999', '#cccccc']
 
 # get header
-n_loop = 5
+n_loop = 50
 
 ################################################################################
 ################################################################################
@@ -31,72 +31,72 @@ ss_loop_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scalin
 n_entries = int(ss_loop_shared_matrix.shape[0]/n_loop) 
 ss_loop_shared_averaged = np.zeros((n_entries, ss_loop_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_shared_averaged[i,:] = np.mean(ss_loop_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_loop_shared_averaged[i,:] = np.median(ss_loop_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop scatter
 ss_loop_scatter_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_scatter.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_loop_scatter_matrix.shape[0]/n_loop) 
 ss_loop_scatter_averaged = np.zeros((n_entries, ss_loop_scatter_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_scatter_averaged[i,:] = np.mean(ss_loop_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_loop_scatter_averaged[i,:] = np.median(ss_loop_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx future_agas_shared
 ss_future_agas_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_agas_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_agas_shared_matrix.shape[0]/n_loop)
 ss_future_agas_shared_averaged = np.zeros((n_entries, ss_future_agas_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_future_agas_shared_averaged[i,:] = np.mean(ss_future_agas_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_future_agas_shared_averaged[i,:] = np.median(ss_future_agas_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx future_naive_shared
 ss_future_naive_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_naive_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_naive_shared_matrix.shape[0]/n_loop)
 ss_future_naive_shared_averaged = np.zeros((n_entries, ss_future_naive_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_future_naive_shared_averaged[i,:] = np.mean(ss_future_naive_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_future_naive_shared_averaged[i,:] = np.median(ss_future_naive_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx future shared
 ss_future_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_shared_matrix.shape[0]/n_loop) 
 ss_future_shared_averaged = np.zeros((n_entries, ss_future_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_future_shared_averaged[i,:] = np.mean(ss_future_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_future_shared_averaged[i,:] = np.median(ss_future_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx future scatter
 ss_future_scatter_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_scatter.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_scatter_matrix.shape[0]/n_loop)
 ss_future_scatter_averaged = np.zeros((n_entries, ss_future_scatter_matrix.shape[1]))
 for i in range (n_entries):
-    ss_future_scatter_averaged[i,:] = np.mean(ss_future_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_future_scatter_averaged[i,:] = np.median(ss_future_scatter_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for hpx loop future_sync_shared
 ss_future_sync_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_sync_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_future_sync_shared_matrix.shape[0]/n_loop)
 ss_future_sync_shared_averaged = np.zeros((n_entries, ss_future_sync_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_future_sync_shared_averaged[i,:] = np.mean(ss_future_sync_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_future_sync_shared_averaged[i,:] = np.median(ss_future_sync_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_pt
 ss_fftw_pt_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_threads.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_pt_matrix.shape[0]/n_loop) 
 ss_fftw_pt_averaged = np.zeros((n_entries, ss_fftw_pt_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_pt_averaged[i,:] = np.mean(ss_fftw_pt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_pt_averaged[i,:] = np.median(ss_fftw_pt_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_omp
 ss_fftw_omp_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_omp_matrix.shape[0]/n_loop) 
 ss_fftw_omp_averaged = np.zeros((n_entries, ss_fftw_omp_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_omp_averaged[i,:] = np.mean(ss_fftw_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_omp_averaged[i,:] = np.median(ss_fftw_omp_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_mpi
 ss_fftw_mpi_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_mpi.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_matrix.shape[0]/n_loop)
 ss_fftw_mpi_averaged = np.zeros((n_entries, ss_fftw_mpi_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_mpi_averaged[i,:] = np.mean(ss_fftw_mpi_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
-# strong scaling data for fftw_hpx
+    ss_fftw_mpi_averaged[i,:] = np.median(ss_fftw_mpi_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+##
+#strong scaling data for fftw_hpx
 ss_fftw_hpx_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_hpx.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_hpx_matrix.shape[0]/n_loop) 
 ss_fftw_hpx_averaged = np.zeros((n_entries, ss_fftw_hpx_matrix.shape[1]))
@@ -112,74 +112,75 @@ ss_loop_measure_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/stron
 n_entries = int(ss_loop_measure_shared_matrix.shape[0]/n_loop) 
 ss_loop_measure_shared_averaged = np.zeros((n_entries, ss_loop_measure_shared_matrix.shape[1]))
 for i in range (n_entries):
-    ss_loop_measure_shared_averaged[i,:] = np.mean(ss_loop_measure_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_loop_measure_shared_averaged[i,:] = np.median(ss_loop_measure_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_pt_measure
 ss_fftw_pt_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_threads_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_pt_measure_matrix.shape[0]/n_loop) 
 ss_fftw_pt_measure_averaged = np.zeros((n_entries, ss_fftw_pt_measure_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_pt_measure_averaged[i,:] = np.mean(ss_fftw_pt_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_pt_measure_averaged[i,:] = np.median(ss_fftw_pt_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_omp_measure
 ss_fftw_omp_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_omp_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_omp_measure_matrix.shape[0]/n_loop) 
 ss_fftw_omp_measure_averaged = np.zeros((n_entries, ss_fftw_omp_measure_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_omp_measure_averaged[i,:] = np.mean(ss_fftw_omp_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_omp_measure_averaged[i,:] = np.median(ss_fftw_omp_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_mpi_measure
 ss_fftw_mpi_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_mpi_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_mpi_measure_matrix.shape[0]/n_loop)
 ss_fftw_mpi_measure_averaged = np.zeros((n_entries, ss_fftw_mpi_measure_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_mpi_measure_averaged[i,:] = np.mean(ss_fftw_mpi_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_mpi_measure_averaged[i,:] = np.median(ss_fftw_mpi_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
 ###
 # strong scaling data for fftw_hpx_measure
 ss_fftw_hpx_measure_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_fftw_hpx_measure.txt'), dtype='float', delimiter=';' , skip_header=1)
 n_entries = int(ss_fftw_hpx_measure_matrix.shape[0]/n_loop) 
 ss_fftw_hpx_measure_averaged = np.zeros((n_entries, ss_fftw_hpx_measure_matrix.shape[1]))
 for i in range (n_entries):
-    ss_fftw_hpx_measure_averaged[i,:] = np.mean(ss_fftw_hpx_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+    ss_fftw_hpx_measure_averaged[i,:] = np.median(ss_fftw_hpx_measure_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
+
 ################################################################################
 ################################################################################
-# calculate factors
+# # calculate factors
 
-# HPX loop measure shared data
-first_fft_measure = ss_loop_measure_shared_averaged[:,8]
-second_fft_measure = ss_loop_measure_shared_averaged[:,10]
-plan_measure = ss_loop_measure_shared_averaged[:,-3]
+# # HPX loop measure shared data
+# first_fft_measure = ss_loop_measure_shared_averaged[:,8]
+# second_fft_measure = ss_loop_measure_shared_averaged[:,10]
+# plan_measure = ss_loop_measure_shared_averaged[:,-3]
 
-# HPX loop shared data
-first_fft = ss_loop_shared_averaged[:,8]
-second_fft = ss_loop_shared_averaged[:,10]
-plan = ss_loop_shared_averaged[:,-3]
+# # HPX loop shared data
+# first_fft = ss_loop_shared_averaged[:,8]
+# second_fft = ss_loop_shared_averaged[:,10]
+# plan = ss_loop_shared_averaged[:,-3]
 
-first_speedup = first_fft / first_fft_measure
-print(first_speedup)
-print(np.mean(first_speedup[:-1]))
+# first_speedup = first_fft / first_fft_measure
+# print(first_speedup)
+# print(np.mean(first_speedup[:-1]))
 
-second_speedup = second_fft /second_fft_measure
-print(second_speedup)
-print(np.mean(second_speedup[:-1]))
+# second_speedup = second_fft /second_fft_measure
+# print(second_speedup)
+# print(np.mean(second_speedup[:-1]))
 
-plan_speedup = plan_measure /plan
-print(plan_speedup)
-print(np.mean(plan_speedup))
+# plan_speedup = plan_measure /plan
+# print(plan_speedup)
+# print(np.mean(plan_speedup))
 
-# OpenMP data
-plan_openmp_2d = ss_fftw_omp_measure_averaged[:,5]
-# MPI data
-plan_mpi_2d = ss_fftw_mpi_measure_averaged[:,5]
-# PThread data
-plan_thread_2d = ss_fftw_pt_measure_averaged[:,5]
-# HPX data
-plan_hpx_2d = ss_fftw_hpx_measure_averaged[:,4] 
+# # OpenMP data
+# plan_openmp_2d = ss_fftw_omp_measure_averaged[:,5]
+# # MPI data
+# plan_mpi_2d = ss_fftw_mpi_measure_averaged[:,5]
+# # PThread data
+# plan_thread_2d = ss_fftw_pt_measure_averaged[:,5]
+# # HPX data
+# plan_hpx_2d = ss_fftw_hpx_measure_averaged[:,4] 
 
-plan_measure_2d = np.mean((plan_hpx_2d + plan_mpi_2d + plan_openmp_2d + plan_thread_2d) / 4)
-plan_2d_speedup = plan_measure_2d / plan_measure
-print(plan_2d_speedup) 
-print(np.mean(plan_2d_speedup))
+# plan_measure_2d = np.mean((plan_hpx_2d + plan_mpi_2d + plan_openmp_2d + plan_thread_2d) / 4)
+# plan_2d_speedup = plan_measure_2d / plan_measure
+# print(plan_2d_speedup) 
+# print(np.mean(plan_2d_speedup))
 ################################################################################
 ################################################################################
 # # STRONG SCALING PARALLEL EFFICIENCY
@@ -233,10 +234,10 @@ plt.plot(points, ss_future_naive_shared_averaged[:,6], 'o-', c=colors[13], linew
 plt.plot(points, ss_future_shared_averaged[:,6], 'o-', c=colors[12], linewidth=2, label='HPX future opt')
 # HPX future sync shared data
 plt.plot(points, ss_future_sync_shared_averaged[:,6], 'o-', c=colors[9], linewidth=2, label='HPX future sync')
-# HPX future agas shared data
-plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=2, label='HPX future agas')
-# HPX future agas dist data
-plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=2, label='HPX future agas dist')
+# # HPX future agas shared data
+# plt.plot(points, ss_future_agas_shared_averaged[:,6], 'o-', c=colors[4], linewidth=2, label='HPX future agas')
+# # HPX future agas dist data
+# plt.plot(points, ss_future_scatter_averaged[:,7], 'o--', c=colors[5], linewidth=2, label='HPX future agas dist')
 # HPX loop shared data
 plt.plot(points, ss_loop_shared_averaged[:,7], 's-', c=colors[2], linewidth=2, label='HPX for_loop')
 # HPX loop dist data
@@ -253,7 +254,8 @@ plt.plot(points, ss_loop_scatter_averaged[:,7], 's--', c=colors[3], linewidth=2,
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
+# plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
+plt.legend(bbox_to_anchor=(1, 0), loc="lower left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -307,7 +309,8 @@ plt.plot(points, ss_loop_measure_shared_averaged[:,7], 's-', c=colors[2], linewi
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(1.0, 1.0), loc="upper right")
+plt.legend(bbox_to_anchor=(1, 0), loc="lower left")
+#plt.legend(bbox_to_anchor=(1.0, 1.0), loc="upper right")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
@@ -336,7 +339,8 @@ plt.plot(points, ss_loop_measure_shared_averaged[:,-3], 's-', c=colors[2], linew
 
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
-plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
+#plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
+plt.legend(bbox_to_anchor=(1, 0), loc="lower left")
 plt.xlabel('N cores')
 plt.xscale("log")
 labels_x = points.astype(int).astype(str)
