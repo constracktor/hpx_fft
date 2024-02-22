@@ -13,20 +13,19 @@ export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 if [[ "$1" == "buran" ]]
 then
     # buran
-    export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1"
+    export HPX_DIR=""
 elif [[ "$1" == "medusa" ]]
 then
     # medusa
-    export HPXSC_ROOT="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa"
+    export HPX_DIR="/work/karame.mp/hpx_nov/hpx/build/lib"
 else
   echo 'Please specify system: "buran" or "medusa"'
   exit 1
 fi
 
-export FFTW_SEQ_DIR="${HPXSC_ROOT}/build/fftw/lib64/"
+export FFTW_SEQ_DIR="/work/karame.mp/hpx_nov/hpx/build/lib"
 export CMAKE_COMMAND=cmake
-export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
-
+export PKG_CONFIG_PATH="$FFTW_SEQ_DIR/pkgconfig":$PKG_CONFIG_PATH
 ################################################################################
 # Compilation
 ################################################################################
