@@ -23,7 +23,7 @@ else
   exit 1
 fi
 
-export FFTW_SEQ_DIR="/work/karame.mp/hpx_nov/hpx/build/lib"
+export FFTW_SEQ_DIR="/work/karame.mp/fftw/fftw_seq/install/lib"
 export CMAKE_COMMAND=cmake
 export PKG_CONFIG_PATH="$FFTW_SEQ_DIR/pkgconfig":$PKG_CONFIG_PATH
 ################################################################################
