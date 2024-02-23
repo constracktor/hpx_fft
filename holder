@@ -1,8 +1,0 @@
-###
-# strong scaling data for hpx loop shared
-ss_loop_measure_shared_matrix = np.genfromtxt(os.path.abspath('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_measure_shared.txt'), dtype='float', delimiter=';' , skip_header=1)
-n_entries = int(ss_loop_measure_shared_matrix.shape[0]/n_loop) 
-ss_loop_measure_shared_averaged = np.zeros((n_entries, ss_loop_measure_shared_matrix.shape[1]))
-for i in range (n_entries):
-    ss_loop_measure_shared_averaged[i,:] = np.mean(ss_loop_measure_shared_matrix[i*n_loop:(i+1)*n_loop,:],axis=0)
-###
