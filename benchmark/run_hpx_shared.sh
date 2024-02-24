@@ -5,18 +5,20 @@
 #SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
 #SBATCH --time=01:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
-#SBATCH --partition=buran               # Name of partition
 #SBATCH --nodes=1                       # Number of nodes
 #SBATCH --ntasks=1                      # Number of MPI ranks
+# optional
+#SBATCH --partition=buran               # Name of partition
 #SBATCH --cpus-per-task=32              # Number of cores per MPI rank 
 
-# Benchmark script for shared-memory strong scaling
+# Benchmark script for shared memory strong scaling
 # $1: Executable name
 # $2: FFTW planning flag (estimate/measure)
+# $3: Number of threads
 # Parameters
 LOOP=1
 POW_START=1
-POW_STOP=5
+POW_STOP=$3
 BASE_SIZE=16384
 # Get run command
 COMMAND="srun -N 1 -n 1 -c 1"

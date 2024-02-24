@@ -5,6 +5,7 @@
 #SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
 #SBATCH --time=01:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
+# optional
 #SBATCH --partition=buran               # Name of partition
 #SBATCH --nodes=16                      # Number of nodes
 #SBATCH --ntasks=16                     # Number of MPI ranks
@@ -13,15 +14,14 @@
 # Benchmark script for distributed memory strong scaling
 # $1: Executable name
 # $2: FFTW planning flag (estimate/measure)
+# $3: Number of nodes
 # Parameters
 LOOP=1
 POW_START=1
-POW_STOP=4
+POW_STOP=$3
 BASE_SIZE=16384
-THREADS=48
-PARTITION=buran
 # Get run command
-COMMAND="srun -p $PARTITION -N 1 -n 1 -c $THREADS"
+COMMAND="srun -N 1 -n 1"
 EXECUTABLE="../build/$1"
 ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --plan=$2"
 # Log Info
@@ -37,7 +37,7 @@ do
 done
 for (( i=2**$POW_START; i<=2**$POW_STOP; i=i*2 ))
 do
-    COMMAND="srun -p $PARTITION -N $i -n $i -c $THREADS"
+    COMMAND="srun -N $i -n $i"
     for (( j=0; j<$LOOP; j=j+1 ))
     do
         $COMMAND $EXECUTABLE $ARGUMENTS
