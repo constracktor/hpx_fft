@@ -27,7 +27,7 @@ pwd; hostname; date
 # Create directories to store data
 mkdir result
 mkdir plans
-# Strong scaling loop from 2^pow_start to 2^pow_stop
+# Strong scaling loop from 2^pow_start to 2^pow_stop cores
 $COMMAND $EXECUTABLE $ARGUMENTS --header=true 
 for (( j=1; j<$LOOP; j=j+1 ))
 do
