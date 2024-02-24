@@ -3,7 +3,7 @@
 #SBATCH --output=fftw_backend_job.log   # Standard output and error log
 #SBATCH --mail-type=NONE                # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
-#SBATCH --time=01:00:00                 # Time limit hrs:min:sec
+#SBATCH --time=10:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
 # optional
 #SBATCH --partition=buran               # Name of partition
@@ -17,7 +17,7 @@
 # $3: Number of nodes
 # $4: Number of threads
 # Parameters
-LOOP=1
+LOOP=50
 POW_START=1
 POW_STOP=$3
 THREADS=$4
