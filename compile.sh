@@ -40,9 +40,7 @@ else
   echo 'Please specify system: "epyc2" or "buran" or "medusa"'
   exit 1
 fi
-export CMAKE_COMMAND=${HPXSC_ROOT}/build/cmake/bin/cmake
-export HPX_DIR=${HPXSC_ROOT}/build/hpx/build/lib
-export CXX=${HPXSC_ROOT}/build/openmpi/bin/mpic++ 
+export CMAKE_COMMAND=cmake
 # FFTW paths
 export FFTW_TH_DIR="$HOME/fft_installations/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$HOME/fft_installations/fftw_omp_mpi/install/lib"
@@ -53,5 +51,5 @@ export PKG_CONFIG_PATH="$FFTW_TH_DIR/pkgconfig":$PKG_CONFIG_PATH
 # Compilation
 ################################################################################
 rm -rf build && mkdir build && cd build
-$CMAKE_COMMAND .. -DCMAKE_BUILD_TYPE=Release -DHPX_DIR="${HPX_DIR}/cmake/HPX" -DFFTW3_DIR="${FFTW_SEQ_DIR}/cmake/fftw3"
+$CMAKE_COMMAND .. -DCMAKE_BUILD_TYPE=Release -DHPX_DIR="${HPX_DIR}/cmake/HPX"
 make -j $(grep -c ^processor /proc/cpuinfo)
