@@ -10,7 +10,7 @@
 #SBATCH --ntasks=16                     # Number of MPI ranks
 #SBATCH --cpus-per-task=48              # Number of cores per MPI rank 
 
-# Benchmark script for shared-memory strong scaling
+# Benchmark script for distributed memory strong scaling
 # $1: Executable name
 # $2: FFTW planning flag (estimate/measure)
 # Parameters
