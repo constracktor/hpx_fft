@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=hpx_fft_job          # Job name
 #SBATCH --output=hpx_fft_job.log        # Standard output and error log
-#SBATCH --mail-type=END                 # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-type=NONE                 # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
 #SBATCH --time=01:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
@@ -10,31 +10,24 @@
 #SBATCH --ntasks=1                      # Number of MPI ranks
 #SBATCH --cpus-per-task=32              # Number of cores per MPI rank 
 
-################################################################################
-# Benchmark script for shared-memory behind slurm
+# Benchmark script for shared-memory strong scaling
 # Parameters
 LOOP=1
+POW_START=1
+POW_STOP=5
 BASE_SIZE=16384
 FFTW_PLAN=estimate
 #FFTW_PLAN=measure
-# Compute benchmark script from 2^start to 2^stop
-POW_START=1
-POW_STOP=5
-# get run command
+# Get run command
 COMMAND="srun -N 1 -n 1 -c 1"
-EXECUTABLE="./build/$1"
+EXECUTABLE="../build/$1"
 ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --run=par --plan=$FFTW_PLAN"
-
+# Log Info
 pwd; hostname; date
- 
-########
-# strong scaling
+# Create directories to store data
 mkdir result
 mkdir plans
-# load modules
-###############################
-# HPX loop
-# shared
+# Strong scaling loop from 2^pow_start to 2^pow_stop
 $COMMAND $EXECUTABLE $ARGUMENTS --header=true 
 for (( j=1; j<$LOOP; j=j+1 ))
 do
@@ -48,6 +41,7 @@ do
         $COMMAND $EXECUTABLE $ARGUMENTS
     done
 done
+# Log Info
 date
 
 
