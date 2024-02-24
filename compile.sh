@@ -13,17 +13,28 @@ export HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 if [[ "$1" == "epyc2" ]]
 then
     # epyc2
+    # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1/build/hpx/build/lib"
-    export CXX="${HOME}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1/build//openmpi/bin/mpic++" 
+    # MPI compiler
+    export CXX="${HOME}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1/build/openmpi/bin/mpic++" 
 elif [[ "$1" == "buran" ]]
 then
     # buran
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib64"
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib"
+    #export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1/build/hpx/build/lib"
+    # MPI compiler
+    export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++" 
     module load openmpi
 elif [[ "$1" == "medusa" ]]
 then
     # medusa
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa/build/hpx/build/lib64"
+    then
+    # epyc2
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa/build/hpx/build/lib"
+    # MPI compiler
+    export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa/build/openmpi/bin/mpic++" 
     module load openmpi
 else
   echo 'Please specify system: "epyc2" or "buran" or "medusa"'
@@ -32,11 +43,10 @@ fi
 
 export CMAKE_COMMAND=cmake
 # FFTW paths
-export FFTW_SEQ_DIR="$HOME/fft_installations/fftw_seq/install/lib/" 
 export FFTW_TH_DIR="$HOME/fft_installations/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$HOME/fft_installations/fftw_omp_mpi/install/lib"
 export FFTW_HPX_DIR="$HOME/fft_installations/fftw_hpx/install/lib"
-export PKG_CONFIG_PATH="$FFTW_SEQ_DIR/pkgconfig":$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH="$FFTW_TH_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################
 # Compilation
