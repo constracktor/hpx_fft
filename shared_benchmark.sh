@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# Benchmark script for shared-memory 
+# Benchmark script for shared memory 
 # $1: FFTW planning flag (estimate/measure)
 cd benchmark
 # HPX implementations
