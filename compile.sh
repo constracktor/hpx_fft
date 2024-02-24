@@ -35,6 +35,7 @@ then
 elif [[ "$1" == "buran" ]]
 then
     # buran
+    module load gcc/11.2.1
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib"
     #export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1/build/hpx/build/lib"
@@ -44,7 +45,7 @@ then
 elif [[ "$1" == "medusa" ]]
 then
     # medusa
-    # epyc2
+    module load gcc/11.2.1
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa/build/hpx/build/lib"
     # MPI compiler
