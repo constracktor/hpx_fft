@@ -44,7 +44,6 @@ then
 elif [[ "$1" == "medusa" ]]
 then
     # medusa
-    then
     # epyc2
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1_medusa/build/hpx/build/lib"
