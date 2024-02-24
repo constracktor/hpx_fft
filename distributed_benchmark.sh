@@ -22,8 +22,8 @@ FFTW_PLAN=$1
 module load openmpi
 cd benchmark
 # HPX implementations
-sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh fftw_hpx_loop $FFTW_PLAN
-sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh fftw_hpx_task_agas $FFTW_PLAN
+sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh fftw_hpx_loop $FFTW_PLAN $NODES
+sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh fftw_hpx_task_agas $FFTW_PLAN $NODES
 # FFTW backends
-sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh fftw_mpi_threads $FFTW_PLAN
-sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh fftw_mpi_omp $FFTW_PLAN
+sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh fftw_mpi_threads $FFTW_PLAN $NODES $THREADS
+sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh fftw_mpi_omp $FFTW_PLAN $NODES $THREADS
