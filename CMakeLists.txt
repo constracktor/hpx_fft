@@ -7,46 +7,39 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 
 ###########################################################
 # HPX code 
-add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp)
-target_link_libraries(fft_hpx_task_agas
-                        HPX::hpx
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp)
+# target_link_libraries(fft_hpx_task_agas
+#                         HPX::hpx
+#                         PkgConfig::FFTW)
 
-add_executable(fft_hpx_loop src/fft_hpx_loop.cpp)
-target_link_libraries(fft_hpx_loop
-                        HPX::hpx
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(fft_hpx_loop src/fft_hpx_loop.cpp)
+# target_link_libraries(fft_hpx_loop
+#                         HPX::hpx
+#                         PkgConfig::FFTW)
 
-add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp)
-target_link_libraries(fft_hpx_task_agas_shared
-                        HPX::hpx
-                        HPX::iostreams_component
-                        PkgConfig::FFTW)
+# add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp)
+# target_link_libraries(fft_hpx_task_agas_shared
+#                         HPX::hpx
+#                         PkgConfig::FFTW)
 
 add_executable(fft_hpx_task_sync_shared src/fft_hpx_task_sync_shared.cpp)
 target_link_libraries(fft_hpx_task_sync_shared
                         HPX::hpx
-                        HPX::iostreams_component
                         PkgConfig::FFTW)
 
 add_executable(fft_hpx_task_naive_shared src/fft_hpx_task_naive_shared.cpp)
 target_link_libraries(fft_hpx_task_naive_shared
                         HPX::hpx
-                        HPX::iostreams_component
                         PkgConfig::FFTW)
 
 add_executable(fft_hpx_task_shared src/fft_hpx_task_shared.cpp)
 target_link_libraries(fft_hpx_task_shared
                         HPX::hpx
-                        HPX::iostreams_component
                         PkgConfig::FFTW)
 
 add_executable(fft_hpx_loop_shared src/fft_hpx_loop_shared.cpp)
 target_link_libraries(fft_hpx_loop_shared
                         HPX::hpx
-                        HPX::iostreams_component
                         PkgConfig::FFTW)
 
 ###########################################################

@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <algorithm> 
 
-#include <iostream>
-#include <hpx/hpx.hpp>
+//#include <iostream>
+#include <hpx/serialization.hpp>
 
 template<typename T>
 struct vector_2d

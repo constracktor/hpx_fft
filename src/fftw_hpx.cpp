@@ -6,7 +6,8 @@
 #include <thread>
 #include <fstream>
 
-#include <hpx/hpx.hpp>
+//#include <hpx/hpx.hpp>
+#include <hpx/hpx_init.hpp>
 #include "fftw3.h"
 
 typedef double real;

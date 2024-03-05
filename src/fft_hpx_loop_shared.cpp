@@ -1,9 +1,9 @@
 #include <hpx/config.hpp>
 
 #if !defined(HPX_COMPUTE_DEVICE_CODE)
-#include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
-#include <hpx/iostream.hpp>
+#include <hpx/execution.hpp>
+#include <hpx/parallel/algorithms/for_loop.hpp>
 #include <hpx/timing/high_resolution_timer.hpp>
 
 #include <iostream>
@@ -277,18 +277,18 @@ void print_vector_2d(const vector_2d<real>& input)
             if(counter%2 == 0)
             {
                 std::string msg = "({1} ";
-                hpx::util::format_to(hpx::cout, msg, element) << std::flush;
+                hpx::util::format_to(std::cout, msg, element) << std::flush;
             }
             else
             {
                 std::string msg = "{1}) ";
-                hpx::util::format_to(hpx::cout, msg, element) << std::flush;
+                hpx::util::format_to(std::cout, msg, element) << std::flush;
             }
             ++counter;
         }    
-        hpx::util::format_to(hpx::cout, msg) << std::flush;
+        hpx::util::format_to(std::cout, msg) << std::flush;
     }
-    hpx::util::format_to(hpx::cout, msg) << std::flush;
+    hpx::util::format_to(std::cout, msg) << std::flush;
 }
 
 int hpx_main(hpx::program_options::variables_map& vm)
@@ -373,7 +373,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
                       "Second trans  : {8}\n"
                       "Plan time     : {9}\n"
                       "Plan flops    : {10}\n";
-    hpx::util::format_to(hpx::cout, msg,
+    hpx::util::format_to(std::cout, msg,
                         run_flag,  
                         total,
                         init,
