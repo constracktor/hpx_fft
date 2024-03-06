@@ -36,6 +36,6 @@ sbatch -p $PARTITION -N 1 -n 1 -c $THREADS run_hpx_shared.sh fft_hpx_task_agas $
 # shared only
 sbatch -p $PARTITION -N 1 -n 1 -c $THREADS run_fftw_shared.sh fftw_hpx $FFTW_PLAN $THREAD_POW
 # distributed possible
-sbatch -p $PARTITION -N 1 -n 1 -c $THREADS run_fftw_shared.sh fftw_mpi_THREAD_POW $FFTW_PLAN $THREAD_POW
+sbatch -p $PARTITION -N 1 -n 1 -c $THREADS run_fftw_shared.sh fftw_mpi_threads $FFTW_PLAN $THREAD_POW
 sbatch -p $PARTITION -N 1 -n 1 -c $THREADS run_fftw_shared.sh fftw_mpi_omp $FFTW_PLAN $THREAD_POW
 
