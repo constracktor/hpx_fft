@@ -11,7 +11,7 @@ POW_STOP=$3
 BASE_SIZE=16384
 # Get run command
 COMMAND="mpirun"
-EXECUTABLE="../build/$1"
+EXECUTABLE="../$1"
 ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --plan=$2"
 # Create directories to store data
 mkdir result

@@ -22,7 +22,7 @@ POW_STOP=$3
 BASE_SIZE=16384
 # Get run command
 COMMAND="srun -N 1 -n 1"
-EXECUTABLE="../build/$1"
+EXECUTABLE="../$1"
 ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --plan=$2"
 # Log Info
 pwd; hostname; date

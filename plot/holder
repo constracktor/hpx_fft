@@ -1,0 +1,36 @@
+plt.errorbar(points, 
+             ss_fftw_mpi_measure.mean[:,6], 
+             yerr = ss_fftw_mpi_measure.min_max_error(6), 
+             fmt='v--', 
+             c=colors[0], 
+             linewidth=2, 
+             label='FFTW3 with MPI')
+plt.errorbar(points, 
+             ss_fftw_threads_measure.mean[:,6], 
+             yerr = ss_fftw_threads_measure.min_max_error(6), 
+             fmt='v-',
+             c=colors[13], 
+             linewidth=2,
+             label='FFTW3 with pthreads')
+plt.errorbar(points, 
+             ss_fftw_omp_measure.mean[:,6], 
+             yerr = ss_fftw_omp_measure.min_max_error(6), 
+             fmt='v-',
+             c=colors[12], 
+             linewidth=2,
+             label='FFTW3 with OpenMP')
+plt.errorbar(points, 
+             ss_fftw_hpx_measure.mean[:,5], 
+             yerr = ss_fftw_hpx_measure.min_max_error(5), 
+             fmt='v-',
+             c=colors[9], 
+             linewidth=2,
+             label='FFTW3 with HPX')
+
+plt.errorbar(points, 
+             ss_loop_shared_measure.mean[:,7], 
+             yerr = ss_loop_shared_measure.min_max_error(7), 
+             fmt='v-',
+             c=colors[2], 
+             linewidth=2,
+             label='HPX for_loop')
