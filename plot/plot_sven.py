@@ -17,13 +17,13 @@ n_loop = 50
 # FFTW_ESTIMATE
 ss_loop_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_loop_shared.txt', n_loop)
 
-#ss_future_sync_shared = plot_object('./plot/data/strong_scaling/16384/strong_runtimes_hpx_future_sync_shared.txt', n_loop)
+ss_future_sync_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_sync_shared.txt', 1)
 ss_future_naive_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_naive_shared.txt', 1)
 ss_future_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_opt_shared.txt', 1)
 
-# ss_fftw_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_threads.txt', n_loop)
-# ss_fftw_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_omp.txt', n_loop)
-# ss_fftw_mpi = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_mpi.txt', n_loop)
+ss_fftw_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_threads.txt', 1)
+ss_fftw_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_omp.txt', 1)
+#ss_fftw_mpi = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_mpi.txt', n_loop)
 ss_fftw_hpx = plot_object('./plot/data/strong_scaling/sven/runtimes_shared_hpx.txt', n_loop)
 
 
@@ -61,13 +61,13 @@ plt.errorbar(points,
              linewidth=2,
              label='HPX future opt')
 
-# plt.errorbar(points, 
-#              ss_future_sync_shared.median[:,6], 
-#              yerr = ss_future_sync_shared.min_max_error(6), 
-#              fmt='o-',
-#              c=colors[9], 
-#              linewidth=2,
-#              label='HPX future sync')
+plt.errorbar(points, 
+             ss_future_sync_shared.median[:,6], 
+             yerr = ss_future_sync_shared.min_max_error(6), 
+             fmt='o-',
+             c=colors[9], 
+             linewidth=2,
+             label='HPX future sync')
 
 plt.errorbar(points, 
              ss_loop_shared.median[:,7], 
@@ -101,21 +101,21 @@ plt.figure(figsize=(7,6))
 #              c=colors[0], 
 #              linewidth=2, 
 #              label='FFTW3 with MPI')
-# plt.errorbar(points, 
-#              ss_fftw_threads.median[:,6], 
-#              yerr = ss_fftw_threads.min_max_error(6), 
-#              fmt='v-',
-#              c=colors[13], 
-#              linewidth=2,
-#              label='FFTW3 with pthreads')
-# plt.errorbar(points, 
-#              ss_fftw_omp.median[:,6], 
-#              yerr = ss_fftw_omp.min_max_error(6), 
-#              fmt='v-',
-#              c=colors[12], 
-#              linewidth=2,
-#             label='FFTW3 with OpenMP')
-plt.errorbar(points[:-1], 
+plt.errorbar(points, 
+             ss_fftw_threads.median[:,6], 
+             yerr = ss_fftw_threads.min_max_error(6), 
+             fmt='v-',
+             c=colors[13], 
+             linewidth=2,
+             label='FFTW3 with pthreads')
+plt.errorbar(points, 
+             ss_fftw_omp.median[:,6], 
+             yerr = ss_fftw_omp.min_max_error(6), 
+             fmt='v-',
+             c=colors[12], 
+             linewidth=2,
+            label='FFTW3 with OpenMP')
+plt.errorbar(points, 
              ss_fftw_hpx.median[:,5], 
              yerr = ss_fftw_hpx.min_max_error(5), 
              fmt='v-',

@@ -8,19 +8,19 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 ###########################################################
 # HPX code 
 # add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp)
-# target_link_libraries(fft_hpx_task_agas
-#                         HPX::hpx
-#                         PkgConfig::FFTW)
+target_link_libraries(fft_hpx_task_agas
+                        HPX::hpx
+                        PkgConfig::FFTW)
 
-# add_executable(fft_hpx_loop src/fft_hpx_loop.cpp)
-# target_link_libraries(fft_hpx_loop
-#                         HPX::hpx
-#                         PkgConfig::FFTW)
+add_executable(fft_hpx_loop src/fft_hpx_loop.cpp)
+target_link_libraries(fft_hpx_loop
+                        HPX::hpx
+                        PkgConfig::FFTW)
 
-# add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp)
-# target_link_libraries(fft_hpx_task_agas_shared
-#                         HPX::hpx
-#                         PkgConfig::FFTW)
+add_executable(fft_hpx_task_agas_shared src/fft_hpx_task_agas_shared.cpp)
+target_link_libraries(fft_hpx_task_agas_shared
+                        HPX::hpx
+                        PkgConfig::FFTW)
 
 add_executable(fft_hpx_task_sync_shared src/fft_hpx_task_sync_shared.cpp)
 target_link_libraries(fft_hpx_task_sync_shared
@@ -60,6 +60,11 @@ target_link_libraries(fftw_mpi_threads
                         PkgConfig::FFTW
                         ${FFTW_TH_MPI_LIB}
                         ${FFTW_TH_LIB})
+# Threads
+add_executable(fftw_threads src/fftw_threads.cpp)
+target_link_libraries(fftw_threads
+                        PkgConfig::FFTW
+                        ${FFTW_TH_LIB})
 
 # MPI+OpenMP
 find_package(OpenMP REQUIRED)
@@ -77,6 +82,12 @@ add_executable(fftw_mpi_omp src/fftw_mpi_omp.cpp)
 target_link_libraries(fftw_mpi_omp
                         PkgConfig::FFTW
                         ${FFTW_OMP_MPI_LIB}
+                        ${FFTW_OMP_LIB}
+                        OpenMP::OpenMP_CXX)
+# OpenMP
+add_executable(fftw_omp src/fftw_omp.cpp)
+target_link_libraries(fftw_omp
+                        PkgConfig::FFTW
                         ${FFTW_OMP_LIB}
                         OpenMP::OpenMP_CXX)
 

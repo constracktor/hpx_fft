@@ -15,8 +15,9 @@
 # $1: Executable name
 # $2: FFTW planning flag (estimate/measure)
 # $3: Number of threads
+# $4: Number of runs
 # Parameters
-LOOP=50
+LOOP=$4
 POW_START=1
 POW_STOP=$3
 BASE_SIZE=16384

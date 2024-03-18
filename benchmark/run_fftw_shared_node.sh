@@ -10,7 +10,7 @@ POW_START=1
 POW_STOP=$3
 BASE_SIZE=16384
 # Get run command
-COMMAND="mpirun"
+COMMAND="mpirun -n 1"
 EXECUTABLE="../$1"
 ARGUMENTS="$BASE_SIZE $BASE_SIZE $2"
 # Create directories to store data
