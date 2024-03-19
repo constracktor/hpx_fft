@@ -13,19 +13,20 @@ export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 if [[ "$1" == "epyc" ]]
 then
     # epyc
-    spack load cmake
-    export BUILD_DIR=build_epyc
+    module load cmake
+    export BUILD_DIR=build_$1
     export FFTW_DIR='.'
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1/build/hpx/build/lib"
     # MPI compiler
     export CXX="${HOME}/hpxsc_installations/hpx_apex_epyc2_v.1.9.1/build/openmpi/bin/mpic++"
+    #spack load cmake
     #module load gcc/13.2.0
     #export HPX_DIR="/home/strackar/spack/opt/spack/linux-ubuntu20.04-zen2/gcc-13.2.0/hpx-1.9.1-hpgdg5dzwzolmnngayqs462ela3iboy6/lib"
 elif [[ "$1" == "buran_mpi" ]]
 then
     # buran with HPX using MPI parcelport
-    export BUILD_DIR=build_buran_mpi
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran
     module load gcc/11.2.1
     # HPX lib directory
@@ -36,7 +37,7 @@ then
 elif [[ "$1" == "buran_lci" ]]
 then
     # buran with HPX using LCI parcelport
-    export BUILD_DIR=build_buran_lci
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran
     module load gcc/11.2.1
     # HPX lib directory
@@ -47,17 +48,27 @@ then
 elif [[ "$1" == "buran_shmem" ]]
 then
     # buran with HPX using openshmem parcelport
-    export BUILD_DIR=build_buran_shmem
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran_clang
     module load llvm/17.0.1
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem/install/lib64"
     module load openmpi
     export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
+elif [[ "$1" == "buran_shmem_ucx" ]]
+then
+    # buran with HPX using openshmem parcelport
+    export BUILD_DIR=build_$1
+    export FFTW_DIR=buran_clang
+    module load llvm/17.0.1
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_ucx/install/lib64"
+    module load openmpi
+    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
 # elif [[ "$1" == "buran_gasnet" ]]
 # then
 #     # buran with gasnet
-#     export BUILD_DIR=build_buran_gasnet
+#     export BUILD_DIR=build_$1
 #     export FFTW_DIR=buran
 #     module load llvm/17.0.1
 #     # HPX lib directory
@@ -69,7 +80,7 @@ then
 elif [[ "$1" == "medusa_mpi" ]]
 then
     # medusa with HPX using MPI parcelport
-    export BUILD_DIR=build_medusa_mpi
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran
     module load gcc/11.2.1
     # HPX lib directory
@@ -80,7 +91,7 @@ then
 elif [[ "$1" == "medusa_lci" ]]
 then
     # medusa with HPX using LCI parcelport
-    export BUILD_DIR=build_medusa_lci
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran
     module load gcc/11.2.1
     # HPX lib directory
@@ -91,7 +102,7 @@ then
 elif [[ "$1" == "medusa_shmem" ]]
 then
     # medusa with HPX using openshmem parcelport
-    export BUILD_DIR=build_medusa_shmem
+    export BUILD_DIR=build_$1
     export FFTW_DIR=buran_clang
     module load llvm/17.0.1
     # HPX lib directory
@@ -101,7 +112,7 @@ then
 elif [[ "$1" == "sven" ]]
 then
     # sven
-    export BUILD_DIR=build_sven
+    export BUILD_DIR=build_$1
     export FFTW_DIR=sven
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_gcc_13.2.1_sven/build/hpx/lib64"
