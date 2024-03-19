@@ -11,6 +11,8 @@ matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 matplotlib.rcParams.update({'font.size': 16})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
+matplotlib.rcParams.update({'errorbar.capsize': 5})
+
 # set number of runs
 n_loop = 50
 # create print objects

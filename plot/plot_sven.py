@@ -10,6 +10,7 @@ matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({'errorbar.capsize': 5})
 
 # get header
 n_loop = 50
@@ -18,8 +19,8 @@ n_loop = 50
 ss_loop_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_loop_shared.txt', n_loop)
 
 ss_future_sync_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_sync_shared.txt', 1)
-ss_future_naive_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_naive_shared.txt', 1)
-ss_future_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_opt_shared.txt', 1)
+ss_future_naive_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_naive_shared.txt', n_loop)
+ss_future_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_opt_shared.txt', n_loop)
 
 ss_fftw_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_threads.txt', n_loop)
 ss_fftw_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_omp.txt', n_loop)
@@ -61,10 +62,16 @@ plt.errorbar(points,
              linewidth=2,
              label='HPX future opt')
 
-plt.errorbar(points, 
+# plt.errorbar(points, 
+#              ss_future_sync_shared.median[:,6], 
+#              yerr = ss_future_sync_shared.min_max_error(6), 
+#              fmt='o-',
+#              c=colors[9], 
+#              linewidth=2,
+#              label='HPX future sync')
+plt.plot(points, 
              ss_future_sync_shared.median[:,6], 
-             yerr = ss_future_sync_shared.min_max_error(6), 
-             fmt='o-',
+             'o-',
              c=colors[9], 
              linewidth=2,
              label='HPX future sync')

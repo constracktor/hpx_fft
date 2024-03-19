@@ -4,41 +4,22 @@
 # $1: FFTW planning flag (estimate/measure)
 # $2: partition (buran/medusa with mpi/lci/shmem)
 # $3 communication scheme (scatter/all_to_all)
-if [[ "$2" == "buran_mpi" ]] || [[ "$2" == "buran_lci" ]] || [[ "$2" == "buran_shmem" ]] || [[ "$2" == "buran_shmem_ucx" ]]
+if [[ "$2" == "buran_mpi" ]] || [[ "$2" == "buran_lci" ]]
 then
     PARTITION=buran
     THREADS=48
     NODES_POW=4
-# elif [[ "$2" == "buran_lci" ]]
-# then
-#     PARTITION=buran
-#     THREADS=48
-#     NODES_POW=4
-# elif [[ "$2" == "buran_shmem" ]]
-# then
-#     PARTITION=buran
-#     THREADS=48
-#     NODES_POW=4
-# elif [[ "$2" == "buran_shmem_ucx" ]]
-# then
-#     PARTITION=buran
-#     THREADS=48
-#     NODES_POW=4
+elif [[ "$2" == "buran_shmem" ]] || [[ "$2" == "buran_shmem_ucx" ]]
+then
+    module load llvm/17.0.1
+    PARTITION=buran
+    THREADS=48
+    NODES_POW=4
 elif [[ "$2" == "medusa_mpi" ]] || [[ "$2" == "medusa_lci" ]] || [[ "$2" == "medusa_shmem" ]] || [[ "$2" == "medusa_shmem_ucx" ]]
 then
     PARTITION=medusa
     THREADS=40
     NODES_POW=3
-# elif [[ "$2" == "medusa_lci" ]]
-# then
-#     PARTITION=medusa
-#     THREADS=40
-#     NODES_POW=3
-# elif [[ "$2" == "medusa_shmem" ]]
-# then
-#     PARTITION=medusa
-#     THREADS=40
-#     NODES_POW=3
 else
   echo 'Please specify partition and parcelport'
   exit 1

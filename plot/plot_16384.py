@@ -10,6 +10,7 @@ matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({'errorbar.capsize': 5})
 
 # get header
 n_loop = 50
