@@ -16,8 +16,9 @@
 # $2: FFTW planning flag (estimate/measure)
 # $3: Number of nodes
 # $4: Number of threads
+# $5: Number of runs
 # Parameters
-LOOP=50
+LOOP=$5
 POW_START=1
 POW_STOP=$3
 THREADS=$4

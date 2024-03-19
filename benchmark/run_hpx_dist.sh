@@ -16,8 +16,9 @@
 # $2: FFTW planning flag (estimate/measure)
 # $3: Number of nodes
 # $4: HPX collective (scatter/all_to_all)
+# $5: Number of runs
 # Parameters
-LOOP=50
+LOOP=$5
 POW_START=1
 POW_STOP=$3
 BASE_SIZE=16384
