@@ -9,14 +9,19 @@ then
     PARTITION=buran
     THREADS=48
     NODES_POW=4
-elif [[ "$2" == "buran_shmem" ]] || [[ "$2" == "buran_shmem_ucx" ]]
+elif [[ "$2" == "buran_shmem" ]] || [[ "$2" == "buran_shmem_ucx" ]] || [[ "$2" == "buran_shmem_libfabric" ]]
 then
     module load llvm/17.0.1
     PARTITION=buran
     THREADS=48
     NODES_POW=4
-elif [[ "$2" == "medusa_mpi" ]] || [[ "$2" == "medusa_lci" ]] || [[ "$2" == "medusa_shmem" ]] || [[ "$2" == "medusa_shmem_ucx" ]]
+elif [[ "$2" == "medusa_mpi" ]] || [[ "$2" == "medusa_lci" ]]
+    PARTITION=medusa
+    THREADS=40
+    NODES_POW=3
+elif [[ "$2" == "medusa_shmem" ]] || [[ "$2" == "medusa_shmem_ucx" ]] || [[ "$2" == "medusa_shmem_libfabric" ]]
 then
+    module load llvm/17.0.1
     PARTITION=medusa
     THREADS=40
     NODES_POW=3

@@ -19,7 +19,8 @@ ss_fftw_mpi_threads = plot_object('./plot/data/strong_scaling/buran_parcelports/
 
 ss_loop_mpi = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_mpi.txt', n_loop)
 ss_loop_lci = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_lci.txt', n_loop)
-ss_loop_shmem = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_openshmem.txt', 1)
+ss_loop_shmem = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem.txt', 1)
+ss_loop_shmem_ucx = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem_ucx.txt', 1)
 
 ss_future_agas_mpi = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_future_agas_mpi.txt', n_loop)
 ss_future_agas_lci = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_future_agas_lci.txt', n_loop)
@@ -38,13 +39,14 @@ plt.plot(points, ideal, '--', c=colors[0], linewidth=1.5)
 # plt.errorbar(points, ss_fftw_mpi_omp.median[:,6], yerr = ss_fftw_mpi_omp.min_max_error(6), fmt='v-', c=colors[12], linewidth=2, label='FFTW3 with MPI+OpenMP')
 # plt.errorbar(points, ss_fftw_mpi_threads.median[:,6], yerr = ss_fftw_mpi_threads.min_max_error(6), fmt='v-', c=colors[13], linewidth=2, label='FFTW3 with MPI+pthreads')
 
-plt.errorbar(points, ss_future_agas_mpi.median[:,7], yerr = ss_future_agas_mpi.min_max_error(7), fmt='o-', c =colors[6], linewidth=2, label='HPX future agas with MPI')
-plt.errorbar(points, ss_future_agas_lci.median[:,7], yerr = ss_future_agas_lci.min_max_error(7), fmt='o-', c=colors[5], linewidth=2, label='HPX future agas with LCI')
-plt.errorbar(points, ss_future_agas_shmem.median[:,7], yerr = ss_future_agas_shmem.min_max_error(7), fmt='o-', c=colors[4], linewidth=2, label='HPX future agas with SHMEM')
+# plt.errorbar(points, ss_future_agas_mpi.median[:,7], yerr = ss_future_agas_mpi.min_max_error(7), fmt='o-', c =colors[6], linewidth=2, label='HPX future agas with MPI')
+# plt.errorbar(points, ss_future_agas_lci.median[:,7], yerr = ss_future_agas_lci.min_max_error(7), fmt='o-', c=colors[5], linewidth=2, label='HPX future agas with LCI')
+# plt.errorbar(points, ss_future_agas_shmem.median[:,7], yerr = ss_future_agas_shmem.min_max_error(7), fmt='o-', c=colors[4], linewidth=2, label='HPX future agas with SHMEM')
 
 plt.errorbar(points, ss_loop_mpi.median[:,7], yerr = ss_loop_mpi.min_max_error(7), fmt='s-', c=colors[3], linewidth=2, label='HPX for_loop with MPI')
 plt.errorbar(points, ss_loop_lci.median[:,7], yerr = ss_loop_lci.min_max_error(7), fmt='s-', c=colors[2], linewidth=2, label='HPX for_loop with LCI')
-plt.errorbar(points, ss_loop_shmem.median[:,7], yerr = ss_loop_shmem.min_max_error(7), fmt='s-', c=colors[1], linewidth=2, label='HPX for_loop with SHMEM')
+plt.errorbar(points, ss_loop_shmem.median[:,7], yerr = ss_loop_shmem.min_max_error(7), fmt='s-', c=colors[1], linewidth=2, label='HPX for_loop with SHMEM mpi')
+plt.errorbar(points, ss_loop_shmem_ucx.median[:,7], yerr = ss_loop_shmem_ucx.min_max_error(7), fmt='s-', c=colors[5], linewidth=2, label='HPX for_loop with SHMEM ucx')
 
 # plot parameters
 #plt.title('Strong Scaling runtime for buran cluster with 48 threads and with $2^{14}$x$2^{14}$ matrix')

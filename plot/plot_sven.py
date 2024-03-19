@@ -132,6 +132,22 @@ plt.errorbar(points,
              linewidth=2,
              label='HPX for_loop')
 
+
+plt.plot(points, 
+             ss_fftw_mpi_threads.median[:,6],
+             'o-',
+             c=colors[13], 
+             linewidth=2,
+             label='FFTW3 with MPI+pthreads')
+plt.plot(points, 
+             ss_fftw_mpi_omp.median[:,6],
+             'o-',
+             c=colors[12], 
+             linewidth=2,
+             label='FFTW3 with MPI+OpenMP')
+
+
+
 # plot parameters
 #plt.title('Strong Scaling runtime for shared-memory ipvs-epyc2 with $2^{14}$x$2^{14}$ matrix')
 plt.legend(bbox_to_anchor=(0, 1.0), loc="upper left")

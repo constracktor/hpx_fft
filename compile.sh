@@ -65,6 +65,16 @@ then
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_ucx/install/lib64"
     module load openmpi
     export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
+elif [[ "$1" == "buran_shmem_libfabric" ]]
+then
+    # buran with HPX using openshmem parcelport
+    export BUILD_DIR=build_$1
+    export FFTW_DIR=buran_clang
+    module load llvm/17.0.1
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_libfabric/install/lib64"
+    module load openmpi
+    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
 # elif [[ "$1" == "buran_gasnet" ]]
 # then
 #     # buran with gasnet
@@ -107,6 +117,26 @@ then
     module load llvm/17.0.1
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_medusa/install/lib64"
+    module load openmpi
+    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
+elif [[ "$1" == "medusa_shmem_ucx" ]]
+then
+    # medusa with HPX using openshmem parcelport
+    export BUILD_DIR=build_$1
+    export FFTW_DIR=buran_clang
+    module load llvm/17.0.1
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_ucx_medusa/install/lib64"
+    module load openmpi
+    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
+elif [[ "$1" == "medusa_shmem_libfabric" ]]
+then
+    # medusa with HPX using openshmem parcelport
+    export BUILD_DIR=build_$1
+    export FFTW_DIR=buran_clang
+    module load llvm/17.0.1
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_libfabric_medusa/install/lib64"
     module load openmpi
     export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
 elif [[ "$1" == "sven" ]]
