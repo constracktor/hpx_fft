@@ -21,12 +21,12 @@ ss_future_sync_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hp
 ss_future_naive_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_naive_shared.txt', 1)
 ss_future_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_opt_shared.txt', 1)
 
-ss_fftw_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_threads.txt', 1)
-ss_fftw_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_omp.txt', 1)
-#ss_fftw_mpi = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_mpi.txt', n_loop)
-ss_fftw_hpx = plot_object('./plot/data/strong_scaling/sven/runtimes_shared_hpx.txt', n_loop)
+ss_fftw_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_threads.txt', n_loop)
+ss_fftw_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_omp.txt', n_loop)
+ss_fftw_hpx = plot_object('./plot/data/strong_scaling/sven/runtimes_fftw_hpx.txt', n_loop)
 
-
+ss_fftw_mpi_threads = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_threads.txt', 1)
+ss_fftw_mpi_omp = plot_object('./plot/data/strong_scaling/sven/runtimes_mpi_omp.txt', 1)
 ##########################################
 # FFTW_MEASURE
 # ss_loop_shared_measure = plot_object('./plot/data/strong_scaling/16384/strong_runtimes_hpx_loop_shared_measure.txt', n_loop)
@@ -94,23 +94,16 @@ plt.savefig('plot/figures/strong_scaling_sven_hpx_runtime.pdf', bbox_inches='tig
 # FFTW ESTIMATE
 plt.figure(figsize=(7,6))
 
-# plt.errorbar(points, 
-#              ss_fftw_mpi.median[:,6], 
-#              yerr = ss_fftw_mpi.min_max_error(6), 
-#              fmt='v--', 
-#              c=colors[0], 
-#              linewidth=2, 
-#              label='FFTW3 with MPI')
 plt.errorbar(points, 
-             ss_fftw_threads.median[:,6], 
-             yerr = ss_fftw_threads.min_max_error(6), 
+             ss_fftw_threads.median[:,5], 
+             yerr = ss_fftw_threads.min_max_error(5), 
              fmt='v-',
              c=colors[13], 
              linewidth=2,
              label='FFTW3 with pthreads')
 plt.errorbar(points, 
-             ss_fftw_omp.median[:,6], 
-             yerr = ss_fftw_omp.min_max_error(6), 
+             ss_fftw_omp.median[:,5], 
+             yerr = ss_fftw_omp.min_max_error(5), 
              fmt='v-',
              c=colors[12], 
              linewidth=2,

@@ -15,6 +15,7 @@
 # $1: Executable name
 # $2: FFTW planning flag (estimate/measure)
 # $3: Number of nodes
+# $4: HPX collective (scatter/all_to_all)
 # Parameters
 LOOP=50
 POW_START=1
@@ -23,7 +24,7 @@ BASE_SIZE=16384
 # Get run command
 COMMAND="srun -N 1 -n 1"
 EXECUTABLE="../$1"
-ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --plan=$2"
+ARGUMENTS="--nx=$BASE_SIZE --ny=$BASE_SIZE --plan=$2 --run=$4"
 # Log Info
 pwd; hostname; date
 # Create directories to store data

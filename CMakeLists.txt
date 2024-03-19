@@ -7,7 +7,7 @@ pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
 
 ###########################################################
 # HPX code 
-# add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp)
+add_executable(fft_hpx_task_agas src/fft_hpx_task_agas.cpp)
 target_link_libraries(fft_hpx_task_agas
                         HPX::hpx
                         PkgConfig::FFTW)
