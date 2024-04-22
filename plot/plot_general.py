@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from scipy.stats.distributions import chi2
+import matplotlib.pyplot as plt
 
 # Greyscale
 # black - dark grey - grey - light grey - very light grey
@@ -40,3 +41,32 @@ class plot_object:
         lower_limit = self.std[:, column] * np.sqrt((self.loop - 1) / chi2.ppf(1 - (alpha / 2), df=(self.loop - 1)))
         upper_limit = self.std[:, column] * np.sqrt((self.loop - 1) / chi2.ppf(alpha / 2, df=(self.loop - 1)))
         return [lower_limit, upper_limit]
+
+
+# helper to print bars
+def plot_bar(bar_positions, sections, section_colors, section_labels, hatch, bar_width):
+    # plot config
+    plt.rc('hatch', color='k', linewidth=0.5)
+    epsilon = .015
+    # data structures
+    bar = []
+    sum = 0
+    for i in range(0, len(sections)):
+        section_bar = plt.bar(bar_positions, sections[i], bar_width-epsilon,
+                                bottom = sum,
+                                color=section_colors[i],
+                                edgecolor='black',
+                                linewidth=0.5,
+                                hatch=hatch,
+                                alpha=1.0,
+                                label=section_labels[i])
+        bar.append(section_bar)
+        sum += sections[i]
+    return bar
+
+def extract_fft_sections(input_data):
+    fft = input_data[:,8] + input_data[:,12]
+    trans = input_data[:,11] + input_data[:,15]
+    rearrange = input_data[:,9] + input_data[:,13]
+    comm = input_data[:,10] + input_data[:,14]
+    return [fft, trans, rearrange, comm]

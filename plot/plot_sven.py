@@ -18,7 +18,7 @@ n_loop = 50
 # FFTW_ESTIMATE
 ss_loop_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_loop_shared.txt', n_loop)
 
-ss_future_sync_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_sync_shared.txt', 1)
+ss_future_sync_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_sync_shared.txt', n_loop)
 ss_future_naive_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_naive_shared.txt', n_loop)
 ss_future_shared = plot_object('./plot/data/strong_scaling/sven/runtimes_hpx_future_opt_shared.txt', n_loop)
 
@@ -62,16 +62,10 @@ plt.errorbar(points,
              linewidth=2,
              label='HPX future opt')
 
-# plt.errorbar(points, 
-#              ss_future_sync_shared.median[:,6], 
-#              yerr = ss_future_sync_shared.min_max_error(6), 
-#              fmt='o-',
-#              c=colors[9], 
-#              linewidth=2,
-#              label='HPX future sync')
-plt.plot(points, 
+plt.errorbar(points, 
              ss_future_sync_shared.median[:,6], 
-             'o-',
+             yerr = ss_future_sync_shared.min_max_error(6), 
+             fmt='o-',
              c=colors[9], 
              linewidth=2,
              label='HPX future sync')

@@ -16,6 +16,7 @@ then
     THREADS=48
     NODES_POW=4
 elif [[ "$2" == "medusa_mpi" ]] || [[ "$2" == "medusa_lci" ]]
+then
     PARTITION=medusa
     THREADS=40
     NODES_POW=3

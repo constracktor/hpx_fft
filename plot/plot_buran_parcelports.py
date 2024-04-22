@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 from plot_general import plot_object
 from plot_general import colors_16 as colors
+from plot_general import plot_bar
+from plot_general import extract_fft_sections
 
 # Configure font and fontsize
 matplotlib.rcParams['text.usetex'] = True
@@ -11,45 +13,34 @@ matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 matplotlib.rcParams.update({'font.size': 16})
 matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
+matplotlib.rcParams.update({'errorbar.capsize': 5})
 # set number of runs
 n_loop = 50
 # create print objects
-ss_fftw_mpi_omp = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_fftw_mpi_omp.txt', n_loop)
 ss_fftw_mpi_threads = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_fftw_mpi_threads.txt', n_loop)
 
 ss_loop_mpi = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_mpi.txt', n_loop)
 ss_loop_lci = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_lci.txt', n_loop)
-ss_loop_shmem = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem.txt', 1)
-ss_loop_shmem_ucx = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem_ucx.txt', 1)
 
-ss_future_agas_mpi = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_future_agas_mpi.txt', n_loop)
-ss_future_agas_lci = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_future_agas_lci.txt', n_loop)
-ss_future_agas_shmem = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_future_agas_openshmem.txt', 1)
-
+ss_loop_shmem = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem.txt', 10)
+ss_loop_shmem_all = plot_object('./plot/data/strong_scaling/buran_parcelports/strong_runtimes_loop_shmem_all.txt', 10)
 
 ################################################################################
-# strong SCALING RUNTIME
-points = np.array([1,2,4,8,16])
+# Strong scaling runtime on buran for scatter collective 
 plt.figure(figsize=(7,6))
 # ideal scaling
-ideal = 2 * ss_loop_lci.median[1,7] / points
+points = np.array([1,2,4,8,16])
+ideal = 2 * ss_fftw_mpi_threads.median[1,6]/ points
 plt.plot(points, ideal, '--', c=colors[0], linewidth=1.5)
 
 # error bars
-# plt.errorbar(points, ss_fftw_mpi_omp.median[:,6], yerr = ss_fftw_mpi_omp.min_max_error(6), fmt='v-', c=colors[12], linewidth=2, label='FFTW3 with MPI+OpenMP')
-# plt.errorbar(points, ss_fftw_mpi_threads.median[:,6], yerr = ss_fftw_mpi_threads.min_max_error(6), fmt='v-', c=colors[13], linewidth=2, label='FFTW3 with MPI+pthreads')
-
-# plt.errorbar(points, ss_future_agas_mpi.median[:,7], yerr = ss_future_agas_mpi.min_max_error(7), fmt='o-', c =colors[6], linewidth=2, label='HPX future agas with MPI')
-# plt.errorbar(points, ss_future_agas_lci.median[:,7], yerr = ss_future_agas_lci.min_max_error(7), fmt='o-', c=colors[5], linewidth=2, label='HPX future agas with LCI')
-# plt.errorbar(points, ss_future_agas_shmem.median[:,7], yerr = ss_future_agas_shmem.min_max_error(7), fmt='o-', c=colors[4], linewidth=2, label='HPX future agas with SHMEM')
-
-plt.errorbar(points, ss_loop_mpi.median[:,7], yerr = ss_loop_mpi.min_max_error(7), fmt='s-', c=colors[3], linewidth=2, label='HPX for_loop with MPI')
-plt.errorbar(points, ss_loop_lci.median[:,7], yerr = ss_loop_lci.min_max_error(7), fmt='s-', c=colors[2], linewidth=2, label='HPX for_loop with LCI')
-plt.errorbar(points, ss_loop_shmem.median[:,7], yerr = ss_loop_shmem.min_max_error(7), fmt='s-', c=colors[1], linewidth=2, label='HPX for_loop with SHMEM mpi')
-plt.errorbar(points, ss_loop_shmem_ucx.median[:,7], yerr = ss_loop_shmem_ucx.min_max_error(7), fmt='s-', c=colors[5], linewidth=2, label='HPX for_loop with SHMEM ucx')
+plt.errorbar(points, ss_fftw_mpi_threads.median[:,6], yerr = ss_fftw_mpi_threads.min_max_error(6), fmt='v-', c=colors[13], linewidth=2, label='FFTW3 reference')
+plt.errorbar(points, ss_loop_mpi.median[:,7], yerr = ss_loop_mpi.min_max_error(7), fmt='s-', c=colors[3], linewidth=2, label='MPI scatter')
+plt.errorbar(points, ss_loop_lci.median[:,7], yerr = ss_loop_lci.min_max_error(7), fmt='s-', c=colors[2], linewidth=2, label='LCI scatter')
+plt.errorbar(points, ss_loop_shmem.median[:,7], yerr = ss_loop_shmem.min_max_error(7), fmt='s-', c=colors[4], linewidth=2, label='SHMEM scatter')
+#plt.errorbar(points, ss_loop_shmem_all.median[:,7], yerr = ss_loop_shmem_all.min_max_error(7), fmt='s-', c=colors[5], linewidth=2, label='SHMEM all_to_all')
 
 # plot parameters
-#plt.title('Strong Scaling runtime for buran cluster with 48 threads and with $2^{14}$x$2^{14}$ matrix')
 #plt.legend(bbox_to_anchor=(0, 0), loc="lower left")
 plt.legend(bbox_to_anchor=(1, 0), loc="lower left")
 plt.xlabel('N nodes')
@@ -59,162 +50,99 @@ plt.xticks(ticks=points, labels= labels_x)
 plt.yscale("log")
 plt.yticks(ticks=[0.1, 1.0, 10.0,100.0])
 plt.ylabel('Runtime in s')
-plt.savefig('plot/figures/strong_scaling_buran_parcelports_runtime.pdf', bbox_inches='tight')
+plt.savefig('plot/figures/strong_scaling_buran_parcelport_scatter_runtime.pdf', bbox_inches='tight')
+
+################################################################################
+# Strong scaling runtime on buran for all_to_all collective 
+plt.figure(figsize=(7,6))
+
+#TODO
+
+plt.xlabel('N nodes')
+plt.xscale("log")
+labels_x = ['1','2','4','8','16']
+plt.xticks(ticks=points, labels= labels_x)
+plt.yscale("log")
+plt.yticks(ticks=[0.1, 1.0, 10.0,100.0])
+plt.ylabel('Runtime in s')
+plt.savefig('plot/figures/strong_scaling_buran_parcelport_all_to_all_runtime.pdf', bbox_inches='tight')
+
+
+################################################################################
+# Strong scaling runtime on medusa for scatter collective 
+plt.figure(figsize=(7,6))
+
+#TODO
+
+plt.xlabel('N nodes')
+plt.xscale("log")
+labels_x = ['1','2','4','8','16']
+plt.xticks(ticks=points, labels= labels_x)
+plt.yscale("log")
+plt.yticks(ticks=[0.1, 1.0, 10.0,100.0])
+plt.ylabel('Runtime in s')
+plt.savefig('plot/figures/strong_scaling_medusa_parcelport_scatter_runtime.pdf', bbox_inches='tight')
+
+################################################################################
+# Strong scaling runtime on buran for all_to_all collective 
+plt.figure(figsize=(7,6))
+
+#TODO
+
+plt.xlabel('N nodes')
+plt.xscale("log")
+labels_x = ['1','2','4','8','16']
+plt.xticks(ticks=points, labels= labels_x)
+plt.yscale("log")
+plt.yticks(ticks=[0.1, 1.0, 10.0,100.0])
+plt.ylabel('Runtime in s')
+plt.savefig('plot/figures/strong_scaling_medusa_parcelport_all_to_all_runtime.pdf', bbox_inches='tight')
+
+
+
+
+
 
 
 ################################################################################
 ################################################################################                                                
-# Bar plot
-plt.figure(figsize=(12,10))
-    
+# Bar plot buran
+plt.figure(figsize=(12,10))   
 # plot details
 bar_width = 0.25
-epsilon = .015
-line_width= 0.5
-opacity = 1.0
 ticks_x= np.linspace(1,5,5)
+section_colors = [colors[3], colors[5], colors[8], colors[9]]
+section_labels = ['FFT', 'Transpose', 'Rearrange', 'Communication']
 
-plt.rc('hatch', color='k', linewidth=0.5)
-# HPX loop distributed bars
-ss_loop_dist_first_fft = ss_loop_mpi.median[:,8]
-ss_loop_dist_first_trans = ss_loop_mpi.median[:,11]
-ss_loop_dist_second_fft = ss_loop_mpi.median[:,12]
-ss_loop_dist_second_trans = ss_loop_mpi.median[:,15]
+# MPI bar
+mpi_sections = extract_fft_sections(ss_loop_mpi.median)
+mpi_bar_positions = ticks_x
+mpi_hatch = '\\'
+# plot bar
+mpi_bar = plot_bar(mpi_bar_positions, mpi_sections, section_colors, section_labels, mpi_hatch, bar_width)
+# create legend
+mpi_legend = plt.legend(mpi_bar, section_labels, title='MPI', bbox_to_anchor=(.5, 1.0), loc="upper left")
+plt.gca().add_artist(mpi_legend)
 
-ss_loop_dist_first_split = ss_loop_mpi.median[:,9]
-ss_loop_dist_first_comm = ss_loop_mpi.median[:,10]
-ss_loop_dist_second_split = ss_loop_mpi.median[:,13]
-ss_loop_dist_second_comm = ss_loop_mpi.median[:,14]
+# LCI bar
+lci_sections = extract_fft_sections(ss_loop_lci.median)
+lci_bar_positions = ticks_x + bar_width
+lci_hatch = ''
+# plot bar
+lci_bar = plot_bar(lci_bar_positions, lci_sections, section_colors, section_labels, lci_hatch, bar_width)
+# create legend
+lci_legend = plt.legend(lci_bar, section_labels, title='LCI', bbox_to_anchor=(.8, 1.0), loc="upper left")
+plt.gca().add_artist(lci_legend)
 
-ss_loop_dist_bar_positions = ticks_x 
-
-ss_loop_dist_bar_first_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_fft, bar_width-epsilon,
-                            color=colors[3],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='First FFT')
-sum = ss_loop_dist_first_fft
-ss_loop_dist_bar_second_fft = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_fft, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[2],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Second FFT')
-sum+= ss_loop_dist_second_fft
-ss_loop_dist_bar_first_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_trans , bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[5],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='First transpose')
-sum+= ss_loop_dist_first_trans
-ss_loop_dist_bar_second_trans = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_second_trans, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[6],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Second transpose')
-sum+= ss_loop_dist_second_trans
-ss_loop_dist_bar_both_split = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_split+ ss_loop_dist_second_split, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[8],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Rearrange')
-sum+= ss_loop_dist_first_split+ ss_loop_dist_second_split
-ss_loop_dist_bar_both_comm = plt.bar(ss_loop_dist_bar_positions, ss_loop_dist_first_comm+ ss_loop_dist_second_comm, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[9],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='\\',
-                            alpha=opacity,
-                            label='Communication')
-
-ss_loop_dist_bars = [ss_loop_dist_bar_first_fft, ss_loop_dist_bar_second_fft, ss_loop_dist_bar_first_trans, ss_loop_dist_bar_second_trans, ss_loop_dist_bar_both_split, ss_loop_dist_bar_both_comm]
-ss_loop_dist_legend = plt.legend(ss_loop_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop dist', bbox_to_anchor=(.5, 1.0), loc="upper left")
-plt.gca().add_artist(ss_loop_dist_legend)
-
-
-# HPX loop lci distributed bars
-ss_loop_lci_dist_first_fft = ss_loop_lci.median[:,8]
-ss_loop_lci_dist_first_trans = ss_loop_lci.median[:,11]
-ss_loop_lci_dist_second_fft = ss_loop_lci.median[:,12]
-ss_loop_lci_dist_second_trans = ss_loop_lci.median[:,15]
-
-ss_loop_lci_dist_first_split = ss_loop_lci.median[:,9]
-ss_loop_lci_dist_first_comm = ss_loop_lci.median[:,10]
-ss_loop_lci_dist_second_split = ss_loop_lci.median[:,13]
-ss_loop_lci_dist_second_comm = ss_loop_lci.median[:,14]
-
-ss_loop_lci_dist_bar_positions = ticks_x  + bar_width
-
-ss_loop_lci_dist_bar_first_fft = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_first_fft, bar_width-epsilon,
-                            color=colors[3],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='First FFT')
-sum = ss_loop_lci_dist_first_fft
-ss_loop_lci_dist_bar_second_fft = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_second_fft, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[2],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='Second FFT')
-sum+= ss_loop_lci_dist_second_fft
-ss_loop_lci_dist_bar_first_trans = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_first_trans , bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[5],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='First transpose')
-sum+= ss_loop_lci_dist_first_trans
-ss_loop_lci_dist_bar_second_trans = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_second_trans, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[6],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='Second transpose')
-sum+= ss_loop_lci_dist_second_trans
-ss_loop_lci_dist_bar_both_split = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_first_split+ ss_loop_lci_dist_second_split, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[8],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='Rearrange')
-sum+= ss_loop_lci_dist_first_split+ ss_loop_lci_dist_second_split
-ss_loop_lci_dist_bar_both_comm = plt.bar(ss_loop_lci_dist_bar_positions, ss_loop_lci_dist_first_comm+ ss_loop_lci_dist_second_comm, bar_width-epsilon,
-                            bottom=sum,
-                            color=colors[9],
-                            edgecolor='black',
-                            linewidth=line_width,
-                            hatch='',
-                            alpha=opacity,
-                            label='Communication')
-
-ss_loop_lci_dist_bars = [ss_loop_lci_dist_bar_first_fft, ss_loop_lci_dist_bar_second_fft, ss_loop_lci_dist_bar_first_trans, ss_loop_lci_dist_bar_second_trans, ss_loop_lci_dist_bar_both_split, ss_loop_lci_dist_bar_both_comm]
-ss_loop_lci_dist_legend = plt.legend(ss_loop_lci_dist_bars, ['First FFT', 'Second FFT', 'First transpose', 'Second transpose', 'Rearrange', 'Communication'], title='HPX loop lci dist', bbox_to_anchor=(.8, 1.0), loc="upper left")
-plt.gca().add_artist(ss_loop_lci_dist_legend)
+# SHMEM bar
+shmem_sections = extract_fft_sections(ss_loop_shmem.median)
+shmem_bar_positions = ticks_x - bar_width
+shmem_hatch = '///'
+# plot bar
+shmem_bar = plot_bar(shmem_bar_positions, shmem_sections, section_colors, section_labels, shmem_hatch, bar_width)
+# create legend
+shmem_legend = plt.legend(shmem_bar, section_labels, title='LCI', bbox_to_anchor=(.2, 1.0), loc="upper left")
+plt.gca().add_artist(shmem_legend)
 
 # plot parameters
 plt.title('Strong Scaling distribution for buran cluster with with 24 threads and $2^{14}$x$2^{14}$ matrix')
@@ -225,3 +153,10 @@ plt.xticks(ticks=ticks_x, labels= labels_x)
 #plt.yscale("log")
 plt.ylabel('Runtime in s')
 plt.savefig('plot/figures/strong_scaling_buran_distribution.pdf', bbox_inches='tight')
+
+
+
+################################################################################                                                
+# Bar plot medusa
+
+#TODO

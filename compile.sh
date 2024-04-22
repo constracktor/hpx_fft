@@ -8,7 +8,7 @@ set +x
 # Preprocessing
 ################################################################################
 # working directory
-export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
+export HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/.."
 # export paths
 if [[ "$1" == "epyc" ]]
 then
@@ -28,23 +28,35 @@ then
     # buran with HPX using MPI parcelport
     export BUILD_DIR=build_$1
     export FFTW_DIR=buran
-    module load gcc/11.2.1
     # HPX lib directory
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib"
-    # MPI compiler
-    export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++"
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_mpi_clang_17.0.1/install/lib64"
     module load openmpi
+    # module load gcc/11.2.1
+    # # HPX lib directory
+    # export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib"
+    # # MPI compiler
+    # export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++"
+    # module load openmpi
 elif [[ "$1" == "buran_lci" ]]
 then
     # buran with HPX using LCI parcelport
     export BUILD_DIR=build_$1
     export FFTW_DIR=buran
-    module load gcc/11.2.1
     # HPX lib directory
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1/build/hpx/build/lib"
-    # MPI compiler
-    export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++"
-    module load openmpi
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_lci_clang_17.0.1/install/lib64"
+    # module load gcc/11.2.1
+    # # HPX lib directory
+    # export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1/build/hpx/build/lib"
+    # # MPI compiler
+    # export CXX="${HOME}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++"
+    # module load openmpi
+elif [[ "$1" == "buran_tcp" ]]
+then
+    # buran with HPX using LCI parcelport
+    export BUILD_DIR=build_$1
+    export FFTW_DIR=buran
+    # HPX lib directory
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_tcp_clang_17.0.1/install/lib64"
 elif [[ "$1" == "buran_shmem" ]]
 then
     # buran with HPX using openshmem parcelport
@@ -52,27 +64,7 @@ then
     export FFTW_DIR=buran_clang
     module load llvm/17.0.1
     # HPX lib directory
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem/install/lib64"
-    module load openmpi
-    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
-elif [[ "$1" == "buran_shmem_ucx" ]]
-then
-    # buran with HPX using openshmem parcelport
-    export BUILD_DIR=build_$1
-    export FFTW_DIR=buran_clang
-    module load llvm/17.0.1
-    # HPX lib directory
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_ucx/install/lib64"
-    module load openmpi
-    export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
-elif [[ "$1" == "buran_shmem_libfabric" ]]
-then
-    # buran with HPX using openshmem parcelport
-    export BUILD_DIR=build_$1
-    export FFTW_DIR=buran_clang
-    module load llvm/17.0.1
-    # HPX lib directory
-    export HPX_DIR="${HOME}/hpxsc_installations/hpx_openshmem_libfabric/install/lib64"
+    export HPX_DIR="${HOME}/hpxsc_installations/hpx_dev_shmem_clang_17.0.1/install/lib64"
     module load openmpi
     export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
 # elif [[ "$1" == "buran_gasnet" ]]
