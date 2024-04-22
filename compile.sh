@@ -30,6 +30,7 @@ then
     export FFTW_DIR=buran
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_mpi_clang_17.0.1/install/lib64"
+    module load llvm/17.0.1
     module load openmpi
     # module load gcc/11.2.1
     # # HPX lib directory
@@ -44,6 +45,7 @@ then
     export FFTW_DIR=buran
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_lci_clang_17.0.1/install/lib64"
+    module load llvm/17.0.1
     # module load gcc/11.2.1
     # # HPX lib directory
     # export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9.1_lci_gcc_11.2.1/build/hpx/build/lib"
@@ -57,14 +59,15 @@ then
     export FFTW_DIR=buran
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_1.9_tcp_clang_17.0.1/install/lib64"
+    module load llvm/17.0.1
 elif [[ "$1" == "buran_shmem" ]]
 then
     # buran with HPX using openshmem parcelport
     export BUILD_DIR=build_$1
     export FFTW_DIR=buran_clang
-    module load llvm/17.0.1
     # HPX lib directory
     export HPX_DIR="${HOME}/hpxsc_installations/hpx_dev_shmem_clang_17.0.1/install/lib64"
+    module load llvm/17.0.1
     module load openmpi
     export C_COMPILER=/opt/apps/llvm/17.0.1/bin/clang
 # elif [[ "$1" == "buran_gasnet" ]]
@@ -150,6 +153,7 @@ export CMAKE_COMMAND=cmake
 export FFTW_TH_DIR="$HOME/fft_installations/$FFTW_DIR/fftw_threads_mpi/install/lib"
 export FFTW_OMP_DIR="$HOME/fft_installations/$FFTW_DIR/fftw_omp_mpi/install/lib"
 export FFTW_HPX_DIR="$HOME/fft_installations/$FFTW_DIR/fftw_hpx/install/lib"
+# for sven with measure planning: export FFTW_HPX_DIR="$HOME/fft_installations/$FFTW_DIR/fftw_hpx_riscv/install/lib"
 export PKG_CONFIG_PATH="$FFTW_TH_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################
