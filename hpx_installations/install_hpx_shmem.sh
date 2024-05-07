@@ -2,7 +2,7 @@
 # This script installs HPX with experimental OpenSHMEM parcelport
 
 # MODIFY: Adjust required modules
-module load gcc/12.2.1 boost hwloc/2.9.1 openmpi
+module load gcc/12.3.0 boost hwloc/2.9.1 openmpi
 # structure
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/hpx_dev_shmem"
 export DIR_SRC="$ROOT/src"
