@@ -2,14 +2,8 @@
 #SBATCH --job-name=fftw_backend_job     # Job name
 #SBATCH --output=fftw_backend_job.log   # Standard output and error log
 #SBATCH --mail-type=NONE                # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
 #SBATCH --time=10:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
-# optional
-#SBATCH --partition=buran               # Name of partition
-#SBATCH --nodes=2                      # Number of nodes
-#SBATCH --ntasks=2                     # Number of MPI ranks
-#SBATCH --cpus-per-task=48              # Number of cores per MPI rank 
 
 # Benchmark script for distributed memory strong scaling
 # $1: Executable name

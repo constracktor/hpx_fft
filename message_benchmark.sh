@@ -1,64 +1,47 @@
 #!/bin/bash
 ################################################################################
-# Benchmark script for message scaling between two nodes of a cluster
-# $1: partition (buran/medusa with mpi/lci/tcp/shmem)
-# $2 communication scheme (scatter/all_to_all)
-if [[ "$1" == "buran_mpi" ]]
+# Benchmark script for distributed memory 
+# $1: parcelport (mpi/lci/tcp/shmem/gasnet)
+# $2: communication scheme (scatter/all_to_all)
+
+# specify parameters
+# cluster partition
+PARTITION=buran
+# shared memory threads
+THREADS=48
+# run 2D FFT for dimension 2^7 up to dimension 2^(7+SIZE_POW) 
+SIZE_POW=7
+# set number of runs per programms
+LOOP=50
+# set FFTW planning flag
+FFTW_PLAN=measure
+
+COLLECTIVE=$2
+BUILD_DIR=build_$1 
+# set parcelport specific parameters
+if [[ "$1" == "mpi" ]]
 then
-    # 16 nodes available
     module load llvm/17.0.1
     module load openmpi
-    PARTITION=buran
-    THREADS=48
-    SIZE_POW=7
-elif [[ "$1" == "buran_lci" ]]
+elif [[ "$1" == "lci" ]]
 then
-    # 16 nodes available
     module load llvm/17.0.1
-    PARTITION=buran
-    THREADS=48
-    SIZE_POW=7
     export LD_LIBRARY_PATH=/home/alex/hpxsc_installations/hpx_1.9_lci_clang_17.0.1/install/lib64:$LD_LIBRARY_PATH
-elif [[ "$1" == "buran_tcp" ]] || [[ "$1" == "buran_shmem" ]]
+elif [[ "$1" == "tcp" ]]
 then
-    # 16 nodes available
     module load llvm/17.0.1
-    PARTITION=buran
-    THREADS=48
-    SIZE_POW=7
-elif [[ "$1" == "medusa_mpi" ]]
+elif [[ "$1" == "shmem" ]]
 then
-    # 14 nodes available
     module load llvm/17.0.1
-    module load openmpi
-    PARTITION=medusa
-    THREADS=40
-    SIZE_POW=7
-elif [[ "$1" == "medusa_lci" ]]
+elif [[ "$1" == "gasnet" ]]
 then
-    # 14 nodes available
     module load llvm/17.0.1
-    PARTITION=medusa
-    THREADS=40
-    SIZE_POW=7
-    export LD_LIBRARY_PATH=/home/alex/hpxsc_installations/hpx_1.9_lci_clang_17.0.1_medusa/install/lib64:$LD_LIBRARY_PATH
-elif [[ "$1" == "medusa_tcp" ]] || [[ "$1" == "medusa_shmem" ]]
-then
-    # 14 nodes available
-    module load llvm/17.0.1
-    PARTITION=medusa
-    THREADS=40
-    SIZE_POW=7
 else
-  echo 'Please specify partition and parcelport'
+  echo 'Please specify parcelport and collective'
   exit 1
 fi
-LOOP=50
-FFTW_PLAN=measure
-COLLECTIVE=$2
-BUILD_DIR=build_$1
 cd benchmark
-# HPX implementations
+# HPX
 sbatch -p $PARTITION -N 2 -n 2 -c $THREADS run_hpx_message.sh $BUILD_DIR/fft_hpx_loop $FFTW_PLAN $SIZE_POW $COLLECTIVE $LOOP
-# FFTW backends
-#sbatch -p $PARTITION -N 2 -n 2 -c $THREADS run_fftw_message.sh $BUILD_DIR/fftw_mpi_threads $FFTW_PLAN $NODES $THREADS $LOOP
+# FFTW
+#sbatch -p $PARTITION -N 2 -n 2 -c $THREADS run_fftw_message.sh $BUILD_DIR/fftw_mpi_threads $FFTW_PLAN 2 $THREADS $LOOP
