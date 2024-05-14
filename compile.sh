@@ -26,12 +26,12 @@ then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_tcp/install/lib64"
 elif [[ "$1" == "shmem" ]]
 then
-    export HPX_DIR="${ROOT}/hpx_installations/hpx_dev_shmem/install/lib64"
-    #module load openmpi
-    module load gcc/12.3.0
+    echo "Add HPX_DIR for OpenSHMEM parcelport"
+    exit 1
 elif [[ "$1" == "gasnet" ]]
 then
     echo "Add HPX_DIR for Gasnet parcelport"
+    exit 1
 else
   echo 'Please specify parcelport'
   exit 1
