@@ -18,15 +18,6 @@ if [[ "$1" == "mpi" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_mpi/install/lib64"
     module load openmpi
-
-
-
-    # module load gcc/11.2.1
-    # # HPX lib directory
-    # export HPX_DIR="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/hpx/build/lib"
-    # # MPI compiler
-    # export CXX="${ROOT}/hpxsc_installations/hpx_1.9.1_mpi_gcc_11.2.1/build/openmpi/bin/mpic++"
-    # module load openmpi
 elif [[ "$1" == "lci" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_lci/install/lib64"
@@ -36,21 +27,20 @@ then
 elif [[ "$1" == "shmem" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_dev_shmem/install/lib64"
-    module load openmpi
+    #module load openmpi
     module load gcc/12.3.0
 elif [[ "$1" == "gasnet" ]]
 then
-    # W.I.P.
-    # export HPX_DIR="${ROOT}/hpx_installations/hpx_dev_gasnet/install/lib"
-    # export PKG_CONFIG_PATH="${ROOT}/hpx_installations/hpx_dev_gasnet/gasnet/install/lib/pkgconfig":$PKG_CONFIG_PATH
+    echo "Add HPX_DIR for Gasnet parcelport"
 else
   echo 'Please specify parcelport'
   exit 1
 fi
 export CMAKE_COMMAND=cmake
 # FFTW path
-export FFTW_TH_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install/lib"
-export PKG_CONFIG_PATH="$FFTW_TH_DIR/pkgconfig":$PKG_CONFIG_PATH
+#export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install/lib"
+export FFTW_DIR="$ROOT/fftw_installations/fftw_cmake/install/lib"
+export PKG_CONFIG_PATH="$FFTW_DIR/pkgconfig":$PKG_CONFIG_PATH
 
 ################################################################################
 # Compilation
