@@ -24,22 +24,13 @@ then
 elif [[ "$1" == "tcp" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_tcp/install/lib64"
-elif [[ "$1" == "shmem" ]]
-then
-    echo "Add HPX_DIR for OpenSHMEM parcelport"
-    exit 1
-elif [[ "$1" == "gasnet" ]]
-then
-    echo "Add HPX_DIR for Gasnet parcelport"
-    exit 1
 else
   echo 'Please specify parcelport'
   exit 1
 fi
 export CMAKE_COMMAND=cmake
 # FFTW path
-#export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install/lib"
-export FFTW_DIR="$ROOT/fftw_installations/fftw_cmake/install/"
+export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install/lib"
 export PKG_CONFIG_PATH="$FFTW_DIR/lib64/pkgconfig:$FFTW_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ################################################################################
