@@ -30,7 +30,7 @@ else
 fi
 export CMAKE_COMMAND=cmake
 # FFTW path
-export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install/lib"
+export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install"
 export PKG_CONFIG_PATH="$FFTW_DIR/lib64/pkgconfig:$FFTW_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ################################################################################

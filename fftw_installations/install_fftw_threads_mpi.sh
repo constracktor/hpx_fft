@@ -20,3 +20,5 @@ CC=clang CXX=clang++ $DIR_SRC/configure --prefix=$DIR_INSTALL --enable-mpi --ena
 make -j $(grep -c ^processor /proc/cpuinfo)
 # install
 make install
+# update pkgconfig to link to fftw3_threads and fftw3_mpi
+sed -i 's/Libs: -L${libdir} -lfftw3/Libs: -L${libdir} -lfftw3 -lfftw3_mpi -lfftw3_threads/g' $DIR_INSTALL/lib/pkgconfig/fftw3.pc
