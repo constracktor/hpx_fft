@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# This script installs FFTW3 from the recommended tarball using cmake
-# load compiler and MPI module
+# This script installs FFTW3 from the recommended tarball without backends
+# load compiler
 module load llvm/17.0.1
 # structure
-export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/fftw_cmake"
+export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/fftw_sequential"
 export DIR_SRC="$ROOT/src"
 export DIR_BUILD="$ROOT/build"
 export DIR_INSTALL="$ROOT/install"
@@ -15,7 +15,7 @@ wget -O- ${DOWNLOAD_URL} | tar xz --strip-components=1
 # build
 mkdir -p $DIR_BUILD
 cd $DIR_BUILD
-CC=clang CXX=clang++ cmake $DIR_SRC -DCMAKE_INSTALL_PREFIX=$DIR_INSTALL
+CC=clang CXX=clang++ $DIR_SRC/configure --prefix=$DIR_INSTALL --disable-fortran --enable-shared
 make -j $(grep -c ^processor /proc/cpuinfo)
 # install
 make install

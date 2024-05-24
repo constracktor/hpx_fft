@@ -17,20 +17,21 @@ module load llvm/17.0.1
 if [[ "$1" == "mpi" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_mpi/install/lib64"
+    export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install"
     module load openmpi
 elif [[ "$1" == "lci" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_lci/install/lib64"
+    export FFTW_DIR="$ROOT/fftw_installations/fftw_sequential/install"
 elif [[ "$1" == "tcp" ]]
 then
     export HPX_DIR="${ROOT}/hpx_installations/hpx_1.9_tcp/install/lib64"
+    export FFTW_DIR="$ROOT/fftw_installations/fftw_sequential/install"
 else
   echo 'Please specify parcelport'
   exit 1
 fi
 export CMAKE_COMMAND=cmake
-# FFTW path
-export FFTW_DIR="$ROOT/fftw_installations/fftw_threads_mpi/install"
 export PKG_CONFIG_PATH="$FFTW_DIR/lib64/pkgconfig:$FFTW_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ################################################################################
