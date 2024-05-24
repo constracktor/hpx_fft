@@ -133,11 +133,7 @@ void fft::split_trans_vec(const std::size_t i)
 
 void fft::communicate_scatter_vec(const std::size_t i)
 {
-    if (num_localities_ == 1)
-    {
-        communication_futures_[i] = hpx::make_ready_future(std::move(values_prep_));
-    }
-    else if(this_locality_ != i)
+    if(this_locality_ != i)
     {
         // receive from other locality
         communication_futures_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
@@ -154,7 +150,7 @@ void fft::communicate_scatter_vec(const std::size_t i)
 
 void fft::communicate_scatter_trans_vec(const std::size_t i)
 {
-if(this_locality_ != i)
+    if(this_locality_ != i)
     {
         // receive from other locality
         communication_futures_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
