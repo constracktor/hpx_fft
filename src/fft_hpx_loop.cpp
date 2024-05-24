@@ -154,11 +154,7 @@ void fft::communicate_scatter_vec(const std::size_t i)
 
 void fft::communicate_scatter_trans_vec(const std::size_t i)
 {
-    if (num_localities_ == 1)
-    {
-        communication_futures_[i] = hpx::make_ready_future(std::move(trans_values_prep_));
-    }
-    else if(this_locality_ != i)
+if(this_locality_ != i)
     {
         // receive from other locality
         communication_futures_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
@@ -266,15 +262,22 @@ vector_2d<real> fft::fft_2d_r2c()
     auto start_first_comm = t_.now();
     if (COMM_FLAG_ == "scatter")
     {
-        for(std::size_t i = 0; i < num_localities_; ++i)
+        if (num_localities_ == 1)
         {
-            // scatter operation from all localities
-            communicate_scatter_vec(i);
+            communication_vec_ = std::move(values_prep_);
         }
-        // global sychronization
-        for(std::size_t i = 0; i < num_localities_; ++i)
-        {     
-            communication_vec_[i] = communication_futures_[i].get();
+        else
+        {
+            for(std::size_t i = 0; i < num_localities_; ++i)
+            {
+                // scatter operation from all localities
+                communicate_scatter_vec(i);
+            }
+            // global sychronization
+            for(std::size_t i = 0; i < num_localities_; ++i)
+            {     
+                communication_vec_[i] = communication_futures_[i].get();
+            }
         }
     }
     else if (COMM_FLAG_ == "all_to_all")
@@ -314,15 +317,22 @@ vector_2d<real> fft::fft_2d_r2c()
     auto start_second_comm = t_.now();
     if (COMM_FLAG_ == "scatter")
     {
-        for(std::size_t i = 0; i < num_localities_; ++i)
+        if (num_localities_ == 1)
         {
-            // scatter operation from all localities
-            communicate_scatter_trans_vec(i);
+            communication_vec_ = std::move(trans_values_prep_);
         }
-        // global synchronization
-        for(std::size_t i = 0; i < num_localities_; ++i)
-        {     
-            communication_vec_[i] = communication_futures_[i].get();
+        else
+        {
+            for(std::size_t i = 0; i < num_localities_; ++i)
+            {
+                // scatter operation from all localities
+                communicate_scatter_trans_vec(i);
+            }
+            // global synchronization
+            for(std::size_t i = 0; i < num_localities_; ++i)
+            {     
+                communication_vec_[i] = communication_futures_[i].get();
+            }
         }
     }
     else if (COMM_FLAG_ == "all_to_all")
