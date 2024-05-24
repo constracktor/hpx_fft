@@ -133,7 +133,11 @@ void fft::split_trans_vec(const std::size_t i)
 
 void fft::communicate_scatter_vec(const std::size_t i)
 {
-    if(this_locality_ != i)
+    if (num_localities_ == 1)
+    {
+        communication_futures_[i] = hpx::make_ready_future(std::move(values_prep_));
+    }
+    else if(this_locality_ != i)
     {
         // receive from other locality
         communication_futures_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
@@ -150,7 +154,11 @@ void fft::communicate_scatter_vec(const std::size_t i)
 
 void fft::communicate_scatter_trans_vec(const std::size_t i)
 {
-    if(this_locality_ != i)
+    if (num_localities_ == 1)
+    {
+        communication_futures_[i] = hpx::make_ready_future(std::move(trans_values_prep_));
+    }
+    else if(this_locality_ != i)
     {
         // receive from other locality
         communication_futures_[i] = hpx::collectives::scatter_from<std::vector<real>>(communicators_[i], 
@@ -168,16 +176,30 @@ void fft::communicate_scatter_trans_vec(const std::size_t i)
 // all to all communication
 void fft::communicate_all_to_all_vec()
 {
-    communication_vec_ = hpx::collectives::all_to_all(communicators_[0], 
+    if (num_localities_ == 1)
+    {
+        communication_vec_ = std::move(values_prep_);
+    }
+    else
+    { 
+        communication_vec_ = hpx::collectives::all_to_all(communicators_[0], 
                 std::move(values_prep_), 
                 hpx::collectives::generation_arg(1)).get();
+    }
 }
 
 void fft::communicate_all_to_all_trans_vec()
 {
-    communication_vec_ = hpx::collectives::all_to_all(communicators_[0], 
+    if (num_localities_ == 1)
+    {
+        communication_vec_ = std::move(trans_values_prep_);
+    }
+    else
+    {
+        communication_vec_ = hpx::collectives::all_to_all(communicators_[0], 
                 std::move(trans_values_prep_), 
                 hpx::collectives::generation_arg(2)).get();
+    }
 }
 
 // transpose after communication
