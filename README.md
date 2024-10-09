@@ -1,13 +1,13 @@
-# HPX based FFT with FFTW3 as 1D backend and FFTW3 with HPX backend
-
-This repo is currently under active developement.
+# A HPX Communication Benchmark: Distributed FFT using Collectives
+ 
+This repo supplements the Poster Paper submitted to Euro-Par2024
 
 ## Dependencies
 
-Execute scripts in FFTW and HPX installation directories. Adjust modules to your system.
+Execute scripts in installation directory. Adjust modules to your system.
 
 - `./install_hpx_tcp/mpi/lci.sh`
-- `./install_fftw_{sequential}/{treads_mpi}.sh`
+- `./install_fftw_treads_mpi.sh`
 
 ## Compile
 
@@ -21,4 +21,5 @@ Execute scripts in FFTW and HPX installation directories. Adjust modules to your
 
 ## Contact
 
-alexander.strack@ipvs.uni-stuttgart.de
+- alexander.strack@ipvs.uni-stuttgart.de
+- dirk.pflueger@ipvs.uni-stuttgart.de

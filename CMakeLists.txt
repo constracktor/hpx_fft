@@ -14,5 +14,5 @@ target_link_libraries(fft_hpx_loop
 # FFTW MPI+Threads
 add_executable(fftw_mpi_threads src/fftw_mpi_threads.cpp)
 target_link_libraries(fftw_mpi_threads
-HPX::hpx
-PkgConfig::FFTW)
+                      HPX::hpx
+                      PkgConfig::FFTW)

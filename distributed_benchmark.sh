@@ -5,21 +5,21 @@
 # $2: communication scheme (scatter/all_to_all)
 
 # specify parameters
-# MODIFY: Adjust compiler
+## MODIFY: Adjust partition
 PARTITION=buran
-# MODIFY: Adjust shared memory threads
+## MODIFY: Adjust shared memory threads
 THREADS=48
 # run from 2^0 up to 2^NODES_POW nodes
 NODES_POW=4
 NODES=$((2**$NODES_POW))
-# # MODIFY: Adjust number of runs per programms
+## MODIFY: Adjust number of runs per programms
 LOOP=50
 # set FFTW planning flag
 FFTW_PLAN=measure
 
 COLLECTIVE=$2
 BUILD_DIR=build_$1 
-# MODIFY: Adjust parcelport specific parameters
+## MODIFY: Adjust parcelport specific parameters
 module load llvm/17.0.1
 if [[ "$1" == "mpi" ]]
 then
