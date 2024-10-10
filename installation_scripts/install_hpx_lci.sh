@@ -2,7 +2,7 @@
 # This script installs HPX with LCI parcelport
 
 # MODIFY: Adjust required modules
-module load llvm/17.0.1 boost/1.83.0 hwloc/2.9.1
+module load llvm/17.0.6 boost/1.84.0-release hwloc/2.10.0
 # structure
 export ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/hpx_1.9_lci"
 export DIR_SRC="$ROOT/src"

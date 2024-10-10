@@ -391,7 +391,6 @@ void fft::initialize(vector_2d<real> values_vec,
                                    FFTW_FORWARD,
                                    PLAN_FLAG_);
     // communication specific initialization
-    hpx::util::format_to(std::cout, "BEFORE COMM INIT\n");
     COMM_FLAG_ = COMM_FLAG;
     if (COMM_FLAG_ == "scatter")
     {
@@ -424,7 +423,6 @@ void fft::initialize(vector_2d<real> values_vec,
         std::cout << "Specify communication scheme: scatter or all_to_all\n";
         hpx::finalize();
     }
-    hpx::util::format_to(std::cout, "AFTER COMM INIT\n");
 }
 
 // helpers
@@ -465,7 +463,6 @@ void print_vector_2d(const vector_2d<real>& input)
 
 int hpx_main(hpx::program_options::variables_map& vm)
 {
-    hpx::util::format_to(std::cout, "ENTERED HPX MAIN\n");
     ////////////////////////////////////////////////////////////////
     // Parameters and Data structures
     const std::size_t this_locality = hpx::get_locality_id(); 
@@ -590,10 +587,7 @@ int hpx_main(hpx::program_options::variables_map& vm)
 
     ////////////////////////////////////////////////////////////////
     // Finalize HPX runtime
-    hpx::util::format_to(std::cout, "BEFORE FINALIZE\n");
-    auto val = hpx::finalize();
-    hpx::util::format_to(std::cout, "AFTER FINALIZE\n");
-    return val;
+    return hpx::finalize();
 }
 
 int main(int argc, char* argv[])
@@ -622,7 +616,6 @@ int main(int argc, char* argv[])
     hpx::init_params init_args;
     init_args.desc_cmdline = desc_commandline;
     init_args.cfg = cfg;
-    hpx::util::format_to(std::cout, "BEFORE HPX MAIN\n");
     return hpx::init(argc, argv, init_args);
 }
 

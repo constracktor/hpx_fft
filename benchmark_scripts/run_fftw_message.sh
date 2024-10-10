@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=fftw_backend_job     # Job name
 #SBATCH --output=fftw_backend_job.log   # Standard output and error log
-#SBATCH --mail-type=NONE                # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --time=10:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
 

@@ -1,8 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=hpx_fft_job          # Job name
 #SBATCH --output=hpx_fft_job.log        # Standard output and error log
-#SBATCH --mail-type=NONE                # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=alexander.strack@ipvs.uni-stuttgart.de       # Where to send mail	
 #SBATCH --time=10:00:00                 # Time limit hrs:min:sec
 #SBATCH --exclusive                     # Exclusive ressource access
 

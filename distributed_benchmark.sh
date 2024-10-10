@@ -19,20 +19,25 @@ FFTW_PLAN=measure
 
 COLLECTIVE=$2
 BUILD_DIR=build_$1 
-## MODIFY: Adjust parcelport specific parameters
-module load llvm/17.0.1
-if [[ "$1" == "mpi" ]]
+# set parcelport specific parameters
+module load llvm/17.0.6
+cd benchmark_scripts
+if [[ "$1" == "fftw" ]]
 then
-    module load openmpi
-elif [[ "$1" == "lci" ]]
+    # FFTW
+    sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh $BUILD_DIR/fftw_mpi_threads $FFTW_PLAN $NODES $THREADS $LOOP
+elif  [[ "$1" == "mpi" ]] ||  [[ "$1" == "lci" ]] ||  [[ "$1" == "tcp" ]]
 then
-    export LD_LIBRARY_PATH=/home/alex/test_chris/hpx_fft/hpx_installations/hpx_1.9_lci/install/lib64:$LD_LIBRARY_PATH
+    if [[ "$1" == "mpi" ]]
+    then
+        module load openmpi/5.0.3
+    elif [[ "$1" == "lci" ]]
+    then
+        export LD_LIBRARY_PATH="$(pwd)/../installation_scripts/hpx_1.9_lci/install/lib64:$LD_LIBRARY_PATH"
+    fi
+    # HPX
+    sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh $BUILD_DIR/fft_hpx_loop $FFTW_PLAN $NODES_POW $COLLECTIVE $LOOP
 else
-  echo 'Please specify parcelport and collective'
-  exit 1
+    echo "Specify parcelport: tcp/lci/mpi/fftw"
+    exit 1
 fi
-cd benchmark
-# HPX
-sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_hpx_dist.sh $BUILD_DIR/fft_hpx_loop $FFTW_PLAN $NODES_POW $COLLECTIVE $LOOP
-# FFTW
-#sbatch -p $PARTITION -N $NODES -n $NODES -c $THREADS run_fftw_dist.sh $BUILD_DIR/fftw_mpi_threads $FFTW_PLAN $NODES $THREADS $LOOP

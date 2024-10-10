@@ -1,23 +1,23 @@
 # A HPX Communication Benchmark: Distributed FFT using Collectives
  
-This repo supplements the Poster Paper submitted to Euro-Par2024
+This repo complements the identically titled poster paper submitted to Euro-Par 2024.
 
 ## Dependencies
 
 Execute scripts in installation directory. Adjust modules to your system.
 
-- `./install_hpx_tcp/mpi/lci.sh`
-- `./install_fftw_treads_mpi.sh`
+- `./install_hpx_{tcp/mpi/lci}.sh`
+- `./install_fftw_{seq/threads_mpi}.sh`
 
 ## Compile
 
-- `./compile.sh tcp/mpi/lci`
+- `./compile.sh tcp/mpi/lci/fftw`
 
 ## Run
 
-- `./distributed_benchmark.sh tcp/mpi/lci scatter/all_to_all`
+- `./distributed_benchmark.sh tcp/mpi/lci/fftw scatter/all_to_all`
 
-- `./message_benchmark.sh tcp/mpi/lci scatter/all_to_all`
+- `./message_benchmark.sh tcp/mpi/lci/fftw scatter/all_to_all`
 
 ## Contact
 
